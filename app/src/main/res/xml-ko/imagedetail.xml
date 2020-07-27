@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="표시 관련 설정" >
+        <src.comitton.config.WAdjustSeekbar
+            android:dialogMessage="옆 소유 상태에서 화면 세로에 대한 가로의 비율을 설정"
+            android:dialogTitle="화면 가로 세로 비율 조정"
+            android:key="WAdjust"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="화면 가로 세로 비율 조정" />
+        <src.comitton.config.ScalingSeekbar
+            android:dialogMessage="이미지의 폭을 지정 크기로 확대/축소"
+            android:dialogTitle="이미지의 폭의 조정"
+            android:key="Scaling"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="이미지의 폭의 조정" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="AccessLamp"
+            android:summary="이미지 로딩 상태를 화면 왼쪽에 표시"
+            android:title="파일 액세스 상태를 표시" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="작업 관련 설정" >
+        <src.comitton.config.LongTapSeekbar
+            android:dialogMessage="확대경보기 길게 시간을 선택"
+            android:dialogTitle="확대경보기까지 길게 시간"
+            android:key="LongTap"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="확대경보기까지 길게 시간" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Max number of processing threads"
+            android:entries="@array/loupesize_name_list"
+            android:entryValues="@array/loupesize_value_list"
+            android:key="LoupeSize"
+            android:summary="dummy"
+            android:title="Size of Loupe view" />
+        <src.comitton.config.ScrlRngWSeekbar
+            android:dialogMessage="볼륨 키 등의 스크롤 량(폭)"
+            android:dialogTitle="스크롤 량(폭)"
+            android:key="ScrlRngW"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="볼륨 키 등의 스크롤 량(폭)" />
+        <src.comitton.config.ScrlRngHSeekbar
+            android:dialogMessage="볼륨 키 등의 스크롤 량(높이)"
+            android:dialogTitle="스크롤 량(높이)"
+            android:key="ScrlRngH"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="볼륨 키 등의 스크롤 량(높이)" />
+        <src.comitton.config.AutoPlaySeekbar
+            android:dialogMessage="자동 재생 간격"
+            android:dialogTitle="자동 재생 속도"
+            android:key="AutoPlayInt"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="자동 재생 속도" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="처리 스레드의 최대 수입니다"
+            android:entries="@array/maxthread_name_list"
+            android:entryValues="@array/maxthread_value_list"
+            android:key="MaxThread"
+            android:summary="dummy"
+            android:title="처리 스레드의 최대 수입니다" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="IDtlHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

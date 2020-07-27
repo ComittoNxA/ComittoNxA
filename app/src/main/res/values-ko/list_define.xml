@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="algomode_name_list">
+        <item>최근 옆 보간</item>
+        <item>Bi-Linear 보간</item>
+        <item>Bi-Linear 보간(두 단계)</item>
+        <item>Bi-Cubic 보간</item>
+        <item>Bi-Cubic 보간(두 단계)</item>
+    </string-array>
+    <string-array name="algomode_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="backmode_name_list">
+        <item>ComittoN 종료</item>
+        <item>부모 디렉토리로 이동</item>
+        <item>이전 디렉토리로 돌아 가기</item>
+    </string-array>
+    <string-array name="backmode_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="file_rotaname_list">
+        <item>회전 수</item>
+        <item>세로 고정</item>
+        <item>옆 고정</item>
+    </string-array>
+    <string-array name="file_rotavalue_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="rotate_name_list">
+        <item>회전 수</item>
+        <item>세로 고정</item>
+        <item>옆 고정</item>
+        <item>세로 고정(90°회전)</item>
+    </string-array>
+    <string-array name="rotate_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="zipsort_name_list">
+        <item>정렬 없음</item>
+        <item>파일 이름(디렉토리 혼합)</item>
+        <item>파일 이름(디렉토리 분리)</item>
+        <item>새로운 순서(디렉토리 혼합)</item>
+        <item>새로운 순서(디렉토리 분리)</item>
+        <item>오래된(디렉토리 혼합)</item>
+        <item>오래된(디렉토리 분리)</item>
+    </string-array>
+    <string-array name="zipsort_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="thumsize_name_list">
+        <item>최소</item>
+        <item>소</item>
+        <item>중</item>
+        <item>대1</item>
+        <item>대2</item>
+        <item>대3</item>
+        <item>대4</item>
+    </string-array>
+    <string-array name="thumsize_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="thumcache_name_list">
+        <item>유지하지</item>
+        <item>최대100파일</item>
+        <item>최대500파일</item>
+        <item>최대1000파일</item>
+        <item>삭제하지(수동 삭제)</item>
+    </string-array>
+    <string-array name="thumcache_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="rotatebtn_name_list">
+        <item>사용하지</item>
+        <item>카메라 포커스 버튼</item>
+        <item>카메라 셔터 버튼</item>
+    </string-array>
+    <string-array name="rotatebtn_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="filesort_name_list">
+        <item>정렬 없음</item>
+        <item>파일 이름-오름차순</item>
+        <item>파일 이름-내림차순</item>
+    </string-array>
+    <string-array name="filesort_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="preset_name_list">
+        <item>지정</item>
+        <item>표준(검정)</item>
+        <item>표준(흰색)</item>
+        <item>벚꽃</item>
+        <item>람</item>
+        <item>잎</item>
+        <item>오렌지</item>
+        <item>먹</item>
+    </string-array>
+    <string-array name="preset_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </string-array>
+    <string-array name="viewpt_name_list">
+        <item>오른쪽 위</item>
+        <item>왼쪽 위</item>
+        <item>오른쪽 아래</item>
+        <item>왼쪽 아래</item>
+        <item>중앙</item>
+    </string-array>
+    <string-array name="viewpt_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="scale_name_list">
+        <item>원래 크기로보기</item>
+        <item>너비에 맞게 표시</item>
+        <item>너비에 맞게 표시(양면 대응)</item>
+        <item>높이에 맞게 표시</item>
+        <item>전체보기</item>
+        <item>전체보기(양면 대응)</item>
+        <item>전체 화면으로 표시</item>
+        <item>전체 화면으로 표시(양면 대응)</item>
+    </string-array>
+    <string-array name="scale_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>6</item>
+        <item>2</item>
+        <item>3</item>
+        <item>7</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="pageway_name_list">
+        <item>오른쪽에서 왼쪽(오른쪽 표지)</item>
+        <item>왼쪽에서 오른쪽으로(왼쪽 표지)</item>
+    </string-array>
+    <string-array name="pageway_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="initview_name_list">
+        <item>그대로</item>
+        <item>마주보기</item>
+        <item>단일 페이지 표시</item>
+        <item>단일 페이지/양면</item>
+    </string-array>
+    <string-array name="initview_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="zoomsize_name_list">
+        <item>원본 이미지 크기</item>
+        <item>원본 이미지 크기의2.0배</item>
+        <item>원본 이미지 크기의3.0배</item>
+        <item>화면 크기의1.5배</item>
+        <item>화면 크기의2.0배</item>
+        <item>화면 크기의2.5배</item>
+        <item>화면 크기의3.0배</item>
+    </string-array>
+    <string-array name="zoomsize_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="volkey_name_list">
+        <item>사용하지</item>
+        <item>Vol-Up:이전 페이지/Down:다음 페이지</item>
+        <item>Vol-Up:다음 페이지/Down:이전 페이지</item>
+    </string-array>
+    <string-array name="volkey_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="noisedec_name_list">
+        <item>천천히</item>
+        <item>보통</item>
+        <item>고속</item>
+    </string-array>
+    <string-array name="noisedec_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="charset_name_list">
+        <item>UTF-8</item>
+        <item>Shift_JIS</item>
+        <item>EUC-JP</item>
+        <item>EUC-KR</item>
+        <item>Big5</item>
+        <item>GB2312</item>
+    </string-array>
+    <string-array name="charset_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="scroll_name_list">
+        <item>가로 → 세로</item>
+        <item>수직 → 수평</item>
+    </string-array>
+    <string-array name="scroll_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="mgncut_name_list">
+        <item>없이</item>
+        <item>약</item>
+        <item>중</item>
+        <item>힘</item>
+        <item>최강</item>
+        <item>강제</item>
+        <item>종횡비 무시</item>
+    </string-array>
+    <string-array name="mgncut_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="txscale_name_list">
+        <item>원래 크기로보기</item>
+        <item>너비에 맞게 표시</item>
+        <item>높이에 맞게 표시</item>
+        <item>전체보기</item>
+    </string-array>
+    <string-array name="txscale_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="txinitview_name_list">
+        <item>마주보기</item>
+        <item>단일 페이지 표시</item>
+        <item>연속 표시</item>
+    </string-array>
+    <string-array name="txinitview_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="txpaper_name_list">
+        <item>화면 크기(세로)</item>
+        <item>800×1280</item>
+        <item>720×1280</item>
+        <item>540×960</item>
+        <item>480×800</item>
+    </string-array>
+    <string-array name="txpaper_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="txgradation_name_list">
+        <item>없이</item>
+        <item>왼쪽 위→오른쪽 아래</item>
+        <item>위 →아래</item>
+        <item>오른쪽 위→왼쪽 아래</item>
+        <item>오른쪽→왼쪽</item>
+        <item>오른쪽 아래→왼쪽 위</item>
+        <item>아래→위</item>
+        <item>왼쪽 아래→오른쪽</item>
+        <item>왼쪽→오른쪽</item>
+    </string-array>
+    <string-array name="txgradation_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+    <string-array name="txpic_name_list">
+        <item>원본 이미지 크기</item>
+        <item>원본 이미지 크기의 2배</item>
+        <item>원본 이미지 크기의 3배</item>
+        <item>원본 이미지 크기의 4배</item>
+        <item>화면 크기로 확대</item>
+    </string-array>
+    <string-array name="txpic_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="effect_name_list">
+        <item>없이</item>
+        <item>플립</item>
+        <item>페이드 인</item>
+    </string-array>
+    <string-array name="effect_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="quality_name_list">
+        <item>속도를 우선하는</item>
+        <item>화질을 우선하는</item>
+    </string-array>
+    <string-array name="quality_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pnpos_name_list">
+        <item>왼쪽 위</item>
+        <item>중앙 위</item>
+        <item>오른쪽 위</item>
+        <item>왼쪽 아래</item>
+        <item>중앙 아래</item>
+        <item>오른쪽 아래</item>
+    </string-array>
+    <string-array name="pnpos_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="pnfmt_name_list">
+        <item>page / total</item>
+        <item>page1-2 / total</item>
+    </string-array>
+    <string-array name="pnfmt_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="lastpage_name_list">
+        <item>화면 닫기</item>
+        <item>확인 대화 상자 표시</item>
+        <item>다음 파일을 표시</item>
+    </string-array>
+    <string-array name="lastpage_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pagesel_name_list">
+        <item>화면 아래를 슬쩍</item>
+        <item>슬라이더를 표시</item>
+        <item>썸네일</item>
+    </string-array>
+    <string-array name="pagesel_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="txpagesel_name_list">
+        <item>화면 아래를 슬쩍</item>
+        <item>슬라이더 표시</item>
+    </string-array>
+    <string-array name="txpagesel_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="history_name_list">
+        <item>저장하지</item>
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="history_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="filemenu_name_list">
+        <item>표시하지</item>
+        <item>보기</item>
+        <item>로컬 만 표시</item>
+        <item>서버 만 표시</item>
+    </string-array>
+    <string-array name="filemenu_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="bright_name_list">
+        <item>-2</item>
+        <item>-1</item>
+        <item>없음</item>
+        <item>+1</item>
+        <item>+2</item>
+    </string-array>
+    <string-array name="bright_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="gamma_name_list">
+        <item>-2</item>
+        <item>-1</item>
+        <item>없음</item>
+        <item>+1</item>
+        <item>+2</item>
+    </string-array>
+    <string-array name="gamma_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="maxthread_name_list">
+        <item>1 스레드</item>
+        <item>2 스레드</item>
+        <item>3 스레드</item>
+        <item>4 스레드</item>
+    </string-array>
+    <string-array name="maxthread_value_list">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="loupesize_name_list">
+        <item>None</item>
+        <item>+1</item>
+        <item>+2</item>
+    </string-array>
+    <string-array name="loupesize_value_list">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+</resources>

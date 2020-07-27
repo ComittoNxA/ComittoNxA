@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="사전 설정 색상" >
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="사전 설정 선택"
+            android:entries="@array/preset_name_list"
+            android:entryValues="@array/preset_value_list"
+            android:key="Preset"
+            android:summary="dummy"
+            android:title="사전 설정 선택" />
+        <PreferenceScreen
+            android:key="CustomUpdate"
+            android:summary="현재 선택된 프리셋의 색상을 사용자 정의 설정의 각 항목에 반영합니다"
+            android:title="프리셋 반영" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="사용자 설정" >
+        <src.comitton.config.ColorTxtSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="서버 선택 텍스트 색상"
+            android:key="TxtRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="서버 선택 텍스트 색상" />
+        <src.comitton.config.ColorDirSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="디렉토리의 색상"
+            android:key="DirRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="디렉토리의 색상" />
+        <src.comitton.config.ColorBefSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="읽지 않은 파일의 색상"
+            android:key="BefRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="읽지 않은 파일의 색상" />
+        <src.comitton.config.ColorNowSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="읽다 파일의 색상"
+            android:key="NowRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="읽다 파일의 색상" />
+        <src.comitton.config.ColorAftSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="읽은 파일의 색상"
+            android:key="AftRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="읽은 파일의 색상" />
+        <src.comitton.config.ColorImgSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="이미지 파일의 색상"
+            android:key="ImgRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="이미지 파일의 색상" />
+        <src.comitton.config.ColorInfSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="파일 정보 색상"
+            android:key="InfRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="파일 정보 색상" />
+        <src.comitton.config.ColorMrkSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="마커의 색"
+            android:key="MrkRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="마커의 색" />
+        <src.comitton.config.ColorBakSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="목록의 배경색"
+            android:key="BakRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="목록의 배경색" />
+        <src.comitton.config.ColorCurSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="선택한 색"
+            android:key="CurRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="선택한 색" />
+        <src.comitton.config.ColorTitSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="제목 텍스트 색상"
+            android:key="TitRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="제목 텍스트 색상" />
+        <src.comitton.config.ColorTibSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="제목의 배경색"
+            android:key="TibRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="제목의 배경색" />
+        <src.comitton.config.ColorTldSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="툴바의 전경색"
+            android:key="TldRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="툴바의 전경색" />
+        <src.comitton.config.ColorTlbSetting
+            android:dialogMessage="색상을 설정합니다"
+            android:dialogTitle="도구 모음 단추 색상"
+            android:key="TlbRGB"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="도구 모음 단추 색상" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="FClrHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="파일 선택 화면 설정" >
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="표시 방향"
+            android:entries="@array/file_rotaname_list"
+            android:entryValues="@array/file_rotavalue_list"
+            android:key="ListRota"
+            android:summary="dummy"
+            android:title="표시 방향" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="정렬 표시"
+            android:entries="@array/zipsort_name_list"
+            android:entryValues="@array/zipsort_value_list"
+            android:key="ListSort"
+            android:summary="dummy"
+            android:title="정렬 표시" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Back 키 동작"
+            android:entries="@array/backmode_name_list"
+            android:entryValues="@array/backmode_value_list"
+            android:key="BackMode"
+            android:summary="dummy"
+            android:title="Back 키 동작" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ResumeOpen"
+            android:summary="시작할 때 이전에 본 파일을 열"
+            android:title="이전 파일을 오픈" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="TapExpand"
+            android:summary="zip/rar/pdf 탭에서 파일 내용을 확장하는"
+            android:title="탭에서 파일 열기보기" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ParentMove"
+            android:summary="파일 목록에 상위 디렉토리로 이동 항목 (위쪽 화살표)를 표시하는"
+            android:title="부모 디렉토리 표시" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="Extension"
+            android:summary="파일 이름 확장명을 표시하는"
+            android:title="확장자보기" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="삭제 메뉴 표시"
+            android:entries="@array/filemenu_name_list"
+            android:entryValues="@array/filemenu_value_list"
+            android:key="FileDelMenu"
+            android:summary="dummy"
+            android:title="삭제 메뉴 표시" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="이름 변경 메뉴 표시"
+            android:entries="@array/filemenu_name_list"
+            android:entryValues="@array/filemenu_value_list"
+            android:key="FileRenMenu"
+            android:summary="dummy"
+            android:title="이름 변경 메뉴 표시" />
+        <src.comitton.config.FontTitleSeekbar
+            android:dialogMessage="제목의 글꼴 크기를 선택"
+            android:dialogTitle="제목 글꼴 크기"
+            android:key="FontTitleSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="제목 글꼴 크기" />
+        <src.comitton.config.FontMainSeekbar
+            android:dialogMessage="파일 이름 등의 글꼴 크기를 선택"
+            android:dialogTitle="글꼴 크기"
+            android:key="FontMainSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="파일 이름 등의 폰트 크기" />
+        <src.comitton.config.FontSubSeekbar
+            android:dialogMessage="요약 글꼴 크기를 선택"
+            android:dialogTitle="요약 글꼴 크기"
+            android:key="FontSubSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="요약 글꼴 크기" />
+        <src.comitton.config.FontTileSeekbar
+            android:dialogMessage="바둑판의 글꼴 크기를 선택"
+            android:dialogTitle="바둑판 글꼴 크기"
+            android:key="FontTileSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="타일 ​​용 글꼴 크기" />
+        <src.comitton.config.ItemMarginSeekbar
+            android:dialogMessage="목록 항목의 여백 크기를 선택"
+            android:dialogTitle="항목의 여백 크기"
+            android:key="ItemMarginSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="항목의 여백 크기" />
+<!--         <CheckBoxPreference -->
+<!--             android:defaultValue="true" -->
+<!--             android:key="ShowToolbar" -->
+<!--             android:summary="목록 상단의 도구 모음 표시" -->
+<!--             android:title="도구 모음의 표시" /> -->
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ToolbarName"
+            android:summary="툴바의 아이콘 이름을 표시하려면"
+            android:title="툴바의 아이콘 이름" />
+        <src.comitton.config.ToolbarSeekbar
+            android:dialogMessage="도구 모음의 아이콘 크기를 설정"
+            android:dialogTitle="도구 모음의 크기"
+            android:key="ToolbarSeek"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="도구 모음의 크기" />
+        <src.comitton.config.ThumbnailPreference
+            android:dialogMessage="썸네일 아이콘 크기를 설정"
+            android:dialogTitle="썸네일의 크기"
+            android:key="ThumbSeek"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="썸네일의 크기" />
+        <src.comitton.config.ListThumbSeekbar
+            android:dialogMessage="Set thumbnail size of the list."
+            android:dialogTitle="List Thumbnail Size"
+            android:key="ListThumbSeek"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="List Thumbnail Size" />
+        <ListPreference
+            android:defaultValue="3"
+            android:dialogTitle="썸네일 캐시"
+            android:entries="@array/thumcache_name_list"
+            android:entryValues="@array/thumcache_value_list"
+            android:key="ThumbCache"
+            android:summary="dummy"
+            android:title="썸네일 캐시" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ThumbSort"
+            android:summary="압축 파일의 전체 파일 이름을 분석하여 시작 파일에 대한(상당히 느립니다)"
+            android:title="처음 파일 이름의 파일 생성" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ClearTop"
+            android:summary="바로 가기 시작할 때 기존 작업을 종료\n(새로 만든 바로 가기에 속성을 추가합니다)"
+            android:title="바로 가기에서 기존 작업 종료" />
+        <CheckBoxPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="true"
+            android:key="ThumbnailTap"
+            android:title="Thumbnail on Menu" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="FileHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

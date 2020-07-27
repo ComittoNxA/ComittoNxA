@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="소리 작업 설정" >
+        <src.comitton.config.NoiseScrlSeekbar
+            android:dialogMessage="긴 소리로 스크롤 할 때의 속도"
+            android:dialogTitle="스크롤 속도"
+            android:key="NoiseScrlSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="스크롤 속도" />
+        <src.comitton.config.NoiseOverSeekbar
+            android:dialogMessage="이 수준 이상의 볼륨을 소리가로 판단합니다"
+            android:dialogTitle="소리가 있다고 판단하는 수준"
+            android:key="NoiseOver"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="소리가 있다고 판단하는 수준" />
+        <src.comitton.config.NoiseUnderSeekbar
+            android:dialogMessage="이 레벨 미만의 볼륨을 무음으로 판단합니다"
+            android:dialogTitle="무음 판단하는 수준"
+            android:key="NoiseUnder"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="무음 판단하는 수준" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="Decision speed"
+            android:entries="@array/noisedec_name_list"
+            android:entryValues="@array/noisedec_value_list"
+            android:key="NoiseDec"
+            android:summary="dummy"
+            android:title="판정 속도" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="NoiseLevel"
+            android:summary="소리의 조작 중에 마이크의 입력 레벨을 표시하는"
+            android:title="마이크 입력 레벨을 표시" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="NoiseHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

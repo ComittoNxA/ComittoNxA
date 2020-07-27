@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="파일 선택 화면" >
+        <PreferenceScreen
+            android:key="FileListSet"
+            android:title="파일 선택 화면 설정"
+            android:summary="파일 선택 화면 시작 표시와 조작을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetFileListActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="RecorderSet"
+            android:title="기록계 목록 설정"
+            android:summary="디렉토리/북마크/기록 목록의 표시 및 동작을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetRecorderActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="FileColor"
+            android:title="파일 선택 화면 색상 설정"
+            android:summary="파일 선택 화면의 표시 색을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetFileColorActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="이미지 및 텍스트 디스플레이 화면" >
+        <PreferenceScreen
+            android:key="ImageSet"
+            android:title="이미지보기 화면 설정"
+            android:summary="이미지 표시 화면 시작 표시와 조작을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetImageActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="DetailSet"
+            android:title="이미지 표시 화면의 고급"
+            android:summary="이미지 표시 화면의 작동에 영향을주는 변수를 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetImageDetailActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="TextSet"
+            android:title="텍스트 화면 설정"
+            android:summary="텍스트 화면의 시작 표시와 조작을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetTextActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="ImageTextDetailSet"
+            android:title="일반적인 표시 고급"
+            android:summary="이미지/텍스트 화면에서 공통 매개 변수를 설정하는">
+            <intent
+                android:targetClass="src.comitton.config.SetImageTextDetailActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="ImageColor"
+            android:title="일반적인 색상 설정"
+            android:summary="이미지/텍스트 표시 화면의 표시 색을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetImageTextColorActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="공통" >
+        <PreferenceScreen
+            android:key="CommOpeSet"
+            android:title="일반 작업 설정"
+            android:summary="각 화면에서 공통 작업을 설정">
+            <intent
+                android:targetClass="src.comitton.config.SetCommonActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="기타 설정" >
+        <PreferenceScreen
+            android:key="NoiseSet"
+            android:title="소리 작업 설정"
+            android:summary="소리 작업에 대한 인식 속도와 검지 레벨 등의 파라미터를 설정하는">
+            <intent
+                android:targetClass="src.comitton.config.SetNoiseActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="MemoryCache"
+            android:title="메모리 캐시 설정"
+            android:summary="메모리 캐시의 크기와 페이지 수의 매개 변수를 설정 (재부팅 반영)">
+            <intent
+                android:targetClass="src.comitton.config.SetCacheActivity"
+                android:targetPackage="jp.dip.muracoro.comittona" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="설정 파일 저장" >
+        <src.comitton.config.ExportSettingPreference
+            android:dialogMessage="대상 파일 이름을 입력\n(확장자는 필요)"
+            android:key="ExportSetting"
+            android:summary="현재 설정에 이름을 붙여 파일에 출력합니다\n（[sdcard]/comittona/conf/*.set에 저장）"
+            android:title="설정 저장" />
+        <src.comitton.config.ImportSettingPreference
+            android:dialogTitle="설정 파일 적용"
+            android:key="ImportSetting"
+            android:summary="선택한 파일의 내용을 현재 설정에 덮어합니다\n ([sdcard]/comittona/conf/*.set참조)"
+            android:title="설정 파일 적용" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="ConfHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

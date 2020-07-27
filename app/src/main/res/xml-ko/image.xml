@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="시작할 때 상태 설정" >
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="크기 조정 방법"
+            android:entries="@array/scale_name_list"
+            android:entryValues="@array/scale_value_list"
+            android:key="IniScale"
+            android:summary="dummy"
+            android:title="크기 조정 방법" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="양면 모드"
+            android:entries="@array/initview_name_list"
+            android:entryValues="@array/initview_value_list"
+            android:key="InitView"
+            android:summary="dummy"
+            android:title="양면 모드" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="보간 방법"
+            android:entries="@array/algomode_name_list"
+            android:entryValues="@array/algomode_value_list"
+            android:key="AlgoMode"
+            android:summary="dummy"
+            android:title="보간 방법" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="Sharpen"
+            android:title="이미지 선명하게" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Jpeg 열기 화질"
+            android:entries="@array/quality_name_list"
+            android:entryValues="@array/quality_value_list"
+            android:key="Quality"
+            android:summary="dummy"
+            android:title="Jpeg 열기 화질" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="표시 관련 설정（＊텍스트와 공통 설정）" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="Notice"
+            android:summary="이미지보기 화면을 닫고 후 사용"
+            android:title="알림 영역을 숨기려면" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="NoSleep"
+            android:summary="이미지보기 화면을 닫고 후 사용"
+            android:title="슬립시키지" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="표시 방향"
+            android:entries="@array/rotate_name_list"
+            android:entryValues="@array/rotate_value_list"
+            android:key="ViewRota"
+            android:summary="dummy"
+            android:title="표시 방향" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="서고에서 파일 정렬"
+            android:entries="@array/filesort_name_list"
+            android:entryValues="@array/filesort_value_list"
+            android:key="FileSort"
+            android:summary="dummy"
+            android:title="서고에서 파일 정렬" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="페이지를 넘기는 방향"
+            android:entries="@array/pageway_name_list"
+            android:entryValues="@array/pageway_value_list"
+            android:key="PageWay"
+            android:summary="dummy"
+            android:title="페이지를 넘기는 방향" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="NoExpand"
+            android:summary="원본 이미지 크기 이상으로 확대하지"
+            android:title="확대하지" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="FitDual"
+            android:summary="바둑판의 경우 높이가 작은 이미지를 큰에 맞게 확대합니다"
+            android:title="바둑판에서 높이 일치" />
+        <ListPreference
+            android:defaultValue="4"
+            android:dialogTitle="확대경보기의 확대"
+            android:entries="@array/zoomsize_name_list"
+            android:entryValues="@array/zoomsize_value_list"
+            android:key="ZoomType"
+            android:summary="dummy"
+            android:title="확대경보기의 확대" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="CMargin"
+            android:summary="바둑판 때 이미지 사이에 여백을 확보"
+            android:title="중앙에 여백을 표시" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="CShadow"
+            android:summary="바둑판 때 이미지의 중앙에 그림자를 그릴"
+            android:title="중앙에 그림자를 그리기" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="페이지 넘김 효과"
+            android:entries="@array/effect_name_list"
+            android:entryValues="@array/effect_value_list"
+            android:key="EffectList"
+            android:summary="dummy"
+            android:title="페이지 넘김 효과" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="이미지의 초기 표시 위치"
+            android:entries="@array/viewpt_name_list"
+            android:entryValues="@array/viewpt_value_list"
+            android:key="ViewPt"
+            android:summary="dummy"
+            android:title="이미지의 초기 표시 위치＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="PrevRev"
+            android:summary="이전 페이지로 돌아 가기 때 가로 표시 위치를 초기 표시 위치의 반대합니다"
+            android:title="이전 페이지 위치를 좌우 반전＊" />
+        <src.comitton.config.PageNumberPreference
+            android:dialogTitle="페이지 번호 표시"
+            android:key="PageNumber"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="페이지 번호 표시" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="작업 관련 설정（＊텍스트와 공통 설정）" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ConfirmBack"
+            android:summary="돌아 가기 버튼으로 화면을 닫을 때 확인 메시지를 표시하는"
+            android:title="뒤로 단추로 확인 표시＊" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="최종/첫 페이지에서 동작"
+            android:entries="@array/lastpage_name_list"
+            android:entryValues="@array/lastpage_value_list"
+            android:key="LastPage"
+            android:summary="dummy"
+            android:title="최종/첫 페이지에서 동작＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="SavePage"
+            android:summary="종료 작업을하지 않고 앱이 멈춘 경우도 읽은 위치가 기록된다"
+            android:title="페이지 이동시 책갈피 저장" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="스크롤 방향"
+            android:entries="@array/scroll_name_list"
+            android:entryValues="@array/scroll_value_list"
+            android:key="ScrlWay"
+            android:summary="dummy"
+            android:title="볼륨 버튼 등의 스크롤 방향" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="DelShare"
+            android:summary="이미지 표시 화면 종료시 공유에 사용 된 임시 파일을 삭제하는"
+            android:title="공유 용 임시 파일을 삭제하는" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="여백 제거"
+            android:entries="@array/mgncut_name_list"
+            android:entryValues="@array/mgncut_value_list"
+            android:key="MarginCut"
+            android:summary="dummy"
+            android:title="여백 제거" />
+        <src.comitton.config.OperationPreference
+            android:dialogMessage="페이지 넘김하는 탭 위치를 선택하십시오\n（&lt;:다음 페이지/&gt;:이전 페이지）"
+            android:dialogTitle="탭 위치의 패턴"
+            android:key="TapPattern"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="탭 조작 패턴＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ChgPage"
+            android:summary="검사는 화면 왼쪽 : 다음 페이지 / 화면 오른쪽 : 이전 페이지 이동합니다"
+            android:title="탭 작업 바꿀＊" />
+        <!-- CheckBoxPreference
+            android:defaultValue="false"
+            android:key="OldPageSel"
+            android:summary="검사는 화면 하단을 드래그하는 방식의 페이지 선택합니다"
+            android:title="구형 페이지 선택＊" /-->
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="VibFlag"
+            android:summary="이미지의 조작/선택에 따라 진동"
+            android:title="진동을 활성화하려면＊" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="볼륨 버튼으로 페이지 넘기기"
+            android:entries="@array/volkey_name_list"
+            android:entryValues="@array/volkey_value_list"
+            android:key="VolKey"
+            android:summary="dummy"
+            android:title="볼륨 버튼으로 페이지 넘기기＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="TapScrl"
+            android:summary="탭에서 스크롤도 할"
+            android:title="탭에서 스크롤＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="FlickPage"
+            android:summary="제스처로 페이지 넘김하기"
+            android:title="제스처로 페이지 넘기기＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="FlickEdge"
+            android:summary="페이지 끝에서 제스처를 시작한 한 경우에만 페이지 넘김하기"
+            android:title="페이지 끝에서 제스처＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ChgFlick"
+            android:summary="검사는 표지 방향으로 플릭이 이전 페이지 이동합니다"
+            android:title="플릭 조작를 바꿀＊" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="페이지 선택 방법"
+            android:entries="@array/pagesel_name_list"
+            android:entryValues="@array/pagesel_value_list"
+            android:key="PageSelect"
+            android:summary="dummy"
+            android:title="페이지 선택 방법" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="ImageHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="시작 표시 상태 설정" >
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="크기 조정 방법"
+            android:entries="@array/txscale_name_list"
+            android:entryValues="@array/txscale_value_list"
+            android:key="txIniScale"
+            android:summary="dummy"
+            android:title="크기 조정 방법" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="양면 모드"
+            android:entries="@array/txinitview_name_list"
+            android:entryValues="@array/txinitview_value_list"
+            android:key="txInitView"
+            android:summary="dummy"
+            android:title="양면 모드" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="용지 선택"
+            android:entries="@array/txpaper_name_list"
+            android:entryValues="@array/txpaper_value_list"
+            android:key="txPaperSize"
+            android:summary="dummy"
+            android:title="용지 선택" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="표시 관련 설정(＊이미지와 공통 설정)" >
+        <PreferenceScreen
+            android:key="txFontDL"
+            android:summary="글꼴 다운로드 화면으로 이동합니다"
+            android:title="글꼴 다운로드" >
+        </PreferenceScreen>
+        <ListPreference
+            android:defaultValue=""
+            android:dialogTitle="글꼴 선택"
+            android:key="txFontName"
+            android:summary="dummy"
+            android:title="글꼴 선택" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="삽화의 크기"
+            android:entries="@array/txpic_name_list"
+            android:entryValues="@array/txpic_value_list"
+            android:key="txPicSize"
+            android:summary="dummy"
+            android:title="삽화의 크기" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="txNotice"
+            android:summary="텍스트 화면을 닫은 후 사용"
+            android:title="알림 영역을 숨기려면" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="txNoSleep"
+            android:summary="텍스트 화면을 닫은 후 사용"
+            android:title="슬립시키지" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="표시 방향"
+            android:entries="@array/rotate_name_list"
+            android:entryValues="@array/rotate_value_list"
+            android:key="txViewRota"
+            android:summary="dummy"
+            android:title="표시 방향" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="txCMargin"
+            android:summary="바둑판 때 이미지 사이에 여백을 확보"
+            android:title="중앙에 여백을 표시" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="txCShadow"
+            android:summary="바둑판 때 이미지의 중앙에 그림자를 그릴"
+            android:title="중앙에 그림자를 그리기" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="txEffect"
+            android:summary="페이지 넘기기 효과를 활성화하는"
+            android:title="페이지 넘김 효과" />
+        <src.comitton.config.TextScrlRngWSeekbar
+            android:dialogMessage="볼륨 키 등의 스크롤 량(폭)"
+            android:dialogTitle="스크롤 량(폭)"
+            android:key="txScrlRngW"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="볼륨 키로 스크롤 량(폭)" />
+        <src.comitton.config.TextScrlRngHSeekbar
+            android:dialogMessage="볼륨 키 등의 스크롤 량(높이)"
+            android:dialogTitle="스크롤 량(높이)"
+            android:key="txScrlRngH"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="볼륨 키로 스크롤 량(높이)" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="이미지의 초기 표시 위치"
+            android:entries="@array/viewpt_name_list"
+            android:entryValues="@array/viewpt_value_list"
+            android:key="ViewPt"
+            android:summary="dummy"
+            android:title="이미지의 초기 표시 위치＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="PrevRev"
+            android:summary="이전 페이지로 돌아 가기 때 가로 표시 위치를 초기 표시 위치의 반대합니다"
+            android:title="이전 페이지 위치를 좌우 반전＊" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="작업 관련 설정(＊이미지와 공통 설정)" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="ConfirmBack"
+            android:summary="돌아 가기 버튼으로 화면을 닫을 때 확인 메시지를 표시하는"
+            android:title="뒤로 단추로 확인 표시＊" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="최종/첫 페이지에서 동작"
+            android:entries="@array/lastpage_name_list"
+            android:entryValues="@array/lastpage_value_list"
+            android:key="LastPage"
+            android:summary="dummy"
+            android:title="최종 / 첫 페이지에서 동작＊" />
+        <src.comitton.config.OperationPreference
+            android:dialogMessage="페이지 넘김하는 탭 위치를 선택하십시오\n（&lt;:다음 페이지/&gt;:이전 페이지）"
+            android:dialogTitle="탭 위치의 패턴"
+            android:key="TapPattern"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="탭 조작 패턴＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ChgPage"
+            android:summary="검사는 화면 왼쪽:다음 페이지 / 화면 오른쪽:이전 페이지 이동합니다"
+            android:title="탭 작업 바꿀＊" />
+        <!--CheckBoxPreference
+            android:defaultValue="false"
+            android:key="OldPageSel"
+            android:summary="チェックにより画面下部をドラッグする方式のページ選択になります"
+            android:title="旧タイプのページ選択＊" /-->
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="VibFlag"
+            android:summary="이미지의 조작/선택에 따라 진동"
+            android:title="진동을 활성화하려면＊" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="볼륨 버튼으로 페이지 넘기기"
+            android:entries="@array/volkey_name_list"
+            android:entryValues="@array/volkey_value_list"
+            android:key="VolKey"
+            android:summary="dummy"
+            android:title="볼륨 버튼으로 페이지 넘기기＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="TapScrl"
+            android:summary="탭에서 스크롤도 할"
+            android:title="탭에서 스크롤＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="FlickPage"
+            android:summary="제스처로 페이지 넘김하기"
+            android:title="제스처로 페이지 넘기기＊" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="FlickEdge"
+            android:summary="페이지 끝에서 제스처를 시작한 한 경우에만 페이지 넘김하기"
+            android:title="페이지 끝에서 제스처＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ChgFlick"
+            android:summary="검사는 표지 방향으로 플릭이 이전 페이지 이동합니다"
+            android:title="플릭 조작를 바꿀＊" />
+        <ListPreference
+            android:defaultValue="1"
+            android:dialogTitle="페이지 선택 방법"
+            android:entries="@array/txpagesel_name_list"
+            android:entryValues="@array/txpagesel_value_list"
+            android:key="txPageSelect"
+            android:summary="dummy"
+            android:title="페이지 선택 방법" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="크기 설정" >
+        <src.comitton.config.TextFontTopSeekbar
+            android:dialogMessage="제목의 글꼴 크기를 선택"
+            android:dialogTitle="제목 글꼴 크기"
+            android:key="txFontTopSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="제목 글꼴 크기" />
+        <src.comitton.config.TextFontBodySeekbar
+            android:dialogMessage="본문의 글꼴 크기를 선택"
+            android:dialogTitle="본문의 글꼴 크기"
+            android:key="txFontBodySp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="본문의 글꼴 크기" />
+        <src.comitton.config.TextFontRubiSeekbar
+            android:dialogMessage="루비의 글꼴 크기를 선택"
+            android:dialogTitle="루비 글꼴 크기"
+            android:key="txFontRubiSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="루비 글꼴 크기" />
+        <src.comitton.config.TextFontInfoSeekbar
+            android:dialogMessage="머리글 / 바닥 글의 글꼴 크기를 선택"
+            android:dialogTitle="머리글/바닥 글의 글꼴 크기"
+            android:key="txFontInfoSp"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="머리글/바닥 글의 글꼴 크기" />
+        <src.comitton.config.TextSpaceWSeekbar
+            android:dialogMessage="행간의 크기를 선택"
+            android:dialogTitle="행간의 크기"
+            android:key="txSpaceW"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="행간의 크기" />
+        <src.comitton.config.TextSpaceHSeekbar
+            android:dialogMessage="문자 사이의 크기를 선택"
+            android:dialogTitle="문자 사이의 크기"
+            android:key="txSpaceH"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="문자 사이의 크기" />
+        <src.comitton.config.TextMarginWSeekbar
+            android:dialogMessage="좌우의 여백 크기를 선택"
+            android:dialogTitle="좌우의 여백 크기"
+            android:key="txMarginW"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="좌우의 여백 크기" />
+        <src.comitton.config.TextMarginHSeekbar
+            android:dialogMessage="상하 여백 크기를 선택"
+            android:dialogTitle="상하 여백 크기"
+            android:key="txMarginH"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="상하 여백 크기" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="온라인 도움말" >
+        <PreferenceScreen
+            android:key="TextHelp"
+            android:summary="설정 항목에 대한 온라인 도움말을 ​​표시합니다"
+            android:title="설정 항목에 대한 설명" >
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

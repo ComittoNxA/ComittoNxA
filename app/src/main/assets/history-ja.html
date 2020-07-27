@@ -1,0 +1,228 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ComittoNxAについて</title>
+<style>
+<！--
+h3.news {
+  color: red;
+  font: bold serif;
+}
+body {
+  color: #FFF;
+  font-size: small;
+  font: bold sans-serif;
+}
+p {
+  padding-left: 1em;
+}
+table {
+  border: 0px
+  width: 100%;
+  font-size: small;
+  border-spacing: 0px;
+}
+td {
+  line-height: 100%;
+}
+td.s1 {
+  text-align: center;
+  vertical-align: top;
+  width: 2%;
+}
+td.s2 {
+  text-align: left;
+  width: 98%;
+}
+
+-->
+</style>
+</head>
+<body bgcolor="#000000" text="#ffffff" link="#0000ff" vlink="#800080" alink="#ff0000">
+<h3>画像処理スレッド数について</h3>
+<p>
+画像処理スレッド数に端末のCPUのコア数を設定すると画像処理が高速になる可能性があります(初期値は２)。<br>
+「イメージの表示詳細設定」-「画像処理スレッド数」で設定してください。<br>
+<br>
+</p>
+
+<h3>KitKatのナビゲーションバー非表示について</h3>
+<p>
+ナビゲーションバー非表示中は画面外からのスワイプ動作による誤動作を防止するため、上端/下端の数ピクセルのタッチを無視します。<br>
+「共通の表示詳細設定」-「IMMERSIVEモードを有効にする」のチェックを外すとで無効化できます。<br>
+</p>
+
+<h3>ディレクトリ一覧</h3>
+<p>
+ファイル選択画面でメニューから「ディレクトリ登録」したパスを表示します。<br>
+画面下のアイコン選択又は一覧でのフリックで表示できます。
+</p>
+
+<h3>ブックマーク一覧</h3>
+<p>
+イメージ又はテキスト表示中にメニューから「ブックマーク追加」したファイルを表示します。<br>
+画面下のアイコン選択又は一覧でのフリックで表示できます。
+</p>
+
+<h3>履歴一覧</h3>
+<p>
+イメージ又はテキスト表示したファイルを表示します。<br>
+画面下のアイコン選択又は一覧でのフリックで表示できます。
+</p>
+
+<h3>PDFの表示</h3>
+<p>
+PDF中のイメージのみを抽出して表示しますのでテキストなどは表示されません。<br>
+NASにある自炊PDFを表示するための苦肉の策の仕様です。<br>
+自炊ではないPDFの表示には別アプリを使用してください。
+</p>
+
+<h3>ComittoNxNとComittoNの違いについて</h3>
+<p>
+ComittoNxNはARMとx86のCPUに最適化しています。<br>
+CPUがx86の端末の場合では体感できる程度に高速化されます。<br>
+CPUがARMの端末では10～20%程度高速ですがキャッシュも効いていますので体感できないと思います。<br>
+</p>
+
+<h3>自動着色について</h3>
+<p>
+HachaCom氏開発の自炊リーダー用自動着色プラグインのソース(GPL)のアルゴリズムを使わせていただきました。<br>
+</p>
+
+<h3>変更履歴</h3>
+<font color="cyan">Ver1.65a1</font>
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">サムネイル作成時の標準の切り取り範囲を変更。</td></tr>
+    <tr><td class="s1"></td><td class="s2">背表紙と左右の折り返しがあると仮定して表紙のあたりを取得。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">余白削除に強制モードを追加。</td></tr>
+    <tr><td class="s1"></td><td class="s2">キャンバスの縦横比を無視(アスペクト比は維持）。</td></tr>
+</table>
+<br>
+Ver1.65t5
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">SMB2関連の対応を削除。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">サーバー情報としおり情報をNxTのみ復元に対応。</td></tr>
+</table>
+<br>
+Ver1.65t4
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">Windowsのルートフォルダが表示されないバグを修正。</td></tr>
+</table>
+<br>
+Ver1.65t3
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">SMB1の匿名アクセスが出来なかったバグを修正。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">SMBの接続バージョン表示に仮対応。</td></tr>
+</table>
+<br>
+Ver1.65t2
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">ファイル名がUTF-8で格納されている場合に対応。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">SMBv2に対応。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">ルーペサイズの切り替えを追加。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">画面下部のタップメニューに設定を追加。</td></tr>
+</table>
+<br>
+Ver1.65t
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">RAR5に対応。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">長押しメニューのタップ対応を設定で変更可能にした。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">画面下部のタップメニューに閉じるを追加。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">SMBv2に対応(予定)。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">先頭・末尾移動のボタンを長押し時に表示されるよう変更。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">リスト表示時でサムネイルOFFでも長押しメニューが出ていたバグを修正。</td></tr>
+</table>
+<br>
+Ver1.65m
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">ZIPファイルの読み込み高速化。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">読み込みバッファサイズを調整。環境によってはSMB上の大きなファイルで結構高速化するかも。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">SMB上の通常画像の読み込みが妙に遅かったのを改善。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">リスト表示中のサムネイル描画サイズの設定を追加。タイル表示では大きく、リスト表示では小さく表示する事が可能に。
+        <br>また、タイル表示時はファイル名部分、リスト表示時はサムネイル部分をタップで長押しメニューを出せるように変更。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">フォルダ・書庫中の好きなファイルをサムネイルに設定する機能を追加。範囲選択して切り出す事も可能。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">マーカーをフィルタとして利用可能に変更。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">先頭・末尾移動のボタンを誤爆防止の為に位置変更。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">プロセスがキル->復帰した時に設定が引き継がれていなかったのを修正。</td></tr>
+    <tr><td class="s1">-</td><td class="s2">サーバ選択のローカルを長押しでストレージに設定出来るように変更。<br>Android7.0以降でファイルリストが表示されない問題が解消出来るかも。</td></tr>
+</table>
+<br>
+Ver1.65
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">半角文字を多く含むテキストの読み込み時間を短縮。</td></tr>
+<tr><td class="s1">-</td><td class="s2">上部メニュー表示中は右下に現在日時と電池残量を表示するように変更。</td></tr>
+<tr><td class="s1">-</td><td class="s2">半角文字を縦に表示する際、2桁の数字と!?は横並びで縦に表示するように変更。</td></tr>
+<tr><td class="s1">-</td><td class="s2">一部のテキスト設定が保存されないバグを修正。</td></tr>
+</table>
+<br>
+Ver1.64
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">画像フォーマットの自動判別処理を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">PNGファイルの表示処理を改善。</td></tr>
+<tr><td class="s1">-</td><td class="s2">いくつかのバグ修正。</td></tr>
+</table>
+<br>
+Ver1.63
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">テキスト表示でのAscii文字表示の表示方法の選択を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">イメージ／テキスト表示の上部メニューを旧形式に切り替える設定を追加。<br>※「共通の表示詳細設定」-「旧タイプの上部メニューを使用」</td></tr>
+<tr><td class="s1">-</td><td class="s2">イメージ表示が不安定になるバグを修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">イメージのシャープ化が有効にならないバグを修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">多くのバグ修正。</td></tr>
+</table>
+<br>
+Ver1.62
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">IMMERSIVE(没入)モードでの誤操作防止のためUIを変更。</td></tr>
+<tr><td class="s1">-</td><td class="s2">イメージ表示設定とテキスト表示設定をダイアログ化。</td></tr>
+<tr><td class="s1">-</td><td class="s2">マルチスレッドによる画像処理時間の短縮。</td></tr>
+<tr><td class="s1">-</td><td class="s2">先頭ページを単独表示する設定を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">明るさ補正、ガンマ補正、モアレ軽減の設定を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">バグ修正。</td></tr>
+</table>
+<br>
+Ver1.54
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫テキスト表示で半角英数を横向けに描画するように変更。</td></tr>
+<tr><td class="s1">-</td><td class="s2">IPAフォントを青空文庫テキスト表示用にダウンロードする機能を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">韓国語のリソースを追加。(全て機械翻訳)</td></tr>
+<tr><td class="s1">-</td><td class="s2">細かなバグ修正。</td></tr>
+</table>
+<br>
+Ver1.53
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫テキスト表示で対応するタグを追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">細かなバグ修正。</td></tr>
+</table>
+<br>
+Ver1.52
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">テキスト表示に検索機能を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">細かなバグ修正。</td></tr>
+</table>
+<br>
+Ver1.51
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">epubをzipとして表示、展開するように機能追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">html/xhtmlの内容を簡易的に縦書き表示できるように機能追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫の挿絵の表示処理を少し変更。</td></tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫でルビが閉じていない場合などに落ちるバグを修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">長い数字を含むファイル名の表示で落ちるバグを修正。</td><n/tr>
+</table>
+<br>
+Ver1.50
+<table width="100%" border="0"><tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫形式の表示を大幅に変更。（UTF-8対応、傍点/傍線対応、対応する外字を追加、ルビのレイアウト改善、字間調整、表示高速化等）</td></tr>
+<tr><td class="s1">-</td><td class="s2">青空文庫形式に見出し選択によるページ移動を追加。（テキストに見出しが設定されていない場合は動作しません）</td></tr>
+<tr><td class="s1">-</td><td class="s2">ピンチイン／アウトの無効化設定を追加。<br>※「共通の表示詳細設定」-「ピンチイン／アウト操作」</td></tr>
+<tr><td class="s1">-</td><td class="s2">ファイル一覧のファイル削除/ファイル名変更機能の無効化設定を追加。<br>※「ファイル選択画面の設定」-「削除メニューの表示/名前変更メニューの表示」</td></tr>
+<tr><td class="s1">-</td><td class="s2">IMMERSIVEモードで誤作動を少し軽減する試みを追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">未読以外のファイル長押しメニューで「先頭ページを開く」を追加。</td></tr>
+<tr><td class="s1">-</td><td class="s2">テキスト表示のIMMERSIVEモード無効化できないバグを修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">Sambaアクセス時のサムネイル表示でファイル読み込みエラーとなるバグを修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">大量ファイルor大量ページのサムネイルでメモリ不足にならない様にメモリ管理を修正。</td></tr>
+<tr><td class="s1">-</td><td class="s2">イメージ表示のサイズ調整に「全体を表示(見開き対応)」を追加。</td></tr>
+</table>
+<br>
+</body>
+</html>

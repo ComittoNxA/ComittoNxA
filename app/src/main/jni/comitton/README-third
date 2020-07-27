@@ -1,0 +1,9 @@
+This archive contains the following versions of the software packages:
+
+	jbig2dec -- git checkout dated 2012-08-06 (da647d1...)
+	openjpeg -- version 1.5.0 from code.google.com/p/openjpeg
+		with revisions 1728 and 1730 included from SVN
+	jpeg -- jpegsr09.zip from www.infai.org/jpeg (06 Aug 2012)
+	zlib -- zlib-1.2.7.zip from www.zlib.net
+	freetype -- ft2410.zip from freetype.org
+

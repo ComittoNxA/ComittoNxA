@@ -1,0 +1,1 @@
+cpp -I.. -I../simd ./jsimdcfg.inc.h | egrep "^[\;%%]|^\ %%" | sed 's%%_cpp_protection_%%%%' | sed 's@%% define@%%define@g' > jsimdcfg.inc

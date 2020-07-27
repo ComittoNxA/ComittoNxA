@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="jp.dip.muracoro.comittona">
+
+    <!--     android:theme="@android:style/Theme.NoTitleBar.Fullscreen" -->
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:hardwareAccelerated="false">
+        <!-- android:requestLegacyExternalStorage="true"> -->
+        <activity
+            android:configChanges="keyboardHidden|orientation|keyboard|screenSize"
+            android:label="@string/app_name"
+            android:name=".FileSelectActivity"
+            android:theme="@style/NoAnime">
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:configChanges="keyboardHidden|orientation|keyboard|screenSize"
+            android:label="@string/app_name"
+            android:name=".ImageActivity"
+            android:theme="@style/MyTheme"
+            android:hardwareAccelerated="false">
+            <intent-filter android:label="@string/app_name" >
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" />
+            </intent-filter>
+            <intent-filter android:label="@string/app_name" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/x-rar-compressed" />
+                <data android:mimeType="application/epub+zip" />
+                <data android:mimeType="image/png" />
+                <data android:mimeType="image/jpeg" />
+                <data android:mimeType="image/jpg" />
+                <data android:mimeType="image/gif" />
+                </intent-filter>
+        </activity>
+        <activity
+            android:configChanges="keyboardHidden|orientation|keyboard|screenSize"
+            android:label="@string/app_name"
+            android:name=".TextActivity"
+            android:theme="@style/MyTheme" >
+            <intent-filter android:label="@string/app_name" >
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/text" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/xhtml+xml" />
+                <data android:mimeType="application/html" />
+                </intent-filter>
+            <intent-filter android:label="@string/app_name" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/text" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:configChanges="keyboardHidden|orientation|keyboard|screenSize|screenLayout"
+            android:label="@string/app_name"
+            android:name="src.comitton.activity.ServerActivity"
+            android:theme="@style/NoAnime" >
+        </activity>
+        <activity
+            android:configChanges="keyboardHidden|orientation|keyboard|screenSize|screenLayout"
+            android:label="@string/app_name"
+            android:name="src.comitton.activity.ExpandActivity"
+            android:theme="@style/NoAnime" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.activity.FontDownloadActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetConfigActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetFileListActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetRecorderActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetFileColorActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetImageActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetImageDetailActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetTextActivity" >
+        </activity>
+<!--
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetImageTextActivity" >
+        </activity>
+-->
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetImageTextDetailActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetImageTextColorActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetNoiseActivity" >
+        </activity>
+<!--
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetMemoryActivity" >
+        </activity>
+-->
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetCacheActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.config.SetCommonActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="src.comitton.activity.CropImageActivity" >
+        </activity>
+    </application>
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+</manifest>
