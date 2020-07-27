@@ -20,6 +20,7 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.preference.PreferenceManager;
 //import android.util.Log;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -30,17 +31,21 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 	public final static short AREATYPE_TOOLBAR = 0x02;
 	public final static short AREATYPE_FILELIST = 0x04;
 	public final static short AREATYPE_DIRLIST = 0x08;
-	public final static short AREATYPE_FAVOLIST = 0x10;
-	public final static short AREATYPE_HISTLIST = 0x20;
-	public final static short AREATYPE_SELECTOR = 0x40;
-	public final static short AREATYPE_LIST = 0x80;
+	public final static short AREATYPE_SERVERLIST = 0x10;
+	public final static short AREATYPE_FAVOLIST = 0x20;
+	public final static short AREATYPE_HISTLIST = 0x40;
+	public final static short AREATYPE_MENULIST = 0x80;
+	public final static short AREATYPE_SELECTOR = 0x100;
+	public final static short AREATYPE_LIST = 0x200;
 
 	public final static short AREATYPE_ALL = 0xFF;
 
-	public final static short LISTINDEX_FILE = 0;
-	public final static short LISTINDEX_DIR = 1;
-	public final static short LISTINDEX_FAVO = 2;
-	public final static short LISTINDEX_HIST = 3;
+//	public final static short LISTINDEX_FILE = 0;
+//	public final static short LISTINDEX_DIR = 1;
+//	public final static short LISTINDEX_SERVER = 2;
+//	public final static short LISTINDEX_FAVO = 3;
+//	public final static short LISTINDEX_HIST = 4;
+//	public final static short LISTINDEX_MENU = 5;
 
 	// 描画情報
 	public TitleArea mTitleArea;
@@ -48,8 +53,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 	public SelectorArea mSelectorArea;
 	public FileListArea mFileListArea;
 	public RecordListArea mDirListArea;
+	public RecordListArea mServerListArea;
 	public RecordListArea mFavoListArea;
 	public RecordListArea mHistListArea;
+	public RecordListArea mMenuListArea;
 	// public ScrollerArea mScrollerArea;
 
 	private Rect mTitleRect;
@@ -57,8 +64,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 	private Rect mSelectorRect;
 	private Rect mFileListRect;
 	private Rect mDirListRect;
+	private Rect mServerListRect;
 	private Rect mFavoListRect;
 	private Rect mHistListRect;
+	private Rect mMenuListRect;
 	// private Rect mScrollerRect;
 
 	private int mListBorder;
@@ -95,15 +104,19 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		mToolbarArea = new ToolbarArea(context, this);
 		mFileListArea = new FileListArea(context, this);
 		mDirListArea = new RecordListArea(context, AREATYPE_DIRLIST, RecordList.TYPE_DIRECTORY, res.getString(R.string.drTitle), this);
+		mServerListArea = new RecordListArea(context, AREATYPE_SERVERLIST, RecordList.TYPE_SERVER, res.getString(R.string.saTitle1), this);
 		mFavoListArea = new RecordListArea(context, AREATYPE_FAVOLIST, RecordList.TYPE_BOOKMARK, res.getString(R.string.bmTitle), this);
 		mHistListArea = new RecordListArea(context, AREATYPE_HISTLIST, RecordList.TYPE_HISTORY, res.getString(R.string.hsTitle), this);
+		mMenuListArea = new RecordListArea(context, AREATYPE_MENULIST, RecordList.TYPE_MENU, res.getString(R.string.listname05), this);
 		mSelectorArea = new SelectorArea(context, this);
 		// mScrollerArea = new ScrollerArea(context, this);
 
 		// 履歴系のタイトル設定
 		mDirListArea.setListTitle("[" + res.getString(R.string.drTitle) + "]", null);
+		mServerListArea.setListTitle("[" + res.getString(R.string.saTitle1) + "]", res.getString(R.string.saTitle2));
 		mFavoListArea.setListTitle("[" + res.getString(R.string.bmTitle) + "]", null);
 		mHistListArea.setListTitle("[" + res.getString(R.string.hsTitle) + "]", null);
+		mMenuListArea.setListTitle("[" + res.getString(R.string.listname05) + "]", null);
 
 		float density = context.getResources().getDisplayMetrics().scaledDensity;
 		mListBorder = (int) (3 * density);
@@ -192,8 +205,13 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 			}
 		}
 		else if (mListType[listIndex] == RecordList.TYPE_DIRECTORY) {
-			if (listIndex == LISTINDEX_DIR && checkInRect(mDirListRect, x, y)) {
+			if (checkInRect(mDirListRect, x, y)) {
 				areatype = AREATYPE_DIRLIST;
+			}
+		}
+		else if (mListType[listIndex] == RecordList.TYPE_SERVER) {
+			if (checkInRect(mServerListRect, x, y)) {
+				areatype = AREATYPE_SERVERLIST;
 			}
 		}
 		else if (mListType[listIndex] == RecordList.TYPE_BOOKMARK) {
@@ -204,6 +222,11 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		else if (mListType[listIndex] == RecordList.TYPE_HISTORY) {
 			if (checkInRect(mHistListRect, x, y)) {
 				areatype = AREATYPE_HISTLIST;
+			}
+		}
+		else if (mListType[listIndex] == RecordList.TYPE_MENU) {
+			if (checkInRect(mMenuListRect, x, y)) {
+				areatype = AREATYPE_MENULIST;
 			}
 		}
 		// else if (checkInRect(mScrollerRect, x, y)) {
@@ -235,8 +258,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 			mSelectorRect = mSelectorArea.setDrawArea(x, y, cx, cy, mOrientation);
 			mFileListRect = mFileListArea.setDrawArea(x, y, mSelectorRect.left, cy, mOrientation);
 			mDirListRect = mDirListArea.setDrawArea(0, y, mSelectorRect.left, cy, mOrientation);
+			mServerListRect = mServerListArea.setDrawArea(0, y, mSelectorRect.left, cy, mOrientation);
 			mFavoListRect = mFavoListArea.setDrawArea(0, y, mSelectorRect.left, cy, mOrientation);
 			mHistListRect = mHistListArea.setDrawArea(0, y, mSelectorRect.left, cy, mOrientation);
+			mMenuListRect = mMenuListArea.setDrawArea(0, y, mSelectorRect.left, cy, mOrientation);
 		}
 		else {
 			// 縦画面
@@ -245,8 +270,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 			mSelectorRect = mSelectorArea.setDrawArea(0, y1, cx, cy, mOrientation);
 			mFileListRect = mFileListArea.setDrawArea(0, y1, cx, mSelectorRect.top, mOrientation);
 			mDirListRect = mDirListArea.setDrawArea(0, y2, cx, mSelectorRect.top, mOrientation);
+			mServerListRect = mServerListArea.setDrawArea(0, y2, cx, mSelectorRect.top, mOrientation);
 			mFavoListRect = mFavoListArea.setDrawArea(0, y2, cx, mSelectorRect.top, mOrientation);
 			mHistListRect = mHistListArea.setDrawArea(0, y2, cx, mSelectorRect.top, mOrientation);
+			mMenuListRect = mMenuListArea.setDrawArea(0, y2, cx, mSelectorRect.top, mOrientation);
 		}
 		mListRect.set(mToolbarRect.left, mToolbarRect.top, mFileListRect.right, mFileListRect.bottom);
 		int minwidth = Math.min(cx, cy);
@@ -421,11 +448,17 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 					else if (type == RecordList.TYPE_DIRECTORY) {
 						mDirListArea.drawArea(canvas, mDirListRect.left + offsetX, mDirListRect.top);
 					}
+					else if (type == RecordList.TYPE_SERVER) {
+						mServerListArea.drawArea(canvas, mServerListRect.left + offsetX, mServerListRect.top);
+					}
 					else if (type == RecordList.TYPE_BOOKMARK) {
 						mFavoListArea.drawArea(canvas, mFavoListRect.left + offsetX, mFavoListRect.top);
 					}
 					else if (type == RecordList.TYPE_HISTORY) {
 						mHistListArea.drawArea(canvas, mHistListRect.left + offsetX, mHistListRect.top);
+					}
+					else if (type == RecordList.TYPE_MENU) {
+						mMenuListArea.drawArea(canvas, mMenuListRect.left + offsetX, mMenuListRect.top);
 					}
 				}
 			}
@@ -445,11 +478,17 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 			else if (listtype == RecordList.TYPE_DIRECTORY) {
 				mDirListArea.drawArea(canvas, mDirListRect.left, mDirListRect.top);
 			}
+			else if (listtype == RecordList.TYPE_SERVER) {
+				mServerListArea.drawArea(canvas, mServerListRect.left, mServerListRect.top);
+			}
 			else if (listtype == RecordList.TYPE_BOOKMARK) {
 				mFavoListArea.drawArea(canvas, mFavoListRect.left, mFavoListRect.top);
 			}
 			else if (listtype == RecordList.TYPE_HISTORY) {
 				mHistListArea.drawArea(canvas, mHistListRect.left, mHistListRect.top);
+			}
+			else if (listtype == RecordList.TYPE_MENU) {
+				mMenuListArea.drawArea(canvas, mMenuListRect.left, mMenuListRect.top);
 			}
 		}
 		if (Rect.intersects(mTitleRect, rc)) {
@@ -551,11 +590,17 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		else if (areatype == AREATYPE_DIRLIST) {
 			x -= mDirListRect.left;
 		}
+		else if (areatype == AREATYPE_SERVERLIST) {
+			x -= mServerListRect.left;
+		}
 		else if (areatype == AREATYPE_FAVOLIST) {
 			x -= mFavoListRect.left;
 		}
 		else if (areatype == AREATYPE_HISTLIST) {
 			x -= mHistListRect.left;
+		}
+		else if (areatype == AREATYPE_MENULIST) {
+			x -= mMenuListRect.left;
 		}
 		return x;
 	}
@@ -576,11 +621,17 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		else if (areatype == AREATYPE_DIRLIST) {
 			y -= mDirListRect.top;
 		}
+		else if (areatype == AREATYPE_SERVERLIST) {
+			y -= mServerListRect.top;
+		}
 		else if (areatype == AREATYPE_FAVOLIST) {
 			y -= mFavoListRect.top;
 		}
 		else if (areatype == AREATYPE_HISTLIST) {
 			y -= mHistListRect.top;
+		}
+		else if (areatype == AREATYPE_MENULIST) {
+			y -= mMenuListRect.top;
 		}
 		return y;
 	}
@@ -720,15 +771,19 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 	public void setDrawColor(int clr_dir, int clr_img, int clr_bef, int clr_now, int clr_aft, int clr_bak, int clr_cur, int clr_mrk, int clr_frm, int clr_txt, int clr_inf) {
 		mFileListArea.setDrawColor(clr_dir, clr_img, clr_bef, clr_now, clr_aft, clr_bak, clr_cur, clr_mrk, clr_frm, clr_inf);
 		mDirListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
+		mServerListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
 		mFavoListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
 		mHistListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
+		mMenuListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
 	}
 
 	public void setDrawInfo(int tilesize, int titlesize, int infosize, int margin, boolean showext) {
 		mFileListArea.setDrawInfo(tilesize, titlesize, infosize, margin, showext);
 		mDirListArea.setDrawInfo(titlesize, infosize, margin);
+		mServerListArea.setDrawInfo(titlesize, infosize, margin);
 		mFavoListArea.setDrawInfo(titlesize, infosize, margin);
 		mHistListArea.setDrawInfo(titlesize, infosize, margin);
+		mMenuListArea.setDrawInfo(titlesize, infosize, margin);
 	}
 
 	public void switchListType(boolean isReverse) {
@@ -747,7 +802,6 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 
 	public void setListType(short listtype[]) {
 		mListType = listtype;
-
 		// リストの選択
 		setListIndex(0, 0, true);
 	}
@@ -835,6 +889,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 					break;
 			}
 		}
+		else if (listtype == RecordList.TYPE_SERVER || listtype == RecordList.TYPE_MENU) {
+			name = "";
+			way = true;
+		}
 		else {
 			switch (sorttype / 2) {
 				case 0:
@@ -863,11 +921,17 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		else if (listtype == RecordList.TYPE_DIRECTORY) {
 			return mDirListArea;
 		}
+		else if (listtype == RecordList.TYPE_SERVER) {
+			return mServerListArea;
+		}
 		else if (listtype == RecordList.TYPE_BOOKMARK) {
 			return mFavoListArea;
 		}
 		else if (listtype == RecordList.TYPE_HISTORY) {
 			return mHistListArea;
+		}
+		else if (listtype == RecordList.TYPE_MENU) {
+			return mMenuListArea;
 		}
 		return null;
 	}
@@ -877,10 +941,10 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		mListNoticeListener = listener;
 		mFileListArea.setListNoticeListener(listener);
 		mDirListArea.setListNoticeListener(listener);
+		mServerListArea.setListNoticeListener(listener);
 		mFavoListArea.setListNoticeListener(listener);
 		mHistListArea.setListNoticeListener(listener);
-		;
-
+		mMenuListArea.setListNoticeListener(listener);
 	}
 
 	// listindexの加減算後の値(範囲考慮)

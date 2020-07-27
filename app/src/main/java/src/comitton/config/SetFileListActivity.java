@@ -307,9 +307,9 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 	}
 
 	public static int getIniScale(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_INISCALE, "2");
-		if( val < 0 || val > 4 ){
-			val = 0;
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_INISCALE, DEF.DEFAULT_INISCHALE);
+		if( val < 0 || val > 7 ){
+			val = 5;
 		}
 		return val;
 	}
@@ -323,7 +323,7 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 	}
 
 	public static int getInitView(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_INITVIEW, "1");
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_INITVIEW, DEF.DEFAULT_INITVIEW);
 		if( val < 0 || val > 3 ){
 			val = 0;
 		}

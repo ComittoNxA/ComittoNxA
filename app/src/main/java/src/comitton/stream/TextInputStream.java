@@ -41,7 +41,7 @@ public class TextInputStream extends InputStream {
 		}
 		else {
 			mHostType = HOSTTYPE_ERROR;
-			throw new IOException("Illigal path");
+			throw new IOException("Illegal path");
 		}
 		return;
 	}

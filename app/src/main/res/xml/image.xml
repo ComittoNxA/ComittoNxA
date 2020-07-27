@@ -25,10 +25,14 @@
             android:key="AlgoMode"
             android:summary="dummy"
             android:title="Image Interpolation" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="Sharpen"
-            android:title="Sharpen image" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Remove the white margin"
+            android:entries="@array/mgncut_name_list"
+            android:entryValues="@array/mgncut_value_list"
+            android:key="MarginCut"
+            android:summary="dummy"
+            android:title="Strength to remove the white margin." />
         <ListPreference
             android:defaultValue="0"
             android:dialogTitle="Jpeg Decode Quality"
@@ -37,6 +41,10 @@
             android:key="Quality"
             android:summary="dummy"
             android:title="Image Decode Quality" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="Sharpen"
+            android:title="Sharpen image" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Display Settings" >
         <CheckBoxPreference
@@ -161,14 +169,6 @@
             android:key="DelShare"
             android:summary="Delete the temporary files for sharing at the end of the Image Viewer."
             android:title="Delete Temporary File" />
-        <ListPreference
-            android:defaultValue="0"
-            android:dialogTitle="Remove the white margin"
-            android:entries="@array/mgncut_name_list"
-            android:entryValues="@array/mgncut_value_list"
-            android:key="MarginCut"
-            android:summary="dummy"
-            android:title="Strength to remove the white margin." />
         <src.comitton.config.OperationPreference
             android:dialogMessage="Please select the location tap page turning.\n(&lt;:Next Page, &gt;:Prev Page)"
             android:dialogTitle="Pattern of tap position"
@@ -177,7 +177,7 @@
             android:summary="dummy"
             android:title="Pattern of tap position" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="ChgPage"
             android:summary="When checked, the right of the screen will move to the previous page."
             android:title="Swap the tap operation(*)" />

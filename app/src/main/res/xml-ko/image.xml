@@ -25,10 +25,14 @@
             android:key="AlgoMode"
             android:summary="dummy"
             android:title="보간 방법" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="Sharpen"
-            android:title="이미지 선명하게" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="여백 제거"
+            android:entries="@array/mgncut_name_list"
+            android:entryValues="@array/mgncut_value_list"
+            android:key="MarginCut"
+            android:summary="dummy"
+            android:title="여백 제거" />
         <ListPreference
             android:defaultValue="0"
             android:dialogTitle="Jpeg 열기 화질"
@@ -37,6 +41,10 @@
             android:key="Quality"
             android:summary="dummy"
             android:title="Jpeg 열기 화질" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="Sharpen"
+            android:title="이미지 선명하게" />
     </PreferenceCategory>
     <PreferenceCategory android:title="표시 관련 설정（＊텍스트와 공통 설정）" >
         <CheckBoxPreference
@@ -161,14 +169,6 @@
             android:key="DelShare"
             android:summary="이미지 표시 화면 종료시 공유에 사용 된 임시 파일을 삭제하는"
             android:title="공유 용 임시 파일을 삭제하는" />
-        <ListPreference
-            android:defaultValue="0"
-            android:dialogTitle="여백 제거"
-            android:entries="@array/mgncut_name_list"
-            android:entryValues="@array/mgncut_value_list"
-            android:key="MarginCut"
-            android:summary="dummy"
-            android:title="여백 제거" />
         <src.comitton.config.OperationPreference
             android:dialogMessage="페이지 넘김하는 탭 위치를 선택하십시오\n（&lt;:다음 페이지/&gt;:이전 페이지）"
             android:dialogTitle="탭 위치의 패턴"

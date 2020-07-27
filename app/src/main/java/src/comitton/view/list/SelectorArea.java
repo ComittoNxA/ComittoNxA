@@ -17,15 +17,15 @@ import android.graphics.Paint.Style;
 import android.view.MotionEvent;
 
 public class SelectorArea {
-	private final int BUTTON_MAXNUM = 4;
+	private final int BUTTON_MAXNUM = 6;
 
 	private final int ICON_ID[] =
 	{
-		R.raw.list_directory, R.raw.list_favorite, R.raw.list_history, R.raw.list_file,
+		R.raw.directory, R.raw.toolbar_server, R.raw.list_favorite, R.raw.list_history, R.raw.menu, R.raw.list_file,
 	};
 	private final int TEXT_ID[] =
 	{
-		R.string.listname01, R.string.listname02, R.string.listname03, R.string.listname00
+		R.string.listname01, R.string.listname02, R.string.listname03, R.string.listname04, R.string.listname05, R.string.listname00
 	};
 
 	private Bitmap mBitmap[];
@@ -123,23 +123,29 @@ public class SelectorArea {
 
 			if (cx > cy) {
 				// 横長ツールバー
-				x1 = baseX + mButtonStart + cx * i / BUTTON_MAXNUM;
-				x2 = baseX + mButtonStart + cx * (i + 1) / BUTTON_MAXNUM;
+//				x1 = baseX + mButtonStart + cx * i / BUTTON_MAXNUM;
+//				x2 = baseX + mButtonStart + cx * (i + 1) / BUTTON_MAXNUM;
+				x1 = baseX + cx * i / mButtonNum;
+				x2 = baseX + cx * (i + 1) / mButtonNum;
 				y1 = baseY + 0;
 				y2 = baseY + cy;
 
-				bmp_x[i] = baseX + mButtonStart + cx * (i * 2 + 1) / (BUTTON_MAXNUM * 2) - size_bitmap / 2;
+//				bmp_x[i] = baseX + mButtonStart + cx * (i * 2 + 1) / (BUTTON_MAXNUM * 2) - size_bitmap / 2;
+				bmp_x[i] = baseX + cx * (i * 2 + 1) / (mButtonNum * 2) - size_bitmap / 2;
 				bmp_y[i] = baseY + (cy - (size_bitmap + (mShowLabel ? mSizeFont + mTextMargin : 0))) / 2;
 			}
 			else {
 				// 縦長ツールバー
 				x1 = baseX + 0;
 				x2 = baseX + cx;
-				y1 = baseY + mButtonStart + cy * i / BUTTON_MAXNUM;
-				y2 = baseY + mButtonStart + cy * (i + 1) / BUTTON_MAXNUM;
+//				y1 = baseY + mButtonStart + cy * i / BUTTON_MAXNUM;
+//				y2 = baseY + mButtonStart + cy * (i + 1) / BUTTON_MAXNUM;
+				y1 = baseY + cy * i / mButtonNum;
+				y2 = baseY + cy * (i + 1) / mButtonNum;
 
 				bmp_x[i] = baseX + (cx - size_bitmap) / 2;
-				bmp_y[i] = baseY + mButtonStart + cy * (i * 2 + 1) / (BUTTON_MAXNUM * 2) - (size_bitmap + (mShowLabel ? mSizeFont + mTextMargin : 0)) / 2;
+//				bmp_y[i] = baseY + mButtonStart + cy * (i * 2 + 1) / (BUTTON_MAXNUM * 2) - (size_bitmap + (mShowLabel ? mSizeFont + mTextMargin : 0)) / 2;
+				bmp_y[i] = baseY + cy * (i * 2 + 1) / (mButtonNum * 2) - (size_bitmap + (mShowLabel ? mSizeFont + mTextMargin : 0)) / 2;
 			}
 
 			// 背景塗り
@@ -185,17 +191,21 @@ public class SelectorArea {
 		if (mShowSelector) {
 			if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
 				cx = mSelectorSize;
-				mButtonSize = cy / BUTTON_MAXNUM;
-				mButtonStart = cy * (BUTTON_MAXNUM - mButtonNum) / BUTTON_MAXNUM / 2;
+				mButtonSize = cy / mButtonNum;
+//				mButtonSize = cy / BUTTON_MAXNUM;
+//				mButtonStart = cy * (BUTTON_MAXNUM - mButtonNum) / BUTTON_MAXNUM / 2;
 			}
 			else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
 				cy = mSelectorSize;
-				mButtonSize = cx / BUTTON_MAXNUM;
-				mButtonStart = cx * (BUTTON_MAXNUM - mButtonNum) / BUTTON_MAXNUM / 2;
+				mButtonSize = cx / mButtonNum;
+//				mButtonSize = cx / BUTTON_MAXNUM;
+//				mButtonStart = cx * (BUTTON_MAXNUM - mButtonNum) / BUTTON_MAXNUM / 2;
 			}
 		}
 		mAreaWidth = cx;
 		mAreaHeight = cy;
+//		return new Rect(x2 - cx, y2 - cy, x2, y2);
+		mButtonStart = 0;
 		return new Rect(x2 - cx, y2 - cy, x2, y2);
 	}
 
@@ -228,10 +238,12 @@ public class SelectorArea {
 			index = -1;
 		}
 		else if (cx > cy) {
-			index = (x - mButtonStart) / mButtonSize;
+//			index = (x - mButtonStart) / mButtonSize;
+			index = x / mButtonSize;
 		}
 		else {
-			index = (y - mButtonStart) / mButtonSize;
+//			index = (x - mButtonStart) / mButtonSize;
+			index = y / mButtonSize;
 		}
 		if (index >= mListType.length) {
 			// 範囲外

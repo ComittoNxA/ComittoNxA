@@ -511,10 +511,10 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageGetFreeSize 
 
 /*
  * Class:     src_comitton_stream_CallImgLibrary
- * Method:    ImageMeasureMarginCut
+ * Method:    GetMarginSize
  * Signature: ()V
  */
-JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageMeasureMarginCut (JNIEnv *env, jclass obj, jint page, jint half, jint index, jint width, jint height, jint margin, jintArray size)
+JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_GetMarginSize (JNIEnv *env, jclass obj, jint page, jint half, jint index, jint width, jint height, jint margin, jintArray size)
 {
 	if (page < 0 || gTotalPages <= page) {
 		LOGE("ImageMeasureMarginCut : Illegal Page.(%d)", page);
@@ -525,7 +525,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageMeasureMargi
 #endif
 
 	jint *retsize = env->GetIntArrayElements(size, NULL);
-	int ret = ImageMeasureMarginCut(page, half, index, width, height, margin, &retsize[0], &retsize[1], &retsize[2], &retsize[3]);
+	int ret = GetMarginSize(page, half, index, width, height, margin, &retsize[0], &retsize[1], &retsize[2], &retsize[3]);
 	env->ReleaseIntArrayElements(size, retsize, 0);
 	return ret;
 //	return
@@ -536,7 +536,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageMeasureMargi
  * Method:    ImageScale
  * Signature: ()V
  */
-JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScale (JNIEnv *env, jclass obj, jint page, jint half, jint width, jint height, jint algorithm, jint rotate, jint margin, jint bright, jint gamma, jint param, jintArray size)
+JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScale (JNIEnv *env, jclass obj, jint page, jint half, jint width, jint height, jint left, jint right, jint top, jint bottom, jint algorithm, jint rotate, jint margin, jint bright, jint gamma, jint param, jintArray size)
 {
 	if (page < 0 || gTotalPages <= page) {
 		LOGE("ImageScale : Illegal Page.(%d)", page);
@@ -547,7 +547,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScale (JNIEn
 #endif
 
     jint *retsize = env->GetIntArrayElements(size, NULL);
-	int ret = CreateScale(page, half, width, height, algorithm, rotate, margin, bright, gamma, param, retsize);
+	int ret = CreateScale(page, half, width, height, left, right, top, bottom, algorithm, rotate, margin, bright, gamma, param, retsize);
     env->ReleaseIntArrayElements(size, retsize, 0);
 	return ret;
 //	return 

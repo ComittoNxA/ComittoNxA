@@ -144,16 +144,18 @@ public class TitleArea implements Handler.Callback {
 			int y2 = y1 + s;
 
 			mArrowPath.reset();
-			if (mSortType) {
-				// 昇順
-				mArrowPath.moveTo(x1 + s / 2, y1 + sh);
-				mArrowPath.lineTo(x2 - s / 3, y2 - sh);
-				mArrowPath.lineTo(x1 + s / 3, y2 - sh);
-			} else {
-				// 昇順
-				mArrowPath.moveTo(x1 + s / 2, y2 - sh);
-				mArrowPath.lineTo(x2 - s / 3, y1 + sh);
-				mArrowPath.lineTo(x1 + s / 3, y1 + sh);
+			if (!mSortName.equals("")) {
+				if (mSortType) {
+					// 昇順
+					mArrowPath.moveTo(x1 + s / 2, y1 + sh);
+					mArrowPath.lineTo(x2 - s / 3, y2 - sh);
+					mArrowPath.lineTo(x1 + s / 3, y2 - sh);
+				} else {
+					// 昇順
+					mArrowPath.moveTo(x1 + s / 2, y2 - sh);
+					mArrowPath.lineTo(x2 - s / 3, y1 + sh);
+					mArrowPath.lineTo(x1 + s / 3, y1 + sh);
+				}
 			}
 			canvas.drawPath(mArrowPath, mArrowPaint);
 			mTextPaint.setTextAlign(Paint.Align.RIGHT);

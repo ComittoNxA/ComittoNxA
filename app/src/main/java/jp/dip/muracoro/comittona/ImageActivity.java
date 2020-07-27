@@ -2006,11 +2006,12 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 						mSelectPage = mCurrentPage;
 					}
 					// 下部押下
-					startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
 					mOperation = TOUCH_COMMAND;
-					// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)
-					mGuideView.eventTouchDown((int)x, (int)y, cx, cy, false);
-
+					if( x <= mClickArea || x>= cx - mClickArea) {
+						startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
+						// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)
+						mGuideView.eventTouchDown((int)x, (int)y, cx, cy, false);
+					}
 					// 文書情報を表示
 					mGuideView.setPageText(mImageMgr.createPageStr(mSelectPage));
 					mGuideView.setPageColor(mTopColor1);
@@ -3487,9 +3488,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mMaxThread = SetImageDetailActivity.getMaxThread(sharedPreferences);
 			if (mMaxThread == 0) {
 				mMaxThread = Runtime.getRuntime().availableProcessors();
-				if (mMaxThread > 3) {
+				if (mMaxThread > 7) {
 					// ひとつ落とす
-					mMaxThread = 3;
+					mMaxThread = 7;
 				}
 				else if (mMaxThread <= 0) {
 					mMaxThread = 1;

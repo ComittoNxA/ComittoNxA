@@ -26,7 +26,7 @@ extern int			gCancel;
 // RetSize 返却用ポインタ
 // RetSize[0] 完成サイズ(幅)
 // RetSize[1] 完成サイズ(高さ)
-int CreateScale(int Page, int Half, int SclWidth, int SclHeight, int algorithm, int Rotate, int Margin, int Bright, int Gamma, int Param, jint *RetSize)
+int CreateScale(int Page, int Half, int SclWidth, int SclHeight, int left, int right, int top, int bottom, int algorithm, int Rotate, int Margin, int Bright, int Gamma, int Param, jint *RetSize)
 {
 	int Sharpen  = (Param & PARAM_SHARPEN) != 0 ? 1 : 0;
 	int Invert   = (Param & PARAM_INVERT) != 0 ? 1 : 0;;
@@ -58,27 +58,11 @@ int CreateScale(int Page, int Half, int SclWidth, int SclHeight, int algorithm, 
 		}
 
 		// 余白カット
-		ret = ImageMarginCut(Page, Half, Index, OrgWidth, OrgHeight, Margin, &OrgWidth, &OrgHeight);
+		ret = ImageMarginCut(Page, Half, Index, SclWidth, SclHeight, left, right, top, bottom, Margin, &OrgWidth, &OrgHeight);
 		if (ret < 0) {
 			return ret;
 		}
 		else if(ret > 0) {
-			if (Margin == 5) {
-				// 余白強制削除の場合
-				if (scl_w > 0 || scl_h > 0) {
-					if (OrgWidth * 1000 / scl_w > OrgHeight * 1000 / scl_h) {
-						// Y方向よりもX方向の方が拡大率が小さく画面いっぱいになる
-						// 幅基準
-						scl_w = scl_w;
-						scl_h = OrgHeight * scl_w / OrgWidth;
-					}
-					else {
-						// 高さ基準
-						scl_w  = OrgWidth * scl_h / OrgHeight;
-						scl_h = scl_h;
-					}
-				}
-			}
 			//LOGD("CreateScale: Page=%d, Half=%d, 強制カット Index=%d, SclWidth=%d, SclHeight=%d, RetWidth=%d, RetHeight=%d", Page, Half, Index, scl_w, scl_h, OrgWidth, OrgHeight);
 			// 余白カットあり
 			Index ++;

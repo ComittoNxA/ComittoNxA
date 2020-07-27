@@ -396,13 +396,13 @@ public class GuideView {
 					mDrawPaint.setColor(mGuideColor2);
 				}
 				switch (i) {
-					case GUIDE_BLEFT:
+					case GUIDE_BLEFT:// 先頭ページ
 						rc.set(0, cy - mButtonSize + 1, mButtonSize - 1, cy);
 						break;
-					case GUIDE_BCENTER:
+					case GUIDE_BCENTER:// ページ選択
 						rc.set(mButtonSize, cy - mButtonSize + 1, cx - mButtonSize, cy);
 						break;
-					case GUIDE_BRIGHT:
+					case GUIDE_BRIGHT:// 最終ページ
 						rc.set(cx - mButtonSize + 1, cy - mButtonSize + 1, cx, cy);
 						break;
 				}
@@ -950,8 +950,8 @@ public class GuideView {
 			num = 11 + 2;
 
 			if (mPageMode == 0) {
-				// スライダーページ選択モードの場合はページ選択なし
-				num -= 3;
+				// スワイプページ選択モードの場合はページ選択なし
+				num -= 1;
 			}
 			if( mImmEnable == false ){
 				// IMMERSIVEモードが無効な時は閉じるメニューなし
@@ -982,20 +982,21 @@ public class GuideView {
 				id_wk = 8;
 				rc_wk = new Rect(mButtonSize + 1, mFirstCY - mButtonSize, mFirstCX - mButtonSize - 1, mFirstCY);
 				cmdinfo[i] = new CommandInfo(str_wk, rc_wk, id_wk, true, false);
-				i ++;
-
-				// 右側ページ
-				id_wk = 0x4002;
-				rc_wk = new Rect(mFirstCX - mButtonSize, mFirstCY - mButtonSize, mFirstCX, mFirstCY);
-				cmdinfo[i] = new CommandInfo(null, rc_wk, id_wk, false, false);	// 長押し時に表示
-				i ++;
-
-				// 左側ページ
-				id_wk = 0x4003;
-				rc_wk = new Rect(0, mFirstCY - mButtonSize, mButtonSize, mFirstCY);
-				cmdinfo[i] = new CommandInfo(null, rc_wk, id_wk, false, false);	// 長押し時に表示
-				i ++;
+				i++;
 			}
+
+			// 先頭ページ
+			id_wk = 0x4002;
+			rc_wk = new Rect(mFirstCX - mButtonSize, mFirstCY - mButtonSize, mFirstCX, mFirstCY);
+			cmdinfo[i] = new CommandInfo(null, rc_wk, id_wk, false, false);	// 長押し時に表示
+			i ++;
+
+			// 最終ページ
+			id_wk = 0x4003;
+			rc_wk = new Rect(0, mFirstCY - mButtonSize, mButtonSize, mFirstCY);
+			cmdinfo[i] = new CommandInfo(null, rc_wk, id_wk, false, false);	// 長押し時に表示
+			i ++;
+
 			basey -= (mButtonSize + 1) * 3 / 2;
 
 			if( mImmEnable == true ){

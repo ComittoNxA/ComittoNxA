@@ -421,7 +421,7 @@ int ThumbnailSave(long long id, int index, int bmp_width, int bmp_height, int bm
 		if (linecount >= linenum) {
 //			LOGD("ThumbnailSave : next buffptr nextindex=%d, pageblocknum=%d, linecount=%d, linenum=%d", nextindex, gThPageBlockNum, linecount, linenum);
 			if (nextindex < 0) {
-//				LOGD("ThumbnailSave : Illigal Index(nextindex=%d)", nextindex);
+//				LOGD("ThumbnailSave : Illegal Index(nextindex=%d)", nextindex);
 			}
 			int pageindex = nextindex / gThPageBlockNum;
 			int blockptr = (nextindex % gThPageBlockNum) * THUMB_BLOCKSIZE;
@@ -504,7 +504,7 @@ int ThumbnailDraw(long long id, int index, int bmp_width, int bmp_height, int bm
 		if (linecount >= linenum) {
 //			LOGD("ThumbnailDraw : next buffptr nextindex=%d, blocknum=%d, linecount=%d, linenum=%d", nextindex, gThPageBlockNum, linecount, linenum);
 			if (nextindex < 0) {
-				LOGD("ThumbnailDraw : Illigal Index(nextindex=%d)", nextindex);
+				LOGD("ThumbnailDraw : Illegal Index(nextindex=%d)", nextindex);
 			}
 			int pageindex = nextindex / gThPageBlockNum;
 			int blockptr = (nextindex % gThPageBlockNum) * THUMB_BLOCKSIZE;

@@ -23,6 +23,7 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.util.Log;
 
 public class FileListArea extends ListArea implements Handler.Callback {
 	private final int ICON_ID[] =
@@ -71,7 +72,9 @@ public class FileListArea extends ListArea implements Handler.Callback {
 
 	private short mListMode;
 
+	private int mMaxLines = 2;
 	private boolean mShowExt;
+	private boolean mSeparate = true;
 
 	private Paint mBitmapPaint;
 	private Paint mFillPaint;
@@ -108,7 +111,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 	private int mDrawLeft;
 	private Bitmap mDrawBitmap;
 
-	private String mText[][];
+	private String mText[][][];
 
 	private Context mContext;
 
@@ -169,6 +172,11 @@ public class FileListArea extends ListArea implements Handler.Callback {
 
 		mNamePaint.setTextAlign(Paint.Align.CENTER);
 		mNamePaint.setTextSize(mTileSize);
+
+		// サマリ描画
+		mInfoPaint.setTextAlign(Paint.Align.CENTER);
+		mInfoPaint.setColor(mInfColor);
+		mInfoPaint.setTextSize(mTileSize);
 
 		if (mItemHeight <= 0) {
 			return;
@@ -343,22 +351,89 @@ public class FileListArea extends ListArea implements Handler.Callback {
 					}
 				}
 				mNamePaint.setColor(color);
-				if (mText[index] == null) {
-					String name = fd.getName();
-					if (mShowExt == false && type != FileData.FILETYPE_DIR && type != FileData.FILETYPE_PARENT) {
-						int dot = name.lastIndexOf('.');
-						if (dot >= 1 && dot < name.length() - 1){
-							name = name.substring(0, dot);
+				if (mText[0][index] == null) {
+					String name[] = new String[4];
+					name[0] = fd.getName(); // ファイル名
+					name[1] = ""; // [角括弧]
+					name[2] = ""; // (丸括弧)
+					name[3] = ""; // .拡張子
+
+					// 拡張子を取得
+					int dot = name[0].lastIndexOf('.');
+					if (type != FileData.FILETYPE_DIR && type != FileData.FILETYPE_PARENT) {
+						if (dot >= 1 && dot < name[0].length() - 1) {
+							name[3] = name[0].substring(dot + 1);
+							if (mSeparate == true || mShowExt == false) {
+								name[0] = name[0].substring(0, dot);
+							}
 						}
 					}
-					mText[index] = TextFormatter.getMultiLine(name, mItemWidth - mItemMargin * 2, mNamePaint, 2);
+					if (mSeparate == true) {
+						// 角括弧を取得(2個目以降は無視)
+						int open_braket = name[0].indexOf('[');
+						int close_braket = name[0].indexOf(']');
+						if (open_braket != -1 && close_braket != -1 && open_braket < close_braket) {
+							name[1] = name[0].substring(open_braket + 1, close_braket);
+							name[0] = name[0].substring(0, open_braket) + name[0].substring(close_braket + 1);
+						}
+						// 丸括弧を取得(2個目以降は無視)
+						int open_parenthesis = name[0].indexOf('(');
+						int close_parenthesis = name[0].indexOf(')');
+						if (open_parenthesis != -1 && close_parenthesis != -1 && open_parenthesis < close_parenthesis) {
+							name[2] = name[0].substring(open_parenthesis + 1, close_parenthesis);
+							name[0] = name[0].substring(0, open_parenthesis) + name[0].substring(close_parenthesis + 1);
+						}
+					}
+					// 結果を前に詰める
+					for (int i = 0; i < mText.length - 1; i++){
+						if (name[i].equals("") || name[i].equals("/")){
+							for (int j = i + 1; j < mText.length; j++) {
+								if (!name[j].equals("")) {
+									name[i] = name[j] + name[i];
+									name[j] = "";
+									break;
+								}
+							}
+						}
+					}
+					//Log.d("comitton", "FileListArea drawTileItems name[0]=\"" + name[0] + "\", name[1]=\"" + name[1] + "\", name[2]=\"" + name[2] + "\", name[3]=\"" + name[3] + "\"");
+
+					mText[0][index] = TextFormatter.getMultiLine(name[0], mItemWidth - mItemMargin * 2, mNamePaint, 10);
+					if (mSeparate == true) {
+						mText[1][index] = TextFormatter.getMultiLine(name[1], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
+						mText[2][index] = TextFormatter.getMultiLine(name[2], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
+						mText[3][index] = TextFormatter.getMultiLine(name[3], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
+					}
 				}
-				if (mText[index] != null) {
+
+				if (mText[0][index] != null) {
 					x += mIconWidth / 2;
 					y += mIconHeight + mItemMargin;
-					for (int i = 0 ; i < mText[index].length ; i ++) {
-						canvas.drawText(mText[index][i], x, y + mTileAscent, mNamePaint);
+					for (int i = 0; i < mText[0][index].length; i++) {
+						canvas.drawText(mText[0][index][i], x, y + mTileAscent, mNamePaint);
 						y += mTileSize + mTileDescent;
+					}
+				}
+
+				if (mSeparate == true) {
+
+					if (mText[1][index] != null) {
+						for (int i = 0; i < mText[1][index].length; i++) {
+							canvas.drawText(mText[1][index][i], x, y + mTileAscent, mInfoPaint);
+							y += mTileSize + mTileDescent;
+						}
+					}
+					if (mText[2][index] != null) {
+						for (int i = 0; i < mText[2][index].length; i++) {
+							canvas.drawText(mText[2][index][i], x, y + mTileAscent, mInfoPaint);
+							y += mTileSize + mTileDescent;
+						}
+					}
+					if (mText[3][index] != null) {
+						for (int i = 0; i < mText[3][index].length; i++) {
+							canvas.drawText(mText[3][index][i], x, y + mTileAscent, mInfoPaint);
+							y += mTileSize + mTileDescent;
+						}
 					}
 				}
 			}
@@ -588,7 +663,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 		mFileList = filelist;
 		if (mFileList != null) {
 			int listnum = mFileList.size();
-			mText = new String[listnum][];
+			mText = new String[4][listnum][];
 		}
 		else {
 			mText = null;
@@ -732,7 +807,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 		int num = 0;
 		if (mFileList != null) {
 			num = mFileList.size();
-			mText = new String[num][];
+			mText = new String[4][num][];
 		}
 		else {
 			mText = null;
@@ -799,7 +874,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				rowNum = (listSize + (columnNum - 1)) / columnNum;
 
 				// 項目の高さ(タイルは固定)
-				mItemHeight = (short)(mIconHeight + (mTileSize + mTileDescent) * 2 + mItemMargin * 3);
+				mItemHeight = (short)(mIconHeight + (mTileSize + mTileDescent) * (mMaxLines + 3) + mItemMargin * 3);
 				disprange = (mAreaHeight / mItemHeight + 2) * columnNum;
 			}
 			// 項目の幅

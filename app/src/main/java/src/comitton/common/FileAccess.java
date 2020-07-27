@@ -16,6 +16,9 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 
 public class FileAccess {
+//	public static final int TYPE_FILE = 0;
+//	public static final int TYPE_DIR = 1;
+
 	// ユーザ認証付きSambaアクセス
 	public static SmbFile authSmbFile(String url) throws MalformedURLException {
 		String user = null;
@@ -87,7 +90,7 @@ public class FileAccess {
 		return ret;
 	}
 
-	public static String getInnerFile(String uri, String path, String user, String pass) {
+	public static ArrayList<String> getInnerFile(String uri, String path, String user, String pass) {
 		boolean isLocal;
 
 		File lfiles[] = null;
@@ -132,7 +135,8 @@ public class FileAccess {
 			length = sfiles.length;
 		}
 
-		ArrayList<String> list = new ArrayList<String>(length);
+		ArrayList<String> file_list = new ArrayList<String>(length);
+		ArrayList<String> dir_list = new ArrayList<String>(length);
 		String name;
 		boolean flag;
 		for (int i = 0; i < length; i++) {
@@ -155,13 +159,16 @@ public class FileAccess {
 				String ext = DEF.getExtension(name);
 				if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif")/* || ext.equals(".bmp")*/
 						|| ext.equals(".zip") || ext.equals(".rar") || ext.equals(".cbz") || ext.equals(".cbr") || ext.equals(".pdf") || ext.equals(".epub")) {
-					 list.add(name);
+					 file_list.add(name);
 				}
+			}else{
+				dir_list.add(name + "/");
 			}
 		}
-		if (list.size() > 0) {
-			Collections.sort(list);
-			return list.get(0);
+		file_list.addAll(dir_list);
+		if (file_list.size() > 0) {
+				Collections.sort(file_list);
+				return file_list;
 		}
 		return null;
 	}

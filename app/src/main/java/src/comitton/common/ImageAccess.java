@@ -1,20 +1,27 @@
 package src.comitton.common;
 
-import com.larvalabs.svgandroid.SVG;
-import com.larvalabs.svgandroid.SVGParser;
+//import com.larvalabs.svgandroid.SVG;
+//import com.larvalabs.svgandroid.SVGParser;
+import com.caverock.androidsvg.SVG;
+import com.caverock.androidsvg.RenderOptions;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Picture;
 import android.util.Log;
 
+import jp.dip.muracoro.comittona.R;
 import src.comitton.stream.CallImgLibrary;
 import src.comitton.stream.ImageData;
 import src.comitton.stream.ImageManager;
+
 
 public class ImageAccess {
 	public static final int BMPALIGN_LEFT = 0;
@@ -198,23 +205,44 @@ public class ImageAccess {
 		if (bm == null) {
 			return null;
 		}
-		Canvas canvas = new Canvas(bm);
+		try {
+			Canvas canvas = new Canvas(bm);
+			SVG svg = SVG.getFromResource(res, resid);
+			Picture picture = svg.renderToPicture();
+			int w = picture.getWidth();
+			int h = picture.getHeight();
+			float dsW = (float)sizeW / (float)w;
+			float dsH = (float)sizeH / (float)h;
+			canvas.scale(dsW, dsH);
+			svg.renderToCanvas(canvas);
+//			canvas.drawPicture(picture);
+			if (drawcolor != null) {
+				bm = setColor(bm,drawcolor);
+			}
+		}
+		catch (Exception ex) {
+			// 読み込み失敗
+		}
 
-		SVG svg;
-		if (drawcolor != null) {
-			svg = SVGParser.getSVGFromResource(res, resid, 0xFF1A1A1A, drawcolor);
-		}
-		else {
-			svg = SVGParser.getSVGFromResource(res, resid);
-		}
-	    Picture picture = svg.getPicture();
-	    int w = picture.getWidth();
-	    int h = picture.getHeight();
-	    float dsW = (float)sizeW / (float)w; 
-	    float dsH = (float)sizeH / (float)h;
+
+
+//		SVG.registerExternalFileResolver(myResolver);
+//		if (drawcolor != null) {
+//			svg = SVGParser.getSVGFromResource(res, resid, 0xFF1A1A1A, drawcolor);
+//		}
+//		else {
+//			svg = SVGParser.getSVGFromResource(res, resid);
+//		}
+//	    Picture picture = svg.getPicture();
+//	    int w = picture.getWidth();
+//	    int h = picture.getHeight();
+//	    float dsW = (float)sizeW / (float)w;
+//	    float dsH = (float)sizeH / (float)h;
+
 //	    float ds = Math.min(dsW, dsH);
-	    canvas.scale(dsW, dsH);
-	    canvas.drawPicture(picture);
+//	    canvas.scale(dsW, dsH);
+//	    canvas.drawPicture(picture);
+
 //		FileOutputStream os;
 //		try {
 //			os = new FileOutputStream("/sdcard/pic" + resid, true);
@@ -230,23 +258,60 @@ public class ImageAccess {
 
 	// SVGファイルからアイコンを作成
 	public static Bitmap createIconFromRawPicture(Resources res, int resid, int size) {
-		// bitmap設定
-		Bitmap bm = Bitmap.createBitmap(size, size, Config.ARGB_4444);
-		Canvas canvas = new Canvas(bm);
+		Bitmap bm = null;
+		try {
+			// bitmap設定
+			bm = Bitmap.createBitmap(size, size, Config.ARGB_4444);
+			if (bm == null) {
+				return null;
+			}
 
-		SVG svg;
-		svg = SVGParser.getSVGFromResource(res, resid);
+			Canvas canvas = new Canvas(bm);
+			SVG svg = SVG.getFromResource(res, resid);
+			Picture picture = svg.renderToPicture();
+			int w = picture.getWidth();
+			int h = picture.getHeight();
+			float dsW = (float)size / (float)w;
+			float dsH = (float)size / (float)h;
+			canvas.scale(dsW, dsH);
+			svg.renderToCanvas(canvas);
+//			canvas.drawPicture(picture);
+		}
+			catch (Exception ex) {
+			// 読み込み失敗
+		}
+//		svg = SVGParser.getSVGFromResource(res, resid);
 		//InputStream is = res.openRawResource(resid);
 	    //Picture picture = Picture.createFromStream(is);
 
-		Picture picture = svg.getPicture();
-		int w = picture.getWidth();
-		int h = picture.getHeight();
-		//int w = picture.getWidth();
-	    //int h = picture.getHeight();
-	    float ds = (float)size / (float)Math.max(w, h); 
-	    canvas.scale(ds, ds);
-	    canvas.drawPicture(picture);
+//		Picture picture = svg.getPicture();
+//		int w = picture.getWidth();
+//		int h = picture.getHeight();
+//		//int w = picture.getWidth();
+//	    //int h = picture.getHeight();
+//	    float ds = (float)size / (float)Math.max(w, h);
+//	    canvas.scale(ds, ds);
+//	    canvas.drawPicture(picture);
 		return bm;
+	}
+
+	/**
+	 * Bitmapデータの色を変更する。
+	 */
+	private static Bitmap setColor(Bitmap bitmap, int color) {
+		//mutable化する
+		Bitmap mutableBitmap = bitmap.copy(Config.ARGB_8888, true);
+		bitmap.recycle();
+
+		Canvas myCanvas = new Canvas(mutableBitmap);
+
+		int myColor = mutableBitmap.getPixel(0,0);
+		ColorFilter filter = new LightingColorFilter(myColor, color);
+
+		Paint pnt = new Paint();
+		pnt.setColorFilter(filter);
+		myCanvas.drawBitmap(mutableBitmap,0,0,pnt);
+
+		return mutableBitmap;
 	}
 }

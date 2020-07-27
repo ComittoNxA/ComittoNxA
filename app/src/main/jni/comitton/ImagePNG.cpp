@@ -73,7 +73,7 @@ int LoadImagePng(IMAGEDATA *pData, int page, int scale)
 
 	fPngCheck = png_check_sig((png_bytep)gLoadBuffer, 8);
 	if (!fPngCheck) {
-		LOGE("LoadImagePng : Illigal PNG Format.");
+		LOGE("LoadImagePng : Illegal PNG Format.");
 		return -5;
 	}
 

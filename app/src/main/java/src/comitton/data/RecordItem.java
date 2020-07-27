@@ -7,12 +7,14 @@ import src.comitton.filelist.ServerSelect;
 
 
 public class RecordItem {
-	public static final int TYPE_NONE = -1;
-	public static final int TYPE_IMAGE = 0;		// イメージ
-	public static final int TYPE_TEXT = 1;		// テキスト
-	public static final int TYPE_COMPTEXT = 2;	// 圧縮ファイル中テキスト
-	public static final int TYPE_FOLDER = 3;	// ディレクトリオープン
-	
+	public static final int TYPE_NONE		= -1;
+	public static final int TYPE_IMAGE		=  0;	// イメージ
+	public static final int TYPE_TEXT		=  1;	// テキスト
+	public static final int TYPE_COMPTEXT	=  2;	// 圧縮ファイル中テキスト
+	public static final int TYPE_FOLDER		=  3;	// ディレクトリオープン
+	public static final int TYPE_SERVER		=  4;	// サーバ
+	public static final int TYPE_MENU		=  5;	// オプションメニュー
+
 	private int server;
 	private String servername;
 	private String path;
@@ -22,6 +24,11 @@ public class RecordItem {
 	private String image;
 	private int page;
 	private String dispname;
+	private String host;
+	private String user;
+	private String pass;
+	private int item;
+	private int icon;
 
 	public RecordItem() {
 		this.server = ServerSelect.INDEX_LOCAL;
@@ -31,6 +38,9 @@ public class RecordItem {
 		this.date = 0;
 		this.image = null;
 		this.dispname = null;
+		this.host = null;
+		this.user = null;
+		this.pass = null;
 	}
 
 	public int getType() {
@@ -106,6 +116,46 @@ public class RecordItem {
 
 	public void setDispName(String dispname) {
 		this.dispname = dispname == null ? "" : dispname;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host == null ? "" : host;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user == null ? "" : user;
+	}
+
+	public String getPass() {
+		return pass;
+	}
+
+	public void setPass(String pass) {
+		this.pass = pass == null ? "" : pass;
+	}
+
+	public int getItem() {
+		return item;
+	}
+
+	public void setItem(int item) {
+		this.item = item;
+	}
+
+	public int getIcon() {
+		return icon;
+	}
+
+	public void setIcon(int icon) {
+		this.icon = icon;
 	}
 
 	@SuppressLint("SimpleDateFormat")

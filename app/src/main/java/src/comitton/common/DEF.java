@@ -29,6 +29,7 @@ public class DEF {
 	public static final int MESSAGE_FILE_LONGCLICK = 1013;
 	public static final int MESSAGE_RECORD_LONGCLICK = 1014;
 	public static final int MESSAGE_FILE_RENAME = 1015;
+	public static final int MESSAGE_MOVE_PATH_EROOR = 1016;
 
 	public static final int HMSG_LOAD_END = 1;
 	public static final int HMSG_READ_END = 2;
@@ -126,11 +127,12 @@ public class DEF {
 	public static final int ZOOMTYPE_DISP30 = 6;
 
 	public static final int TOOLBAR_NONE = -1;
-	public static final int TOOLBAR_REFRESH = 0;
-	public static final int TOOLBAR_THUMBNAIL = 1;
-	public static final int TOOLBAR_MARKER = 2;
-	public static final int TOOLBAR_SERVER = 3;
-	public static final int TOOLBAR_PARENT = 4;
+	public static final int TOOLBAR_PARENT = 0;
+	public static final int TOOLBAR_REFRESH = 1;
+	public static final int TOOLBAR_THUMBNAIL = 2;
+	public static final int TOOLBAR_MARKER = 3;
+	//	public static final int TOOLBAR_SERVER = 4;
+	public static final int TOOLBAR_ADDDIR = 4;
 	public static final int TOOLBAR_EXIT = 5;
 
 	// ページめくり表示方向
@@ -365,8 +367,11 @@ public class DEF {
 	public static final String KEY_MEMNEXT = "MemNext";
 	public static final String KEY_MEMPREV = "MemPrev";
 
-	public static final int DEFAULT_CLICKAREA = 30;
-	public static final int DEFAULT_PAGERANGE = 5;
+	public static final int DEFAULT_INISCHALE = 5; //全体を表示(見開き対応)
+	public static final int DEFAULT_INITVIEW = 1; //見開き表示
+	public static final int DEFAULT_QUALITY = 1; //画質を優先する
+	public static final int DEFAULT_CLICKAREA = 30; //上下の操作エリアサイズ:60sp
+	public static final int DEFAULT_PAGERANGE = 5; //ページ選択の感度:1ページ/5sp
 	public static final int DEFAULT_SCROLL = 2;
 	public static final int DEFAULT_ORGWIDTH = 0;
 	public static final int DEFAULT_ORGHEIGHT = 0;
@@ -381,32 +386,34 @@ public class DEF {
 	public static final int DEFAULT_FONTMAIN = 14; // 28sp
 	public static final int DEFAULT_FONTSUB = 8; // 22sp
 	public static final int DEFAULT_FONTTILE = 6; // 16sp
-	public static final int DEFAULT_MEMSIZE = 4; // 60MByte
-	public static final int DEFAULT_MEMNEXT = 16; // 4ページ
-	public static final int DEFAULT_MEMPREV = 8; // 2ページ
+	public static final int DEFAULT_MEMSIZE = 18; // キャッシュサイズ:200MByte
+	public static final int DEFAULT_MEMNEXT = 16; // キャッシュ前方:32ページ
+	public static final int DEFAULT_MEMPREV = 8; // キャッシュ後方:16ページ
 	public static final int DEFAULT_NOISESCRL = 1; // 20ドット
 	public static final int DEFAULT_NOISEUNDER = 8; // 800
 	public static final int DEFAULT_NOISEOVER = 15; // 1500
 	public static final int DEFAULT_VOLSCRL = 28; // 32ドット
 	public static final int DEFAULT_SCRLRNGW = 6; // 35% ((6+1)*5)
 	public static final int DEFAULT_SCRLRNGH = 6; // 35% ((6+1)*5)
-	public static final int DEFAULT_ITEMMARGIN = 4; // 4sp
-	public static final int DEFAULT_EFFECTTIME = 3; // 350msec
-	public static final int DEFAULT_MOMENTMODE = 8; // フレーム1/8ずつ減速
+	public static final int DEFAULT_ITEMMARGIN = 10; // スクロール感度:10sp
+	public static final int DEFAULT_EFFECTTIME = 5; // スクロール時間:250msec
+	public static final int DEFAULT_MOMENTMODE = 8; // スクロール減速:フレーム1/8ずつ減速
 	public static final int DEFAULT_AUTOPLAY = 2; // 1.5sec(0.5 * (5 + 1))
+	public static final boolean DEF_SAVEPAGE = true; // ページ移動時にしおりを保存
+	public static final int DEFAULT_TAPPATTERN = 0; // タッチ位置のパターン:左右分割
+	public static final int DEFAULT_TAPRATE = 0; // 10% : 90%
+	public static final boolean DEFAULT_CHGPAGE = true; // タップ操作の入替え:YES(縦書き、漫画)
+	public static final boolean DEFAULT_PREVREV = true; // 前ページに戻った時に逆から表示
 
-	public static final int DEFAULT_TAPPATTERN = 0; // 標準
-	public static final int DEFAULT_TAPRATE = 4; // 50% : 50%
-
-	public static final boolean DEFAULT_PNUMDISP = false; // 50% : 50%
+	public static final boolean DEFAULT_PNUMDISP = false; // ページ番号表示しない
 	public static final int DEFAULT_PNUMFORMAT = 0; // page / total
-	public static final int DEFAULT_PNUMPOS = 5; // 右下
+	public static final int DEFAULT_PNUMPOS = 4; // 中央下
 	public static final int DEFAULT_PNUMSIZE = 10; // 16px (8 + 6)
 
 	public static final int DEFAULT_TOOLBARSEEK = 14; // 38 (8+24)
-	public static final int DEFAULT_THUMBSIZEW = 18; // 220 (18 * 10 + 40)
-	public static final int DEFAULT_THUMBSIZEH = 24; // 280 (24 * 10 + 40)
-	public static final int DEFAULT_LISTTHUMBSIZEH = 12; // 160 (12 * 10 + 40)
+	public static final int DEFAULT_THUMBSIZEW = 23; // 270 (23 * 10 + 40)
+	public static final int DEFAULT_THUMBSIZEH = 28; // 320 (28 * 10 + 40)
+	public static final int DEFAULT_LISTTHUMBSIZEH = 20; // 240 (20 * 10 + 40)
 
 	public static final int MAX_SCROLL = 9;
 	public static final int MAX_CLICKAREA = 100;
@@ -424,9 +431,9 @@ public class DEF {
 	public static final int MAX_FONTMAIN = 44; // 50ドット
 	public static final int MAX_FONTSUB = 44; // 50ドット
 	public static final int MAX_FONTTILE = 44; // 50ドット
-	public static final int MAX_MEMSIZE = 48; // 20MByte
-	public static final int MAX_MEMNEXT = 30; // 60ページ
-	public static final int MAX_MEMPREV = 30; // 60ページ
+	public static final int MAX_MEMSIZE = 98; // 1000MByte
+	public static final int MAX_MEMNEXT = 100; // 200ページ
+	public static final int MAX_MEMPREV = 100; // 200ページ
 	public static final int MAX_NOISESCRL = 39; // 200ドット
 	public static final int MAX_NOISEUNDER = 50; // 5000
 	public static final int MAX_NOISEOVER = 50; // 5000
@@ -1171,7 +1178,7 @@ public class DEF {
 		if (filename != null) {
 			int extpos = filename.lastIndexOf('.');
 			int slashpos = filename.lastIndexOf('/');
-			if (slashpos < 0 && extpos >= 1) {
+			if (slashpos < extpos && extpos >= 1) {
 				return filename.substring(extpos).toLowerCase();
 			}
 		}

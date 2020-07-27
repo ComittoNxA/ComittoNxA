@@ -2,18 +2,22 @@ package src.comitton.view.list;
 
 import java.util.ArrayList;
 
+import jp.dip.muracoro.comittona.R;
 import src.comitton.common.DEF;
 import src.comitton.common.TextFormatter;
 import src.comitton.data.FileData;
 import src.comitton.data.RecordItem;
+import src.comitton.filelist.ServerSelect;
 import src.comitton.listener.DrawNoticeListener;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
 import android.graphics.Typeface;
+import android.util.Log;
 
 public class RecordListArea extends ListArea {
 	private int mBakColor;
@@ -42,7 +46,7 @@ public class RecordListArea extends ListArea {
 	private int mInfoAscent;
 	private int mInfoDescent;
 
-//	private short mAreaType;
+	private Context mContext;
 
 	private DrawNoticeListener mDrawNoticeListener = null;
 
@@ -51,7 +55,7 @@ public class RecordListArea extends ListArea {
 	// コンストラクタ
 	public RecordListArea(Context context, short areatype, int listtype, String title, DrawNoticeListener listener) {
 		super(context, listtype);
-
+		mContext = context;
 //		mAreaType = areatype;
 		mTitleName = title;
 		// リストファイルの更新日時
@@ -70,6 +74,9 @@ public class RecordListArea extends ListArea {
 		mDrawNoticeListener = listener;
 	}
 
+	/**
+	 * リストを描画
+	 */
 	@Override
 	public void drawArea(Canvas canvas, int baseX, int baseY) {
 		// 背景色
@@ -252,6 +259,9 @@ public class RecordListArea extends ListArea {
 		update(false);
 	}
 
+	/**
+	 * リストのレイアウト情報を保存
+	 */
 	private void requestLayout(boolean isRefresh) {
 		int width = mAreaWidth;
 		int listSize = 0;
@@ -269,15 +279,30 @@ public class RecordListArea extends ListArea {
 			// 各項目の行数分割
 			for (int index = 0; index < listSize; index++) {
 				RecordItem rd = mRecordList.get(index);
+				Resources res = mContext.getResources();
 
 				String work;
-				mTitleSep[index] = new String[2][];
 				if (rd.getType() == RecordItem.TYPE_FOLDER) {
+					mTitleSep[index] = new String[2][];
 					mTitleSep[index][0] = TextFormatter.getMultiLine("[" + rd.getServerName() + "]", tcx, mTitlePaint, 1);
 					mTitleSep[index][1] = TextFormatter.getMultiLine(rd.getPath(), tcx, mTitlePaint, 99);
 				}
+				else if (rd.getType() == RecordItem.TYPE_SERVER){
+					mTitleSep[index] = new String[1][];
+					if (rd.getServerName().equals("")) {
+						mTitleSep[index][0] = TextFormatter.getMultiLine(res.getString(R.string.undefine), tcx, mTitlePaint, 1);
+					}
+					else {
+						mTitleSep[index][0] = TextFormatter.getMultiLine("[" + rd.getServerName() + "]", tcx, mTitlePaint, 1);
+					}
+				}
+				else if (rd.getType() == RecordItem.TYPE_MENU){
+					mTitleSep[index] = new String[1][];
+					mTitleSep[index][0] = TextFormatter.getMultiLine(rd.getDispName(), tcx, mTitlePaint, 1);
+				}
 				else {
 					String name = rd.getDispName();
+					mTitleSep[index] = new String[2][];
 					mTitleSep[index][0] = TextFormatter.getMultiLine(name, tcx, mTitlePaint, 1);
 					if (rd.getType() == RecordItem.TYPE_IMAGE) {
 						work = rd.getImage();
@@ -290,6 +315,36 @@ public class RecordListArea extends ListArea {
 
 				if (rd.getType() == RecordItem.TYPE_FOLDER) {
 					mInfoSep[index] = new String[0][];
+				}
+				else if (rd.getType() == RecordItem.TYPE_SERVER) {
+					String name = rd.getServerName();
+					String uri = "";
+					if (rd.getServer() == ServerSelect.INDEX_LOCAL) {
+						uri = rd.getPath();
+					}
+					else {
+						if (name != null && !name.equals("")) {
+							String user = rd.getUser();
+							String pass = rd.getPass();
+							String host = rd.getHost();
+
+							uri = "smb://";
+							if (user != null && !user.equals("")) {
+								uri += user;
+								if (pass != null && !pass.equals("")) {
+									uri += ":******";
+								}
+								uri += "@";
+							}
+							uri += host + "/";
+						}
+					}
+					mInfoSep[index] = new String[1][];
+					mInfoSep[index][0] = TextFormatter.getMultiLine(uri, tcx, mInfoPaint, 5);
+				}
+				else if (rd.getType() == RecordItem.TYPE_MENU){
+					mInfoSep[index] = new String[1][];
+					mInfoSep[index][0] = TextFormatter.getMultiLine("", tcx, mInfoPaint, 5);
 				}
 				else {
 					mInfoSep[index] = new String[3][];
@@ -307,7 +362,9 @@ public class RecordListArea extends ListArea {
 		super.setListSize(listSize, 1, listSize, disprange, isRefresh);
 	}
 
-	// リストの描画更新
+	/**
+	 * リストの描画更新
+	 */
 	@Override
 	public void update(boolean isRealtime) {
 		if (mChangeLayout) {
@@ -323,6 +380,9 @@ public class RecordListArea extends ListArea {
 		return false;
 	}
 
+	/**
+	 * 項目の高さを計算する
+	 */
 	@Override
 	protected short calcRowHeight(int row) {
 		// タイトルの行数を求める
@@ -347,4 +407,5 @@ public class RecordListArea extends ListArea {
 		int height = (mTitleSize + mTitleDescent) * textLine + (mInfoSize + mInfoDescent) * infoLine;
 		return (short)(height + mItemMargin * 2);
 	}
+
 }

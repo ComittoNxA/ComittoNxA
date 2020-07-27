@@ -25,10 +25,14 @@
             android:key="AlgoMode"
             android:summary="dummy"
             android:title="画像補間方式" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="Sharpen"
-            android:title="画像のシャープ化" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="余白の削除"
+            android:entries="@array/mgncut_name_list"
+            android:entryValues="@array/mgncut_value_list"
+            android:key="MarginCut"
+            android:summary="dummy"
+            android:title="余白の削除" />
         <ListPreference
             android:defaultValue="0"
             android:dialogTitle="Jpeg展開の画質"
@@ -37,6 +41,10 @@
             android:key="Quality"
             android:summary="dummy"
             android:title="Jpeg展開の画質" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="Sharpen"
+            android:title="画像のシャープ化" />
     </PreferenceCategory>
     <PreferenceCategory android:title="表示関連の設定（＊はテキストと共通の設定）" >
         <CheckBoxPreference
@@ -161,14 +169,6 @@
             android:key="DelShare"
             android:summary="イメージ表示画面終了時に共有で使用した一時ファイルを削除する"
             android:title="共有用一時ファイルを削除する" />
-        <ListPreference
-            android:defaultValue="0"
-            android:dialogTitle="余白の削除"
-            android:entries="@array/mgncut_name_list"
-            android:entryValues="@array/mgncut_value_list"
-            android:key="MarginCut"
-            android:summary="dummy"
-            android:title="余白の削除" />
         <src.comitton.config.OperationPreference
             android:dialogMessage="ページめくりするタップ位置を選択してください\n（&lt;:次ページ、&gt;:前ページ）"
             android:dialogTitle="タップ位置のパターン"

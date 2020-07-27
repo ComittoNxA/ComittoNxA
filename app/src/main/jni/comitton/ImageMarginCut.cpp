@@ -9,6 +9,9 @@
 #endif
 //#include <unistd.h>
 #include "Image.h"
+#include <unistd.h>
+
+extern IMAGEDATA	*gImageData;
 
 extern WORD			**gLinesPtr;
 extern WORD			**gSclLinesPtr;
@@ -59,23 +62,23 @@ void *ImageMarginCut_ThreadFunc(void *param)
 }
 
 // Margin     : 画像の何%まで余白チェックするか(0～20%)
-// pOrgWidth  : 余白カット後の幅を返す
-// pOrgHeight : 余白カット後の高さを返す
-int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHeight, int Margin, int *pOrgWidth, int *pOrgHeight, int *pCutT, int *pCutL)
+// *pLeft, *pRight, *pTop, *pBottom  : 余白カット量を返す
+int GetMarginSize(int Page, int Half, int Index, int SclWidth, int SclHeight, int Margin, int *pLeft, int *pRight, int *pTop, int *pBottom)
 {
+    bool debug = false;
+
+    IMAGEDATA *pData = &gImageData[Page];
+    int OrgWidth  = pData->OrgWidth;
+    int OrgHeight = pData->OrgHeight;
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 元サイズ Index=%d, OrgWidth=%d, OrgHeight=%d, SclWidth=%d, SclHeight=%d, Margin=%d", Page, Half, Index, OrgWidth, OrgHeight, SclWidth, SclHeight, Margin);
+
     int ret = 0;
 
     // 使用するバッファを保持
-    int CutL = 0;
-    int CutR = 0;
-    int CutT = 0;
-    int CutB = 0;
-    int CutCX = 0;
-    int CutCY = 0;
-    int SclWidth = 0;
-    int SclHeight = 0;
-
-    //LOGD("ImageMarginCut Page=%d, Half=%d, 元サイズ Index=%d, OrgWidth=%d, OrgHeight=%d, Margin=%d", Page, Half, Index, OrgWidth, OrgHeight, Margin);
+    int left = 0;
+    int right = 0;
+    int top = 0;
+    int bottom = 0;
 
     int limit;
     int space;
@@ -87,23 +90,23 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
             return 0;
         case 1:		// 弱
             limit = 5;
-            space = 70;
-            range = 15;
+            space = 60;
+            range = 25;
             break;
         case 2:		// 中
             limit = 6;
             space = 80;
-            range = 15;
+            range = 30;
             break;
         case 3:		// 強
             limit = 7;
             space = 90;
-            range = 20;
+            range = 45;
             break;
         default:	// 最強
             limit = 8;
             space = 100;
-            range = 30;
+            range = 100;
             break;
     }
 
@@ -114,6 +117,7 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
             return ret;
         }
     }
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 配列化成功", Page, Half);
 
     WORD *buffptr = NULL;
     WORD *orgbuff1;
@@ -125,12 +129,11 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
     int CheckCY = OrgHeight * range / 100;
     int overcnt;
 
-    //LOGD("ImageMarginCut : CheckCX=%d, CheckCY=%d", CheckCX, CheckCY);
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 余白調査範囲 CheckCX=%d, CheckCY=%d", Page, Half, CheckCX, CheckCY);
     for (yy = 0 ; yy < CheckCY ; yy ++) {
-//		LOGD("ImageMarginCut : yy=%d", yy);
         orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
         overcnt = 0;	// 白でないカウンタ
-        CutT = yy;
+        top = yy;
         for (xx = 0 ; xx < OrgWidth ; xx ++) {
             // 白チェック
             if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
@@ -144,10 +147,9 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
         }
     }
     for (int yy = OrgHeight - 1 ; yy >= OrgHeight - CheckCY ; yy --) {
-//		LOGD("ImageMarginCut : yy=%d", yy);
         orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
         overcnt = 0;	// 白でないカウンタ
-        CutB = OrgHeight - 1 - yy;
+        bottom = OrgHeight - 1 - yy;
         for (xx = 0 ; xx < OrgWidth ; xx ++) {
             // 白チェック
             if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
@@ -160,17 +162,12 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
             break;
         }
     }
-    //LOGD("ImageMarginCut : CutT=%d, CutB=%d", CutT, CutB);
-    if (Margin < 5 && CutT * space / 100 + CutB * space / 100 <= 0) {
-        // 0になったら抜ける(0除算もあるし)
-        return 0;
-    }
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 縦カット値 上=%d, 下=%d", Page, Half, top, bottom);
 
     for (xx = 0 ; xx < CheckCX ; xx ++) {
-//		LOGD("ImageMarginCut : xx=%d", xx);
         overcnt = 0;	// 白でないカウンタ
-        CutL = xx;
-        for (yy = CutT + 1 ; yy < OrgHeight - CutB ; yy ++) {
+        left = xx;
+        for (yy = top + 1 ; yy < OrgHeight - bottom ; yy ++) {
             // 白チェック
             if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
                 overcnt ++;
@@ -183,10 +180,9 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
         }
     }
     for (int xx = OrgWidth - 1 ; xx >= OrgWidth - CheckCX ; xx --) {
-//		LOGD("ImageMarginCut : xx=%d", xx);
         overcnt = 0;	// 白でないカウンタ
-        CutR = OrgWidth - 1 - xx;
-        for (yy = CutT + 1 ; yy < OrgHeight - CutB ; yy ++) {
+        right = OrgWidth - 1 - xx;
+        for (yy = top + 1 ; yy < OrgHeight - bottom ; yy ++) {
             // 白チェック
             if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
                 overcnt ++;
@@ -199,253 +195,61 @@ int ImageMeasureMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHe
         }
     }
 
-    CutL = CutL * space / 100;
-    CutR = CutR * space / 100;
-    CutT = CutT * space / 100;
-    CutB = CutB * space / 100;
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 横カット値 左=%d, 右=%d", Page, Half, left, right);
 
-    //LOGD("ImageMarginCut : CutL=%d, CutR=%d", CutL, CutR);
-    if (Margin >= 5) {
-        // 強制or縦横比無視の場合
-        CutCX = (CutL + CutR);
-        CutCY = (CutT + CutB);
-        if (CutCX <= 0 && CutCY <= 0) {
-            // 余白無し
-            return 0;
-        }
-    }
-    else {
-        // 縦横比保持の場合
-        if (CutL + CutR <= 0) {
-            // 0になったら抜ける(0除算もあるし)
-            //		LOGD("ImageMarginCut : return=0 cl=%d, cr=%d", CutL, CutR);
-            return 0;
-        }
+    left = left * space / 100;
+    right = right * space / 100;
+    top = top * space / 100;
+    bottom = bottom * space / 100;
+    if (debug) LOGD("GetMarginSize Page=%d, Half=%d, カット率反映 CutLeft=%d, CutRight=%d, CutTop=%d, CutBottom=%d", Page, Half, left, right, top, bottom);
 
-        if ((CutL + CutR) * 1000 / OrgWidth < (CutT + CutB) * 1000 / OrgHeight) {
-            // 幅の余白率の方が小さい
-            CutCX = (CutL + CutR);
-            CutCY = (CutL + CutR) * OrgHeight / OrgWidth;
-            CutT = CutCY * CutT / (CutT + CutB);
-            CutB = CutCY - CutT;
-        }
-        else {
-            // 高さの余白率の方が小さい
-            CutCX = (CutT + CutB) * OrgWidth / OrgHeight;
-            CutCY = (CutT + CutB);
-            CutL = CutCX * CutL / (CutL + CutR);
-            CutR = CutCX - CutL;
-        }
-        if (CutCX <= 0 || CutCY <= 0) {
-            // 余白無し
-            return 0;
-        }
+    if (left + right <= 0 && top + bottom <= 0) {
+        // 余白無し
+        return 0;
     }
 
-    SclWidth  = OrgWidth - CutCX;
-    SclHeight = OrgHeight - CutCY;
-    *pOrgWidth = SclWidth;
-    *pOrgHeight = SclHeight;
-    *pCutT = CutT;
-    *pCutL = CutL;
-
-    //LOGD("ImageMarginCut Page=%d, Half=%d, 出力サイズ SclWidth=%d, SclHeight=%d, CutLeft=%d, CutRight=%d, CutTop=%d, CutBottom=%d", Page, Half, SclWidth, SclHeight, CutL, CutR, CutT, CutB);
+    *pLeft = left;
+    *pRight = right;
+    *pTop = top;
+    *pBottom = bottom;
     return 1;
 }
 
 // Margin     : 画像の何%まで余白チェックするか(0～20%)
-// pOrgWidth  : 余白カット後の幅を返す
-// pOrgHeight : 余白カット後の高さを返す
-int ImageMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHeight, int Margin, int *pOrgWidth, int *pOrgHeight)
+// pReturnWidth  : 余白カット後の幅を返す
+// pReturnHeight : 余白カット後の高さを返す
+int ImageMarginCut(int Page, int Half, int Index, int SclWidth, int SclHeight, int left, int right, int top, int bottom, int Margin, int *pReturnWidth, int *pReturnHeight)
 {
-	// 使用するバッファを保持
-	int CutL = 0;
-	int CutR = 0;
-	int CutT = 0;
-	int CutB = 0;
-	int CutCX = 0;
-	int CutCY = 0;
-	int SclWidth = 0;
-	int SclHeight = 0;
+    bool debug = false;
 
-    //LOGD("ImageMarginCut Page=%d, Half=%d, 元サイズ Index=%d, OrgWidth=%d, OrgHeight=%d, Margin=%d", Page, Half, Index, OrgWidth, OrgHeight, Margin);
+    IMAGEDATA *pData = &gImageData[Page];
+    int OrgWidth  = pData->OrgWidth;
+    int OrgHeight = pData->OrgHeight;
+    if (debug) LOGD("ImageMarginCut Page=%d, Half=%d, 元サイズ Index=%d, OrgWidth=%d, OrgHeight=%d, left=%d, right=%d, top=%d, bottom=%d, SclWidth=%d, SclHeight=%d, Margin=%d", Page, Half, Index, OrgWidth, OrgHeight, SclWidth, SclHeight, left, right, top, bottom, Margin);
 
-    int limit;
-    int space;
-    int range;
+    int ret = 0;
 
-    // パラメタ設定
-    switch (Margin) {
-        case 0:		// なし
-            return 0;
-        case 1:		// 弱
-            limit = 5;
-            space = 70;
-            range = 15;
-            break;
-        case 2:		// 中
-            limit = 6;
-            space = 80;
-            range = 15;
-            break;
-        case 3:		// 強
-            limit = 7;
-            space = 90;
-            range = 20;
-            break;
-        default:	// 最強
-            limit = 8;
-            space = 100;
-            range = 30;
-            break;
-    }
+    // 使用するバッファを保持
+    int ReturnWidth = 0;
+    int ReturnHeight = 0;
 
-    WORD *buffptr = NULL;
-    WORD *orgbuff1;
-
-    int		xx;	// サイズ変更後のx座標
-    int		yy;	// サイズ変更後のy座標
-
-    int CheckCX = OrgWidth * range / 100;
-    int CheckCY = OrgHeight * range / 100;
-    int overcnt;
-
-    //LOGD("ImageMarginCut : CheckCX=%d, CheckCY=%d", CheckCX, CheckCY);
-
-    for (yy = 0 ; yy < CheckCY ; yy ++) {
-//		LOGD("ImageMarginCut : yy=%d", yy);
-        orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
-        overcnt = 0;	// 白でないカウンタ
-        CutT = yy;
-        for (xx = 0 ; xx < OrgWidth ; xx ++) {
-            // 白チェック
-            if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
-            }
-        }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
-            break;
-        }
-    }
-    for (int yy = OrgHeight - 1 ; yy >= OrgHeight - CheckCY ; yy --) {
-//		LOGD("ImageMarginCut : yy=%d", yy);
-        orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
-        overcnt = 0;	// 白でないカウンタ
-        CutB = OrgHeight - 1 - yy;
-        for (xx = 0 ; xx < OrgWidth ; xx ++) {
-            // 白チェック
-            if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
-            }
-        }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
-            break;
-        }
-    }
-    //LOGD("ImageMarginCut : CutT=%d, CutB=%d", CutT, CutB);
-    if (Margin < 5 && CutT * space / 100 + CutB * space / 100 <= 0) {
-        // 0になったら抜ける(0除算もあるし)
-        return 0;
-    }
-
-    for (xx = 0 ; xx < CheckCX ; xx ++) {
-//		LOGD("ImageMarginCut : xx=%d", xx);
-        overcnt = 0;	// 白でないカウンタ
-        CutL = xx;
-        for (yy = CutT + 1 ; yy < OrgHeight - CutB ; yy ++) {
-            // 白チェック
-            if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
-            }
-        }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
-            break;
-        }
-    }
-    for (int xx = OrgWidth - 1 ; xx >= OrgWidth - CheckCX ; xx --) {
-//		LOGD("ImageMarginCut : xx=%d", xx);
-        overcnt = 0;	// 白でないカウンタ
-        CutR = OrgWidth - 1 - xx;
-        for (yy = CutT + 1 ; yy < OrgHeight - CutB ; yy ++) {
-            // 白チェック
-            if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
-            }
-        }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
-            break;
-        }
-    }
-
-    CutL = CutL * space / 100;
-    CutR = CutR * space / 100;
-    CutT = CutT * space / 100;
-    CutB = CutB * space / 100;
-
-    if (Margin >= 5) {
-        // 強制or縦横比無視の場合
-        CutCX = (CutL + CutR);
-        CutCY = (CutT + CutB);
-        if (CutCX <= 0 && CutCY <= 0) {
-            // 余白無し
-            return 0;
-        }
-    }
-    else {
-        // 縦横比保持の場合
-        if (CutL + CutR <= 0) {
-            // 0になったら抜ける(0除算もあるし)
-            //		LOGD("ImageMarginCut : return=0 cl=%d, cr=%d", CutL, CutR);
-            return 0;
-        }
-
-        if ((CutL + CutR) * 1000 / OrgWidth < (CutT + CutB) * 1000 / OrgHeight) {
-            // 幅の余白率の方が小さい
-            CutCX = (CutL + CutR);
-            CutCY = (CutL + CutR) * OrgHeight / OrgWidth;
-            CutT = CutCY * CutT / (CutT + CutB);
-            CutB = CutCY - CutT;
-        }
-        else {
-            // 高さの余白率の方が小さい
-            CutCX = (CutT + CutB) * OrgWidth / OrgHeight;
-            CutCY = (CutT + CutB);
-            CutL = CutCX * CutL / (CutL + CutR);
-            CutR = CutCX - CutL;
-        }
-        if (CutCX <= 0 || CutCY <= 0) {
-            // 余白無し
-            return 0;
-        }
-    }
-
-    SclWidth  = OrgWidth - CutCX;
-    SclHeight = OrgHeight - CutCY;
-
-    //LOGD("ImageMarginCut Page=%d, Half=%d, 出力サイズ SclWidth=%d, SclHeight=%d, CutLeft=%d, CutRight=%d, CutTop=%d, CutBottom=%d", Page, Half, SclWidth, SclHeight, CutL, CutR, CutT, CutB);
-
+    ReturnWidth  = OrgWidth - left - right;
+    ReturnHeight = OrgHeight - top - bottom;
+    if (debug) LOGD("ImageMarginCut Page=%d, Half=%d, 出力サイズ ReturnWidth=%d, ReturnHeight=%d", Page, Half, ReturnWidth, ReturnHeight);
 		// 縮小画像から取得
-	int linesize  = SclWidth + HOKAN_DOTS;
+	int linesize  = ReturnWidth + HOKAN_DOTS;
 
 	//  サイズ変更画像待避用領域確保
-	if (ScaleMemAlloc(linesize, SclHeight) < 0) {
+	if (ScaleMemAlloc(linesize, ReturnHeight) < 0) {
 		return -6;
 	}
 
 	// データの格納先ポインタリストを更新
-	if (RefreshSclLinesPtr(Page, Half, Index, SclHeight, linesize) < 0) {
+	if (RefreshSclLinesPtr(Page, Half, Index, ReturnHeight, linesize) < 0) {
 		return -7;
 	}
 
-	int ret = 1;
+	ret = 1;
 
 	pthread_t thread[gMaxThreadNum];
 	int start = 0;
@@ -454,13 +258,13 @@ int ImageMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHeight, i
 
 	for (int i = 0 ; i < gMaxThreadNum ; i ++) {
 		param[i][0] = start;
-		param[i][1] = start = SclHeight * (i + 1)  / gMaxThreadNum;
-		param[i][2] = SclWidth;
-		param[i][3] = SclHeight;
+		param[i][1] = start = ReturnHeight * (i + 1)  / gMaxThreadNum;
+		param[i][2] = ReturnWidth;
+		param[i][3] = ReturnHeight;
 		param[i][4] = OrgWidth;
 		param[i][5] = OrgHeight;
-		param[i][6] = CutT;
-		param[i][7] = CutL;
+		param[i][6] = top;
+		param[i][7] = left;
 		
 		if (i < gMaxThreadNum - 1) {
 			/* スレッド起動 */
@@ -484,8 +288,8 @@ int ImageMarginCut(int Page, int Half, int Index, int OrgWidth, int OrgHeight, i
 			ret = -10;
 		}
 	}
-	*pOrgWidth = SclWidth;
-	*pOrgHeight = SclHeight;
+	*pReturnWidth = ReturnWidth;
+	*pReturnHeight = ReturnHeight;
 
 	//LOGD("ImageMarginCut : complete");
 	return ret;

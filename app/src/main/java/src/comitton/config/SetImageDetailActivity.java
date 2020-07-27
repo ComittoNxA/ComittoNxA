@@ -30,7 +30,11 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 		, R.string.maxthread01		// 1スレッド
 		, R.string.maxthread02		// 2スレッド
 		, R.string.maxthread03		// 3スレッド
-		, R.string.maxthread04 };	// 4スレッド
+		, R.string.maxthread04		// 4スレッド
+		, R.string.maxthread05		// 5スレッド
+		, R.string.maxthread06		// 6スレッド
+		, R.string.maxthread07		// 7スレッド
+		, R.string.maxthread08 };	// 8スレッド
 	public static final int LoupeSize[] =
 		{
 			R.string.loupesize00,
@@ -251,8 +255,8 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 		str = res.getString(MaxThread[val]);
 		if (val == 0) {
 			int threads = Runtime.getRuntime().availableProcessors();
-			if (threads > 3) {
-				threads = 3;
+			if (threads > 7) {
+				threads = 7;
 			}
 			else if (threads <= 0) {
 				threads = 1;

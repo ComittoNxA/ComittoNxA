@@ -16,6 +16,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.Message;
@@ -27,6 +28,9 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 	private static final int LISTMODE_LOCAL = 0;
 	private static final int LISTMODE_SERVER = 1;
 	private static final int LISTMODE_WEBDAV = 2;
+
+	//標準のストレージパスを保存
+	private static final String mStaticRootDir = Environment.getExternalStorageDirectory().getAbsolutePath() +"/";
 
 	private ArrayList<FileData> mFileList = null;
 
@@ -150,14 +154,16 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 				if (lfiles == null) {
 					flag = true;
 				}
-			} else if (mListMode == LISTMODE_SERVER) {
+			}
+			else if (mListMode == LISTMODE_SERVER) {
 				// サーバの場合のファイル一覧取得
 				sfile = FileAccess.authSmbFile(mUri + mPath, mUser, mPass);
 				sfiles = sfile.listFiles();
 				if (sfiles == null) {
 					flag = true;
 				}
-			} else {
+			}
+			else {
 				// WebDAVサーバの場合のファイル一覧取得
 //				wdfile = new WDFile(mUri + mPath, mUser, mPass);
 //				wdfiles = wdfile.listFiles();
@@ -171,7 +177,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			}
 
 			if (flag) {
-				// ファイル無しの場合は .. だけ表示
+				// ファイル無しの場合は .. を表示
 				fileList = new ArrayList<FileData>();
 				if (!mPath.equals("/") && mParentMove) {
 					// ツールバーがある場合は不要
@@ -179,6 +185,19 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					fileData.setName("..");
 					fileData.setType(FileData.FILETYPE_PARENT);
 					fileData.setState(0);
+					fileList.add(fileData);
+				}
+				// 初期フォルダより上のフォルダの場合
+				if (mStaticRootDir.startsWith(mPath) && !mStaticRootDir.equals(mPath)) {
+					int pos = mStaticRootDir.indexOf("/", mPath.length());
+					String dir = mStaticRootDir.substring(mPath.length(), pos + 1);
+
+					//途中のフォルダを表示対象に追加
+					FileData fileData = new FileData();
+					fileData.setExtType(FileData.EXTTYPE_NONE);
+					fileData.setName(dir);
+					fileData.setType(FileData.FILETYPE_DIR);
+					fileData.setState(-1);
 					fileList.add(fileData);
 				}
 				// 処理中断
@@ -297,7 +316,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 						hit = true;
 					}
 				}
-				
+
 				FileData fileData = new FileData();
 				fileData.setType(type);
 				fileData.setExtType(exttype);
@@ -306,7 +325,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 				fileData.setSize(size);
 				fileData.setDate(date);
 				fileData.setMarker(hit);
-//マークではなくフィルタに
+				//マークではなくフィルタに
 				if(mFilter) {
 					//マーカー未設定orディレクトリに適用しない場合のディレクトリは無条件で追加
 					if (marker == null || (mApplyDir == false && flag) ) {

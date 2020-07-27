@@ -1,15 +1,18 @@
 package src.comitton.filelist;
 
+import java.io.File;
 import java.net.URLEncoder;
 
-import src.comitton.data.ServerData;
-
 import jp.dip.muracoro.comittona.R;
+
+import src.comitton.data.ServerData;
+import src.comitton.data.RecordItem;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
+import android.os.Environment;
 
 public class ServerSelect {
 	public static final int MAX_SERVER = 10;
@@ -34,6 +37,15 @@ public class ServerSelect {
 		mLocalPath = sharedPreferences.getString("path", "/");
 		if (mLocalPath == null || mLocalPath.length() < 1 || !mLocalPath.substring(0, 1).equals("/")) {
 			mLocalPath = "/";
+		}
+		if (mLocalPath.equals("/")) {
+			// ローカルのルートフォルダ
+			File dir = new File(mLocalPath);
+			if (!dir.canRead()) {
+				// 読み取り権限がない
+				// ストレージルートにリセット
+				mLocalPath = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
+			}
 		}
 
 		for (int i = 0 ; i < MAX_SERVER ; i ++) {
@@ -199,7 +211,7 @@ public class ServerSelect {
 		}
 	}
 
-	// サーバパスの取得
+	// サーバパスの設定
 	public void setPath(String path) {
 		if (mSelect == INDEX_LOCAL) {
 			// ローカル名
@@ -212,12 +224,16 @@ public class ServerSelect {
 		savePath();
 	}
 
-	// サーバパスの取得
+	/**
+	 * URIの取得
+	 */
 	public String getURI() {
 		return(getURI(mSelect));
 	}
 
-	// サーバパスの取得
+	/**
+	 * URIの取得
+	 */
 	public String getURI(int index) {
 //		return getUserPassURI(index);
 		if (index == INDEX_LOCAL) {
@@ -231,7 +247,9 @@ public class ServerSelect {
 		}
 	}
 
-	// サーバパスの取得
+	/**
+	  * URIの取得
+	  */
 	public String getUserPassURI(int index) {
 		if (index == INDEX_LOCAL) {
 			// ローカル名
@@ -254,17 +272,45 @@ public class ServerSelect {
 		}
 	}
 
+	/**
+	 * サーバの情報の保存
+	 */
 	public void setData(int index, ServerData data) {
 		if (0 <= index && index < MAX_SERVER) {
-			mServer[index].setName(data.getName());
-			mServer[index].setHost(data.getHost());
-			mServer[index].setUser(data.getUser());
-			mServer[index].setPass(data.getPass());
-			mServer[index].setPath(data.getPath());
+//			mServer[index].setName(data.getName());
+//			mServer[index].setHost(data.getHost());
+//			mServer[index].setUser(data.getUser());
+//			mServer[index].setPass(data.getPass());
+//			mServer[index].setPath(data.getPath());
+			setData(index, data.getName(), data.getHost(), data.getUser(), data.getPass(), data.getPath());
 			save(index);
 		}
 	}
 
+	/**
+	 * サーバの情報の保存
+ 	 */
+	public void setData(int index, RecordItem record) {
+		if (0 <= index && index < MAX_SERVER) {
+			setData(index, record.getServerName(), record.getHost(), record.getUser(), record.getPass(), record.getPath());
+			save(index);
+		}
+	}
+
+	public void setData(int index, String name, String host, String user, String pass, String path) {
+		if (0 <= index && index < MAX_SERVER) {
+			mServer[index].setName(name);
+			mServer[index].setHost(host);
+			mServer[index].setUser(user);
+			mServer[index].setPass(pass);
+			mServer[index].setPath(path);
+			save(index);
+		}
+	}
+
+	/**
+	 * サーバの情報の保存
+	 */
 	public void save(int index) {
 		Editor ed = mSharedPrefer.edit();
 		// サーバ情報
@@ -276,7 +322,9 @@ public class ServerSelect {
 		ed.commit();
 	}
 
-	// パス情報の保存
+	/**
+	 * ローカルのフォルダパスの保存
+	 */
 	public void savePath() {
 		Editor ed = mSharedPrefer.edit();
 		if (mSelect == INDEX_LOCAL) {

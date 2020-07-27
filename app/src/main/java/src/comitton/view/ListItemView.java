@@ -321,7 +321,7 @@ public class ListItemView extends View {
 		int lastpos = 0;
 		int line = 0;
 		float sum = 0.0f;
-		int pos[] = { 0, 0, 0 };
+		int pos[] = new int[MAX_LINES];
 
 		float dotwidth = text.measureText("...");
 

@@ -99,8 +99,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		, R.string.mgncut02		// 中
 		, R.string.mgncut03		// 強
 		, R.string.mgncut04		// 最強
-		, R.string.mgncut05		// 強制
-		, R.string.mgncut06 };	// 縦横比無視
+		, R.string.mgncut05 };	// 縦横比無視
 	public static final int EffectName[] =
 		{ R.string.effect00		// なし
 		, R.string.effect01		// フリップ
@@ -356,7 +355,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getQuality(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_QUALITY, "0");
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_QUALITY, DEF.DEFAULT_QUALITY);
 		if( val < 0 || val >= QualityName.length){
 			val = 1;
 		}
@@ -481,7 +480,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 
 	public static boolean getNoExpand(SharedPreferences sharedPreferences){
 		boolean flag;
-		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_NOEXPAND, false);
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_NOEXPAND, true);
 		return flag;
 	}
 

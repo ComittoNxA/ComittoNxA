@@ -93,6 +93,12 @@ public class SetRecorderActivity extends PreferenceActivity implements OnSharedP
 		return flag;
 	}
 
+	public static boolean getServerView(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  true;
+		return flag;
+	}
+
 	public static boolean getBookmarkView(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_RBMVIEW, true);
@@ -102,6 +108,12 @@ public class SetRecorderActivity extends PreferenceActivity implements OnSharedP
 	public static boolean getHistoryView(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_RHISTVIEW, true);
+		return flag;
+	}
+
+	public static boolean getMenuView(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  true;
 		return flag;
 	}
 
@@ -125,11 +137,13 @@ public class SetRecorderActivity extends PreferenceActivity implements OnSharedP
 
 	// 表示するリストを返す
 	public static short[] getListTypes(SharedPreferences sharedPreferences) {
-		boolean listflag[] = {false, false, false};
+		boolean listflag[] = {false, false, false, false, false};
 		int listnum = 0;
 		listflag[0] = getDirectoryView(sharedPreferences);
-		listflag[1] = getBookmarkView(sharedPreferences);
-		listflag[2] = getHistoryView(sharedPreferences);
+		listflag[1] = getServerView(sharedPreferences);
+		listflag[2] = getBookmarkView(sharedPreferences);
+		listflag[3] = getHistoryView(sharedPreferences);
+		listflag[4] = getMenuView(sharedPreferences);
 		for (int i = 0 ; i < listflag.length ; i ++) {
 			listnum += listflag[i] ? 1 : 0;
 		}

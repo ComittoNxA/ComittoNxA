@@ -11,19 +11,29 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import android.content.Context;
+import android.content.res.Resources;
+import jp.dip.muracoro.comittona.R;
 import src.comitton.common.DEF;
 import src.comitton.data.RecordItem;
+import src.comitton.data.ServerData;
 
+import android.content.SharedPreferences;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.MenuItem;
 
 
 public class RecordList {
-	public static final int TYPE_DIRECTORY = 0; 
-	public static final int TYPE_BOOKMARK = 1; 
-	public static final int TYPE_HISTORY = 2; 
-	public static final int TYPE_FILELIST = 3;
-	public static final int TYPE_MAXNUM = TYPE_HISTORY + 1; 
-	private static final String FILENAME[] = {"directory.dat", "bookmark.dat", "history.dat"}; 
+	public static final int TYPE_DIRECTORY = 0;
+	public static final int TYPE_SERVER = 1;
+	public static final int TYPE_BOOKMARK = 2;
+	public static final int TYPE_HISTORY = 3;
+	public static final int TYPE_MENU = 4;
+	public static final int TYPE_FILELIST = 5;
+	public static final int TYPE_MAXNUM = TYPE_FILELIST;
+	private static final String FILENAME[] = {"directory.dat", "server.dat", "bookmark.dat", "history.dat", "optmenu.dat"};
 	private static final String SEPARATOR = "\t";
 	private static final int INDEX_TYPE = 0;
 	private static final int INDEX_SERVER = 1;
@@ -34,30 +44,100 @@ public class RecordList {
 	private static final int INDEX_PAGE = 6;
 	private static final int INDEX_DISPNAME = 7;
 
-	// 時刻チェック
+	private static final int MENU_TITLE_ID[] = {R.string.shortCut, R.string.delMenu, R.string.thumbMenu, R.string.setMenu,
+			R.string.rotateMenu, R.string.onlineMenu, R.string.noticeMenu, R.string.aboutMenu};
+
+	private static final int MENU_ITEM[] = {DEF.MENU_SHORTCUT, DEF.MENU_SIORI, DEF.MENU_THUMBDEL, DEF.MENU_SETTING,
+			DEF.MENU_ROTATE, DEF.MENU_ONLINE, DEF.MENU_NOTICE, DEF.MENU_ABOUT};
+
+	private static final int MENU_IMAGE[] = {android.R.drawable.ic_menu_myplaces, android.R.drawable.ic_menu_delete, android.R.drawable.ic_menu_delete,
+			android.R.drawable.ic_menu_preferences, android.R.drawable.ic_menu_rotate, android.R.drawable.ic_menu_set_as,
+			android.R.drawable.ic_menu_info_details, android.R.drawable.ic_menu_info_details};
+
+	private static Context mContext;
+	/**
+	 * 更新の有無をチェック
+	 * @param listtype 表示対象リストの種類 このクラスのTYPE_***
+	 * @return 更新の有無
+	 * 		- 画面更新の要・不要
+	 */
 	public static boolean checkModified(int listtype, long modified) {
 		String filepath = getFilePath(listtype);
 
-		File file = new File(filepath);
-		if (!file.exists()) {
-			// ファイルが存在しない
-			return false;
+		if (listtype == TYPE_SERVER  || listtype == TYPE_MENU){
+			return true;
 		}
-
-		if (modified > 0) {
-			// ファイル更新時刻取得
-			long lastmodified = file.lastModified();
-			if (lastmodified <= modified) {
-				// 更新されていなければ
+		else {
+			File file = new File(filepath);
+			if (!file.exists()) {
+				// ファイルが存在しない
 				return false;
 			}
+
+			if (modified > 0) {
+				// ファイル更新時刻取得
+				long lastmodified = file.lastModified();
+				if (lastmodified <= modified) {
+					// 更新されていなければ
+					return false;
+				}
+			}
+			return true;
 		}
-		return true;
 	}
 
-	// ブックマークを読み込み(全て)
+	/**
+	 * リストを読み込み
+	 */
 	public static ArrayList<RecordItem> load(ArrayList<RecordItem> list, int listtype) {
-		return load(list, listtype, -2, null, null);
+		if(listtype == TYPE_SERVER) {
+			if (list == null) {
+				// なければ新規
+				list = new ArrayList<RecordItem>();
+			}
+			else {
+				list.clear();
+			}
+
+			for (int i = ServerSelect.INDEX_LOCAL; i < ServerSelect.MAX_SERVER; i++) {
+				// データ設定
+				SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+				ServerSelect server = new ServerSelect(sharedPreferences, mContext);
+				RecordItem data = new RecordItem();
+				data.setType(RecordItem.TYPE_SERVER);
+				data.setServer(i);
+				data.setServerName(server.getName(i));
+				data.setHost(server.getHost(i));
+				data.setUser(server.getUser(i));
+				data.setPass(server.getPass(i));
+				data.setPath(server.getPath(i));
+				list.add(data);
+			}
+			return list;
+		}
+		else if(listtype == TYPE_MENU) {
+			if (list == null) {
+				// なければ新規
+				list = new ArrayList<RecordItem>();
+			} else {
+				list.clear();
+			}
+
+			// データ設定
+			for (int index = 0; index < MENU_TITLE_ID.length; index++){
+				Resources res = mContext.getResources();
+				RecordItem data = new RecordItem();
+				data.setType(RecordItem.TYPE_MENU);
+				data.setItem(MENU_ITEM[index]);
+				data.setIcon(MENU_IMAGE[index]);
+				data.setDispName(res.getString(MENU_TITLE_ID[index]));
+				list.add(data);
+			}
+			return list;
+		}
+		else {
+			return load(list, listtype, -2, null, null);
+		}
 	}
 
 	// ブックマークを読み込み(パス指定あり)
@@ -227,6 +307,18 @@ public class RecordList {
 		OutputStreamWriter sw;
 		BufferedWriter bw;
 
+		if(listtype == TYPE_SERVER){
+			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+			ServerSelect server = new ServerSelect(sharedPreferences, mContext);
+			for (int i = 1; i < list.size(); i++) {
+				int index = list.get(i).getServer();
+				server.setData(index, list.get(i));
+			}
+			return;
+		}
+		if(listtype == TYPE_MENU){
+			return;
+		}
 		try {
 			// ファイルオープン
 			os = new FileOutputStream(filepath, false);
@@ -281,4 +373,7 @@ public class RecordList {
 
 		return path + FILENAME[type];
 	}
+
+	public static void setContext(Context context){ mContext = context; }
+
 }

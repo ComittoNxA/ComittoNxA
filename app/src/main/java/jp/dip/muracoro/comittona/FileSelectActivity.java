@@ -20,6 +20,7 @@ import src.comitton.config.SetImageText;
 import src.comitton.config.SetRecorderActivity;
 import src.comitton.data.FileData;
 import src.comitton.data.RecordItem;
+import src.comitton.data.ServerData;
 import src.comitton.dialog.BookmarkDialog;
 import src.comitton.dialog.CloseDialog;
 import src.comitton.dialog.DownloadDialog;
@@ -35,6 +36,7 @@ import src.comitton.filelist.RecordList;
 import src.comitton.filelist.ServerSelect;
 import src.comitton.stream.FileThumbnailLoader;
 import src.comitton.stream.ThumbnailLoader;
+import src.comitton.view.ListItemView;
 import src.comitton.view.list.FileListArea;
 import src.comitton.view.list.ListNoticeListener;
 import src.comitton.view.list.ListScreenView;
@@ -43,6 +45,7 @@ import src.comitton.view.list.TitleArea;
 import jcifs.smb.SmbFile;
 //import jp.dip.muracoro.comittona.R;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -57,11 +60,14 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -93,6 +99,7 @@ import android.support.v7.app.AppCompatActivity;
 
 @SuppressLint("DefaultLocale")
 public class FileSelectActivity extends Activity implements OnTouchListener, ListNoticeListener, BookmarkListenerInterface, Handler.Callback {
+
 	private static final int OPERATE_NONREAD = 0;
 	private static final int OPERATE_READ = 1;
 	private static final int OPERATE_OPEN = 2;
@@ -213,6 +220,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private int mFileFirstIndex;
 	private int mFileLastIndex;
 
+	private View mEditDlg = null;
+
 	private static final int REQUEST_CODE = 1;
 
 	/** Called when the activity is first created. */
@@ -273,7 +282,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 		// 回転時など保存しておいた情報
 		mServer = new ServerSelect(mSharedPreferences, this);
-		mServer.select(-1);
+		mServer.select(ServerSelect.INDEX_LOCAL);
+		RecordList.setContext(this);
 
 		mPath = "";
 		mURI = "";
@@ -347,6 +357,15 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			mURI = mServer.getURI();
 		}
 
+		if (mServer.getSelect() == ServerSelect.INDEX_LOCAL && "/".equals(mPath)) {
+			// ローカルのルートフォルダ
+			File current_dir = new File(mPath);
+			if (!current_dir.canRead()) {
+				// 読み取り権限がない
+				mPath = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
+			}
+		}
+
 		// // ユーザ・パスワード取得
 		// mUser = mServer.getUser();
 		// mPass = mServer.getPass();
@@ -373,7 +392,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			// 取得不可エラー
 		}
 
-/*
+		/*
 		//==== パーミッション承認状態判定(SDカード書き込み) ====//
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
 		{
@@ -672,6 +691,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		// mSelectorShow =
 		// SetRecorderActivity.getShowSelector(mSharedPreferences); // セレクタ表示
 		mListType = SetRecorderActivity.getListTypes(mSharedPreferences);
+		Log.d("FileSelectActivity", "mListType.length=" + mListType.length);
 
 		mHistCount = DEF.calcSaveNum(SetRecorderActivity.getHistNum(mSharedPreferences));
 		mLocalSave = SetRecorderActivity.getRecLocal(mSharedPreferences);
@@ -862,6 +882,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					break;
 				case KeyEvent.KEYCODE_ESCAPE:
 				case KeyEvent.KEYCODE_BACK:
+					int listtype = mListScreenView.getListType();
+					if(listtype != RecordList.TYPE_FILELIST){
+						switchFileList(); // ファイルリストをアクティブ化
+						return true;
+					}
 					if (mBackMode == BACKMODE_EXIT) {
 						checkExitTimer();
 						return true;
@@ -988,6 +1013,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
+	/**
+	 * ダイアログのレイアウトを指定する
+	 */
 	// ActivityクラスのonCreateDialogをオーバーライド
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -1298,15 +1326,13 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 								mLoadListNextFile = lastFile;
 								mLoadListNextPath = path;
 								mLoadListNextInFile = lastText;
-							}
-							else {
+							} else {
 								// 最後に開いたテキストオープン
 								mLoadListNextFile = lastText;
 								mLoadListNextPath = path;
 							}
 							mLoadListNextPage = -1;
-						}
-						else if (lastView == DEF.LASTOPEN_IMAGE) {
+						} else if (lastView == DEF.LASTOPEN_IMAGE) {
 							// 最後に開いたイメージオープン
 							// if (lastFile.length() == 0) {
 							// int l = path.length();
@@ -1336,10 +1362,60 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				dialog = dialogBuilder.create();
 				break;
 			}
+//			case DEF.MESSAGE_MOVE_PATH_EROOR:{
+//				//dialogBuilder.setTitle("dummy");
+//				dialogBuilder.setMessage(R.string.movePathErr);
+//				dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//					public void onClick(DialogInterface dialog, int whichButton) {
+//						dialog.dismiss();
+//					}
+//				});
+//				dialog = dialogBuilder.create();
+//				break;
+//			}
+			case DEF.MESSAGE_EDITSERVER:{
+				// レイアウトの呼び出し
+				LayoutInflater factory = LayoutInflater.from(this);
+				mEditDlg = factory.inflate(R.layout.editsvr, null);
+				// ダイアログの作成(AlertDialog.Builder)
+				dialogBuilder.setTitle(R.string.svTitle);
+				dialogBuilder.setView(mEditDlg);
+				dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// 入力値を保存
+						EditText name = (EditText) mEditDlg.findViewById(R.id.edit_name);
+						EditText host = (EditText) mEditDlg.findViewById(R.id.edit_host);
+						EditText user = (EditText) mEditDlg.findViewById(R.id.edit_user);
+						EditText pass = (EditText) mEditDlg.findViewById(R.id.edit_pass);
+
+						int listtype = RecordList.TYPE_SERVER;
+						// リストのデータを更新
+						mSelectRecord.setServerName(name.getText().toString());
+						mSelectRecord.setHost(host.getText().toString());
+						mSelectRecord.setUser(user.getText().toString());
+						mSelectRecord.setPass(pass.getText().toString());
+						mSelectRecord.setPath("/");
+
+						ArrayList<RecordItem> recordList = mListScreenView.getList(listtype);
+						RecordList.update(recordList, listtype);
+						mListScreenView.notifyUpdate(listtype);
+					}
+				});
+				dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						/* キャンセル処理 */
+					}
+				});
+				dialog = dialogBuilder.create();
+				break;
+			}
 		}
 		return dialog;
 	}
 
+	/**
+	 * ダイアログに初期値を設定する
+	 */
 	// ActivityクラスのonCreateDialogをオーバーライド
 	@Override
 	protected void onPrepareDialog(final int id, final Dialog dialog) {
@@ -1367,6 +1443,26 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					dialog.setTitle(title);
 				}
 				break;
+			case DEF.MESSAGE_EDITSERVER:
+				if (mEditDlg == null) {
+					break;
+				}
+				// 一度ダイアログを表示すると画面回転時に呼び出される
+				EditText name = (EditText) mEditDlg.findViewById(R.id.edit_name);
+				EditText host = (EditText) mEditDlg.findViewById(R.id.edit_host);
+				EditText user = (EditText) mEditDlg.findViewById(R.id.edit_user);
+				EditText pass = (EditText) mEditDlg.findViewById(R.id.edit_pass);
+				// 属性
+				name.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
+				host.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+				user.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+				pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+				// 文字列
+				name.setText(mSelectRecord.getServerName());
+				host.setText(mSelectRecord.getHost());
+				user.setText(mSelectRecord.getUser());
+				pass.setText(mSelectRecord.getPass());
+				break;
 		}
 		if (id == DEF.MESSAGE_DOWNLOAD) {
 			String localPath = mServer.getPath(ServerSelect.INDEX_LOCAL);
@@ -1384,6 +1480,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
+	/**
+	 * オプションメニューを表示
+	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean ret = super.onCreateOptionsMenu(menu);
 		Resources res = getResources();
@@ -1406,7 +1505,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		// menu.add(0, DEF.MENU_MARKER, Menu.NONE,
 		// res.getString(R.string.marker)).setIcon(android.R.drawable.ic_menu_search);
 		// ディレクトリ登録
-		menu.add(0, DEF.MENU_ADDDIR, Menu.NONE, res.getString(R.string.addDirMenu)).setIcon(android.R.drawable.ic_menu_add);
+		//menu.add(0, DEF.MENU_ADDDIR, Menu.NONE, res.getString(R.string.addDirMenu)).setIcon(android.R.drawable.ic_menu_add);
 		// // 表示モード
 		// menu.add(0, DEF.MENU_LISTMODE, Menu.NONE,
 		// res.getString(R.string.listModeMenu)).setIcon(android.R.drawable.ic_menu_add);
@@ -1422,18 +1521,26 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		// オンラインヘルプ
 		menu.add(0, DEF.MENU_ONLINE, Menu.NONE, res.getString(R.string.onlineMenu)).setIcon(android.R.drawable.ic_menu_set_as);
-		// 動作・仕様上の注意
+		// 動作・使用上の注意
 		menu.add(0, DEF.MENU_NOTICE, Menu.NONE, R.string.noticeMenu).setIcon(android.R.drawable.ic_menu_info_details);
 		// バージョン情報
 		menu.add(0, DEF.MENU_ABOUT, Menu.NONE, res.getString(R.string.aboutMenu)).setIcon(android.R.drawable.ic_menu_info_details);
 		// 終了
-		menu.add(0, DEF.MENU_QUIT, Menu.NONE, res.getString(R.string.exitMenu)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		//menu.add(0, DEF.MENU_QUIT, Menu.NONE, res.getString(R.string.exitMenu)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		return ret;
 	}
 
+	/**
+	 * オプションメニューの項目が選択された
+	 */
 	@SuppressLint("DefaultLocale")
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
+		onOptionsItemSelected(id);
+		return super.onOptionsItemSelected(item);
+	}
+
+	public void onOptionsItemSelected(int id) {
 		if (id == DEF.MENU_SETTING) {
 			// 設定
 			// Intentをつかって画面遷移する
@@ -1511,10 +1618,10 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			// AboutDialog dlg = new AboutDialog(this);
 			// dlg.show();
 		}
-		return super.onOptionsItemSelected(item);
 	}
-
-	// リストの再読み込み
+	/**
+	 * ファイルリストの再読み込み
+	 */
 	private void loadListView(String cursor) {
 		loadListView();
 
@@ -1523,7 +1630,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mLoadListNextOpen = -1;
 	}
 
-	// リストの再読み込み
+	/**
+	 * ファイルリストの再読み込み
+	 */
 	private void loadListView(int topindex) {
 		loadListView();
 
@@ -1532,7 +1641,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mLoadListNextOpen = -1;
 	}
 
-	// リストの再読み込み
+	/**
+	 * ファイルリストの再読み込み
+	 */
 	private void loadListView() {
 		if (mFileList.mDialog != null) {
 			// 読み込み中であれば二重実行しない
@@ -1568,7 +1679,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mIsLoading = true;
 	}
 
-	// 読み込み後のリスト設定
+	/**
+	 * ファイルリスト読み込み後のリスト設定
+	 */
 	private void loadListViewAfter() {
 		// 読み込み中フラグOFF
 		mIsLoading = false;
@@ -1616,7 +1729,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 	}
 
-	// リストの更新
+	/**
+	 * ファイルリストの更新
+	 */
 	private void updateListView() {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		String path = mURI + mPath;
@@ -1652,6 +1767,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mListScreenView.update(ListScreenView.AREATYPE_FILELIST);
 	}
 
+	/**
+	 * ファイルリストを選択
+	 */
 	private void switchFileList() {
 		// ファイルリストを選択
 		int listindex = mListScreenView.getListIndex(RecordList.TYPE_FILELIST);
@@ -1661,12 +1779,15 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private boolean mTouchState;
 	private short mTouchArea;
 
+	/**
+	 * タッチイベント
+	 */
 	public boolean onTouch(View v, MotionEvent event) {
 		int action = event.getAction();
 		float x = event.getX();
 		float y = event.getY();
 
-		// 押した時はどのエリアが求める
+		// 押した時はどのエリアか求める
 		if (action == MotionEvent.ACTION_DOWN) {
 			mTouchArea = mListScreenView.findAreaType((int) x, (int) y);
 		}
@@ -1684,8 +1805,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				openOptionsMenu();
 			}
 			else if (select == TitleArea.SELECT_SORT) {
-				// ダイアログ表示
-				showSortDialog();
+				int listtype = mListScreenView.getListType();
+				if (listtype != RecordList.TYPE_SERVER && listtype != RecordList.TYPE_MENU) {
+					// ダイアログ表示
+					showSortDialog();
+				}
 			}
 			return true;
 		}
@@ -1694,10 +1818,22 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				// ボタン押下
 				int result = mListScreenView.mToolbarArea.sendTouchEvent(action, (int) x, (int) y);
 				switch (result) {
-					case DEF.TOOLBAR_SERVER:
-						// Intentをつかって画面遷移する
-						Intent intent = new Intent(FileSelectActivity.this, ServerActivity.class);
-						startActivityForResult(intent, DEF.REQUEST_SERVER);
+//					case DEF.TOOLBAR_SERVER:
+//						// Intentをつかって画面遷移する
+//						Intent intent = new Intent(FileSelectActivity.this, ServerActivity.class);
+//						startActivityForResult(intent, DEF.REQUEST_SERVER);
+//						break;
+					case DEF.TOOLBAR_ADDDIR:
+						// ディレクトリ登録
+						RecordList.add(RecordList.TYPE_DIRECTORY, RecordItem.TYPE_FOLDER, mServer.getSelect(), mPath, null
+								, new Date().getTime(), null, -1, null);
+
+						mListScreenView.notifyUpdate(RecordList.TYPE_DIRECTORY);
+						// ディレクトリリストに切り替える
+						mListScreenView.updateRecordList(RecordList.TYPE_DIRECTORY);
+						int listindex = mListScreenView.getListIndex(RecordList.TYPE_DIRECTORY);
+						mListScreenView.setListIndex(listindex, 0, false);
+						mListScreenView.onUpdateArea(ListScreenView.AREATYPE_ALL, false);
 						break;
 					case DEF.TOOLBAR_PARENT:
 						// 親ディレクトリに移動
@@ -1755,6 +1891,15 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			}
 			return true;
 		}
+		else if (mTouchArea == ListScreenView.AREATYPE_SERVERLIST) {
+			if (mListScreenView.sendTouchEvent(action, x, y)) {
+				mListScreenView.mServerListArea.sendTouchEvent(action, x, y);
+			}
+			else {
+				mListScreenView.mServerListArea.cancelOperation();
+			}
+			return true;
+		}
 		else if (mTouchArea == ListScreenView.AREATYPE_FAVOLIST) {
 			if (mListScreenView.sendTouchEvent(action, x, y)) {
 				mListScreenView.mFavoListArea.sendTouchEvent(action, x, y);
@@ -1773,10 +1918,21 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			}
 			return true;
 		}
+		else if (mTouchArea == ListScreenView.AREATYPE_MENULIST) {
+			if (mListScreenView.sendTouchEvent(action, x, y)) {
+				mListScreenView.mMenuListArea.sendTouchEvent(action, x, y);
+			}
+			else {
+				mListScreenView.mMenuListArea.cancelOperation();
+			}
+			return true;
+		}
 		return true;
 	}
 
-	// ソートメニュー表示
+	/**
+	 * ソートメニュー表示
+	 */
 	private void showSortDialog() {
 		String[] items;
 		Resources res = getResources();
@@ -1862,7 +2018,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 	}
 
-	// ファイル長押し選択表示
+	/**
+	 * ファイルリストの長押し選択表示
+	 */
 	private void showFileLongClickDialog() {
 		if (mListDialog != null) {
 			return;
@@ -2187,7 +2345,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mListDialog.show();
 	}
 
-	// 長押し選択表示
+	/**
+	 * 履歴系リストの長押し選択表示
+	 */
 	private void showRecordLongClickDialog() {
 		if (mListDialog != null) {
 			return;
@@ -2197,8 +2357,56 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 		String title = res.getString(R.string.opeTitle);
 
+		// RecordList.TYPE_xxx が入る
 		int listtype = mListScreenView.getListType();
-		if (listtype != RecordList.TYPE_DIRECTORY) {
+
+		if (listtype == RecordList.TYPE_DIRECTORY) {
+			String[] items = new String[1];
+			items[0] = res.getString(R.string.bm02);
+			mListDialog = new ListDialog(this, title, items, -1, true, new ListSelectListener() {
+				@Override
+				public void onSelectItem(int item) {
+					switch (item) {
+						case 0: { // ブックマーク削除
+							showDialog(DEF.MESSAGE_RECORD_DELETE);
+							break;
+						}
+					}
+				}
+
+				@Override
+				public void onClose() {
+					// 終了
+					mListDialog = null;
+				}
+			});
+			mListDialog.show();
+		}
+		else if (listtype == RecordList.TYPE_SERVER) {
+			// サーバリストのアイテムが長押しされた
+			int serverindex = mSelectRecord.getServer(); // サーバのキーインデックス
+			ServerSelect server = new ServerSelect(mSharedPreferences, this);
+
+			if (serverindex == ServerSelect.INDEX_LOCAL) {
+				// ローカルの場合はストレージルートにリセット
+				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
+				//path = DEF.getBaseDirectory();
+				server.select(serverindex);
+				server.setPath(path);
+				mSelectRecord.setPath(path);
+				mListScreenView.notifyUpdate(listtype);
+
+				ArrayList<RecordItem> recordList = mListScreenView.getList(listtype);
+				RecordList.update(recordList, listtype);
+			}
+			else {
+				showDialog(DEF.MESSAGE_EDITSERVER);
+			}
+		}
+		else if (listtype == RecordList.TYPE_MENU) {
+
+		}
+		else if (listtype == RecordList.TYPE_BOOKMARK || listtype == RecordList.TYPE_HISTORY) {
 			String[] items = new String[3];
 			items[0] = res.getString(R.string.bm00);
 			items[1] = res.getString(R.string.bm01);
@@ -2245,31 +2453,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			});
 			mListDialog.show();
 		}
-		else {
-			String[] items = new String[1];
-			items[0] = res.getString(R.string.bm02);
-			mListDialog = new ListDialog(this, title, items, -1, true, new ListSelectListener() {
-				@Override
-				public void onSelectItem(int item) {
-					switch (item) {
-						case 0: { // ブックマーク削除
-							showDialog(DEF.MESSAGE_RECORD_DELETE);
-							break;
-						}
-					}
-				}
-
-				@Override
-				public void onClose() {
-					// 終了
-					mListDialog = null;
-				}
-			});
-			mListDialog.show();
-		}
 	}
 
-	// しおりメニュー表示
+	/**
+	 * しおり削除のメニューを表示
+	 */
 	private void showShioriDialog() {
 		Resources res = getResources();
 		String siori0 = res.getString(R.string.siori00); // すべてのしおり
@@ -2379,7 +2567,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mListDialog.show();
 	}
 
-	// リスト表示モード切り替え表示
+	/**
+	 * タイル・リスト切替ダイアログ
+	 */
 	private void showListModeDialog() {
 		if (mListDialog != null) {
 			return;
@@ -2463,6 +2653,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mListDialog.show();
 	}
 
+	/**
+	 * リストをソート
+	 */
 	private void sortList(int listtype) {
 		if (listtype == RecordList.TYPE_FILELIST) {
 			if (mFileList == null || mFileList.getFileList() == null) {
@@ -2480,6 +2673,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 			// サムネイル読み直し
 			loadThumbnail();
+		}
+		else if (listtype == RecordList.TYPE_SERVER || listtype == RecordList.TYPE_MENU) {
+			return;
 		}
 		else {
 			// ソート切り替え
@@ -2517,6 +2713,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	// ;
 	// }
 
+	/**
+	 * 親フォルダに移動
+	 */
 	private void moveParentDir() {
 		int next = 0, pos = 0, prev = 0;
 		String cursor = "";
@@ -2539,6 +2738,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		moveFileSelect(mURI, path, cursor, true);
 	}
 
+	/**
+	 * パスの移動
+	 */
 	private void moveFileSelect(String uri, String path, int topindex, boolean history) {
 		// 移動
 		moveFileSelectProc(uri, path, history);
@@ -2547,6 +2749,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		loadListView(topindex);
 	}
 
+	/**
+	 * パスの移動
+	 */
 	private void moveFileSelect(String uri, String path, String cursor, boolean history) {
 		// 移動
 		moveFileSelectProc(uri, path, history);
@@ -2569,6 +2774,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	// loadListView(cursor);
 	// }
 
+	/**
+	 * パスの移動
+	 */
 	private void moveFileSelect(String uri, String path, boolean history) {
 		// 移動
 		moveFileSelectProc(uri, path, history);
@@ -2577,6 +2785,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		loadListView();
 	}
 
+	/**
+	 * パスの移動
+	 */
 	private void moveFileSelect(int serverindex, boolean history) {
 		ServerSelect server = new ServerSelect(mSharedPreferences, this);
 
@@ -2595,8 +2806,12 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 		// リスト再ロード
 		loadListView();
+//		mListScreenView.notifyUpdate(RecordList.TYPE_SERVER);
 	}
 
+	/**
+	 * パスの移動
+	 */
 	private boolean moveFileSelectFromServer(int svrindex, String path) {
 		ServerSelect server = new ServerSelect(mSharedPreferences, this);
 		if (svrindex != ServerSelect.INDEX_LOCAL) {
@@ -2623,7 +2838,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private void moveFileSelectProc(String uri, String path, boolean history) {
 		if (history) {
 			if (!uri.equals(mURI) || !path.equals(mPath)) {
-				// タイル場合
+				// タイルの場合
 				int topindex = mListScreenView.mFileListArea.getTopIndex();
 				mPathHistory.push(mServer.getCode(), mPath, topindex);
 			}
@@ -2634,8 +2849,10 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mPath = path;
 	}
 
+	/**
+	 * ファイルリスト画面を作り直す
+	 */
 	private void refreshFileSelect() {
-		// 画面を作り直す
 		Intent intent = new Intent(FileSelectActivity.this, FileSelectActivity.class);
 		intent.putExtra("Path", mPath);
 		// intent.putExtra("Server", mServer.getCode());
@@ -2654,13 +2871,18 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
-	/* アプリの終了 */
+	/**
+	 * アプリの終了
+	 */
 	private void finishApplication() {
 		this.moveTaskToBack(true);
 		finish();
 		return;
 	}
 
+	/**
+	 * ファイルオープン
+	 */
 	private boolean openFile(FileData fd, String infile, int page) {
 		// ファイルを表示
 		if (fd == null) {
@@ -2698,6 +2920,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return true;
 	}
 
+	/**
+	 * テキストファイルオープン
+	 */
 	private void openTextFile(String name, int page) {
 		// saveLastOpenComp(mServer.getCode(), mPath, null, name,
 		// DEF.LASTOPEN_TEXT);
@@ -2734,7 +2959,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	// return;
 	// }
 
-	// ファイルを開く
+	/**
+	 * 画像ファイルオープン
+	 */
 	private void openImageFile(String name) {
 		// saveLastOpenComp(mServer.getCode(), mPath, null, name,
 		// DEF.LASTOPEN_IMAGE);
@@ -2753,7 +2980,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
-	// フォルダを開く
+	/**
+	 * ディレクトリ内のイメージ表示
+	 */
 	private void openImageDir(String name) {
 		// saveLastOpenComp(mServer.getCode(), mPath + name, null, null,
 		// DEF.LASTOPEN_IMAGE);
@@ -2771,6 +3000,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
+	/**
+	 * 圧縮ファイルオープン
+	 */
 	private void openCompFile(String name, String page) {
 		// saveLastOpenComp(mServer.getCode(), mPath, name, null,
 		// DEF.LASTOPEN_IMAGE);
@@ -2819,17 +3051,25 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	// ed.commit();
 	// }
 
-	// ファイル展開
+	/**
+	 * 圧縮ファイル展開
+	 */
 	private void expandCompFile(String comp) {
 		expandCompFile(comp, null);
 		return;
 	}
 
+	/**
+	 * 圧縮ファイル展開
+	 */
 	private void expandCompFile(String comp, String text) {
 		expandCompFile(comp, text, -1);
 		return;
 	}
 
+	/**
+	 * 圧縮ファイル展開
+	 */
 	private void expandCompFile(String comp, String text, int page) {
 		// Intentをつかって画面遷移する
 		Intent intent = new Intent(FileSelectActivity.this, ExpandActivity.class);
@@ -3169,6 +3409,12 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				}
 			}
 		}
+		else if (listtype == RecordList.TYPE_MENU) {
+			RecordItem rd = mListScreenView.getRecordItem(listtype, listpos);
+			int item = rd.getItem();
+//			switchFileList(); // ファイルリストをアクティブ化
+			onOptionsItemSelected(item);
+		}
 		else {
 			RecordItem rd = mListScreenView.getRecordItem(listtype, listpos);
 			if (rd != null) {
@@ -3200,26 +3446,35 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					}
 					mLoadListNextInFile = file;
 				}
-				else {
+				else if (listtype != RecordList.TYPE_SERVER || rd.getServerName() != "") {
 					// 通常ファイルオープン
 					mLoadListNextFile = file;
 					mLoadListNextPath = path;
 					mLoadListNextInFile = image;
 				}
-				moveFileSelectFromServer(server, mLoadListNextPath);
-				if (type != RecordItem.TYPE_NONE) {
-					mLoadListNextOpen = CloseDialog.CLICK_THIS;
-					mLoadListNextPage = page;
+				if (listtype != RecordList.TYPE_SERVER || rd.getServerName() != "") {
+					moveFileSelectFromServer(server, mLoadListNextPath);
+					if (type != RecordItem.TYPE_NONE) {
+						mLoadListNextOpen = CloseDialog.CLICK_THIS;
+						mLoadListNextPage = page;
+					}
 				}
-				if (listtype == RecordList.TYPE_DIRECTORY) {
+				if (listtype == RecordList.TYPE_DIRECTORY ){
 					switchFileList(); // ファイルリストをアクティブ化
+				}
+				else if (listtype == RecordList.TYPE_SERVER) {
+					if (rd.getServerName() != "") {
+						switchFileList(); // ファイルリストをアクティブ化
+					}
 				}
 			}
 		}
 		return;
 	}
 
-	// ファイル名でソート
+	/**
+	 * 履歴系リストをファイル名でソート
+	 */
 	public class BookmarkComparator implements Comparator<RecordItem> {
 		public int compare(RecordItem data1, RecordItem data2) {
 			int result = 0;
@@ -3259,6 +3514,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 	}
 
+	/**
+	 * 履歴系リストを最新状態にする
+	 */
 	@Override
 	public void onRequestUpdate(RecordListArea list, int listtype) {
 		// 履歴系リストを最新状態にする
@@ -3273,7 +3531,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			recordList = RecordList.load(recordList, listtype);
 			for (int i = 0; i < recordList.size(); i++) {
 				RecordItem data = recordList.get(i);
-				data.setServerName(mServer.getName(data.getServer()));
+				if (listtype != RecordList.TYPE_SERVER) {
+					data.setServerName(mServer.getName(data.getServer()));
+				}
 			}
 
 			int listsize = recordList.size();
@@ -3305,14 +3565,14 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			// ソート情報の読み込み
 			if (listtype == RecordList.TYPE_BOOKMARK) {
 				mSortType = (short) mSharedPreferences.getInt("RBSort", 0);
-			}
-			else if (listtype == RecordList.TYPE_DIRECTORY) {
+			} else if (listtype == RecordList.TYPE_DIRECTORY) {
 				mSortType = (short) mSharedPreferences.getInt("RDSort", 0);
-			}
-			else {
+			} else {
 				mSortType = (short) mSharedPreferences.getInt("RHSort", 5);
 			}
-			Collections.sort(recordList, new BookmarkComparator());
+			if (listtype != RecordList.TYPE_SERVER && listtype != RecordList.TYPE_MENU) {
+				Collections.sort(recordList, new BookmarkComparator());
+			}
 			mListScreenView.setRecordList(list, recordList);
 			mListScreenView.setListSortType(listtype, mSortType);
 			// list.update(false);
@@ -3320,6 +3580,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return;
 	}
 
+	/**
+	 * 履歴系リストに項目を追加？
+	 */
 	@Override
 	public void onAddBookmark(String name) {
 		// 名前の更新
@@ -3334,4 +3597,5 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		return;
 	}
+
 }

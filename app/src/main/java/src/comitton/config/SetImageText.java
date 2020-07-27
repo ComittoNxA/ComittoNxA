@@ -78,13 +78,13 @@ public class SetImageText {
 
 	public static boolean getPrevRev(SharedPreferences sharedPreferences){
 		boolean flag;
-		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_PREVREV, true);
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_PREVREV, DEF.DEFAULT_PREVREV);
 		return flag;
 	}
 
 	public static boolean getChgPage(SharedPreferences sharedPreferences){
 		boolean flag;
-		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_CHGPAGE, false);
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_CHGPAGE, DEF.DEFAULT_CHGPAGE);
 		return flag;
 	}
 
@@ -137,17 +137,17 @@ public class SetImageText {
 	}
 
 	public static boolean getSavePage(SharedPreferences sharedPreferences){
-		boolean flag = DEF.getBoolean(sharedPreferences, DEF.KEY_SAVEPAGE, true);
+		boolean flag = DEF.getBoolean(sharedPreferences, DEF.KEY_SAVEPAGE, DEF.DEF_SAVEPAGE);
 		return flag;
 	}
 
 	public static int getTapPattern(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TAPPATTERN, 0);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TAPPATTERN, DEF.DEFAULT_TAPPATTERN);
 		return val;
 	}
 
 	public static int getTapRate(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TAPRATE, 4);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TAPRATE, DEF.DEFAULT_TAPRATE);
 		return val;
 	}
 

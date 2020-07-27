@@ -640,7 +640,7 @@ public class ListArea implements Handler.Callback, ScrollMoveListener {
 		}
 		else if (msg.what == HMSG_ITEMCLICK) {
 			// ワンテンポ遅らせないとなんか落ちる
-			mListNoticeListener.	onItemClick(mListType, msg.arg1, null);
+			mListNoticeListener.onItemClick(mListType, msg.arg1, null);
 		}
 		else if (msg.what == HMSG_LONGCLICK) {
 			// ロングタップ
