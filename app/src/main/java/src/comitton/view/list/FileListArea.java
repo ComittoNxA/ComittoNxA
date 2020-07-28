@@ -241,10 +241,40 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				short exttype = fd.getExtType();
 				x = baseX + mDrawLeft + ix * mItemWidth + (mItemWidth - mIconWidth) / 2;
 				y = baseY + ypos + mItemMargin;
+
+				if (type == FileData.FILETYPE_PARENT) {
+					color = mDirColor;
+				}
+				else if (type == FileData.FILETYPE_IMG) {
+					color = mImgColor;
+				}
+				else {
+					switch (fd.getState()) {
+						case -1:
+							if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_TXT) {
+								color = mBefColor;
+							}
+							else {
+								color = mDirColor;
+							}
+							break;
+						case -2:
+							color = mAftColor;
+							break;
+						default:
+							color = mNowColor;
+							break;
+					}
+				}
+				mNamePaint.setColor(color);
+				mLinePaint.setColor(color);
+				mLinePaint.setStrokeWidth(3);
+
 				if (mThumbFlag) {
 					if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR) {
 						// ビットマップ表示
 						canvas.drawRect(x - 1, y - 1, x + mIconWidth, y + mIconHeight, mLinePaint);
+//						canvas.drawRect(x - 1, y - 1, x + mIconWidth, y + mIconHeight, paint);
 
 						Bitmap bmMark = null;
 						if (type != FileData.FILETYPE_IMG) {
@@ -289,7 +319,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 
 							// 中央
 							mBitmapPaint.setStrokeWidth(1.0f);
-							mBitmapPaint.setStyle(Paint.Style.FILL);
+							mBitmapPaint.setStyle(Style.FILL);
 							mBitmapPaint.setColor(Color.DKGRAY);
 							canvas.drawText(str, text_x + 1, text_y + 1, mBitmapPaint);
 
@@ -324,33 +354,10 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				}else{ // タイル表示・サムネ無しの場合は枠で囲む
 					canvas.drawRect(baseX + mDrawLeft + ix * mItemWidth + mItemMargin, y + mIconHeight,
 							baseX + mDrawLeft + (ix + 1) * mItemWidth - mItemMargin, y + mItemHeight - mItemMargin*2, mLinePaint);
+//					canvas.drawRect(baseX + mDrawLeft + ix * mItemWidth + mItemMargin, y + mIconHeight,
+//							baseX + mDrawLeft + (ix + 1) * mItemWidth - mItemMargin, y + mItemHeight - mItemMargin*2, paint);
 				}
 
-				if (type == FileData.FILETYPE_PARENT) {
-					color = mDirColor;
-				}
-				else if (type == FileData.FILETYPE_IMG) {
-					color = mImgColor;
-				}
-				else {
-					switch (fd.getState()) {
-						case -1:
-							if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_TXT) {
-								color = mBefColor;
-							}
-							else {
-								color = mDirColor;
-							}
-							break;
-						case -2:
-							color = mAftColor;
-							break;
-						default:
-							color = mNowColor;
-							break;
-					}
-				}
-				mNamePaint.setColor(color);
 				if (mText[0][index] == null) {
 					String name[] = new String[4];
 					name[0] = fd.getName(); // ファイル名
@@ -385,7 +392,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 						}
 					}
 					// 結果を前に詰める
-					for (int i = 0; i < mText.length - 1; i++){
+					for (int i = 1; i < mText.length - 1; i++){
 						if (name[i].equals("") || name[i].equals("/")){
 							for (int j = i + 1; j < mText.length; j++) {
 								if (!name[j].equals("")) {
@@ -506,18 +513,49 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				canvas.drawRect(x, y + itemHeight - mh, x + mItemWidth, y + itemHeight, mFillPaint);
 			}
 
+			short type = fd.getType();
+			short exttype = fd.getExtType();
+
 			// 項目区切り
 			mFillPaint.setColor(mBdrColor);
 			canvas.drawRect(x, y + itemHeight, x + cx, y + itemHeight + BORDER_HEIGHT, mFillPaint);
+			if (type == FileData.FILETYPE_PARENT) {
+				color = mDirColor;
+			}
+			else if (type == FileData.FILETYPE_IMG) {
+				color = mImgColor;
+			}
+			else {
+				switch (fd.getState()) {
+					case -1:
+						if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_TXT) {
+							color = mBefColor;
+						}
+						else {
+							color = mDirColor;
+						}
+						break;
+					case -2:
+						color = mAftColor;
+						break;
+					default:
+						color = mNowColor;
+						break;
+				}
+			}
 
-			short type = fd.getType();
-			short exttype = fd.getExtType();
+			mNamePaint.setColor(color);
+			mNamePaint.setTextSize(mTitleSize);
+			mLinePaint.setColor(color);
+			mLinePaint.setStrokeWidth(3);
+
 			x = baseX + mItemMargin;
 			y = baseY + ypos + mItemMargin;
 			if (mThumbFlag) {
                 int iconHeight = mListIconHeight;
                 int iconWidth = mIconWidth * iconHeight / mIconHeight;
 				int retBitmap = CallImgLibrary.ThumbnailCheck(mThumbnailId, index);
+
 				if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR) {
 					// ビットマップ表示
                     canvas.drawRect(x - 1, y - 1, x + iconWidth, y + iconHeight, mLinePaint);
@@ -566,7 +604,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 
 						// 中央
 						mBitmapPaint.setStrokeWidth(1.0f);
-						mBitmapPaint.setStyle(Paint.Style.FILL);
+						mBitmapPaint.setStyle(Style.FILL);
 						mBitmapPaint.setColor(Color.DKGRAY);
 						canvas.drawText(str, text_x + 1, text_y + 1, mBitmapPaint);
 
@@ -597,33 +635,6 @@ public class FileListArea extends ListArea implements Handler.Callback {
 			// タイトル描画
 			int ty = 0;
 			if (mTitleSep != null && mInfoSep != null && mTitleSep[index] != null && mInfoSep[index] != null) {
-				if (type == FileData.FILETYPE_PARENT) {
-					color = mDirColor;
-				}
-				else if (type == FileData.FILETYPE_IMG) {
-					color = mImgColor;
-				}
-				else {
-					switch (fd.getState()) {
-						case -1:
-							if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_TXT) {
-								color = mBefColor;
-							}
-							else {
-								color = mDirColor;
-							}
-							break;
-						case -2:
-							color = mAftColor;
-							break;
-						default:
-							color = mNowColor;
-							break;
-					}
-				}
-
-				mNamePaint.setColor(color);
-				mNamePaint.setTextSize(mTitleSize);
 
 				for (int i = 0; i < mTitleSep[index].length; i++) {
 					canvas.drawText(mTitleSep[index][i], x, y + ty + mTitleAscent, mNamePaint);

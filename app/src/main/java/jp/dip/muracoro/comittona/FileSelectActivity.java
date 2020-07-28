@@ -222,12 +222,32 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 	private View mEditDlg = null;
 
+
 	private static final int REQUEST_CODE = 1;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+
+		// 設定の読込
+		mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		Editor ed = mSharedPreferences.edit();
+		String initialize = mSharedPreferences.getString("Initialize", "");
+		if ( "true".equals(initialize)) {
+			//起動処理中が最後まで実行されなかった
+			// ローカルはストレージルートにリセット
+			String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
+			ed.putString("path", path);
+
+			ed.putInt("ListMode", FileListArea.LISTMODE_LIST);
+			ed.putBoolean("Thumbnail", false);
+		}
+		// 起動処理開始を保存
+		ed.putString("Initialize", "true");
+		ed.commit();
+
 
 		mActivity = this;
 		mDensity = getResources().getDisplayMetrics().scaledDensity;
@@ -412,13 +432,16 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		if (prevVerName == null || !prevVerName.equals(verName)) {
 
 			// バージョンが変わったときはお知らせ表示
-			Editor ed = mSharedPreferences.edit();
 			ed.putString("LastVer", verName);
 			ed.commit();
 
 			// お知らせ表示
 			mInformation.showNotice();
 		}
+
+		// 起動処理終了を保存
+		ed.putString("Initialize", "true");
+		ed.commit();
 	}
 
 	@Override

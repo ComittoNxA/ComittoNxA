@@ -2,18 +2,18 @@ apply plugin: 'com.android.application'
 def applicationName = "ComittoNxA"
 def versionMajor = 1
 def versionMinor = 65
-//def versionPatch = 0
+def versionPatch = 1
 def revision = "a"
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 30
     buildToolsVersion '29.0.2'
     defaultConfig {
         applicationId "jp.dip.muracoro.comittona"
-        minSdkVersion 8
-        targetSdkVersion 8
-        versionCode versionMajor * 100 + versionMinor
-        versionName "${versionMajor}.${versionMinor}${revision}"
+        minSdkVersion 9
+        targetSdkVersion 30
+        versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}${revision}"
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
@@ -23,7 +23,7 @@ android {
             return
         }
         variant.outputs.all {
-            outputFileName = "${applicationName}_${versionName}.apk"  // ←ココ
+            outputFileName = "${applicationName}_${versionName}.apk"
         }
     }
     lintOptions {
@@ -35,8 +35,18 @@ android {
     buildTypes {
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            signingConfig signingConfigs.debug
+            minifyEnabled true
         }
         debug {
+        debuggable true
+            jniDebuggable true
+            renderscriptDebuggable true
+            signingConfig signingConfigs.debug
+            minifyEnabled false
         }
     }
     externalNativeBuild {
@@ -55,9 +65,20 @@ repositories {
 }
 
 dependencies {
-//    implementation 'com.android.support:support-compat:24.2.1'
-//    implementation 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'com.android.support:support-compat:24.2.1'
+    implementation 'com.android.support:appcompat-v7:24.2.1'
+
+    implementation 'com.joanzapata.pdfview:android-pdfview:1.0.+@aar'
+
+    implementation 'org.apache.commons:commons-compress:1.20'
+    implementation 'org.tukaani:xz:1.8'
+
     implementation 'com.caverock:androidsvg-aar:1.4'
+
+    implementation 'com.github.bumptech.glide:glide:3.6.1'
+
+//    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.4'
+
     api files('libs/jcifs-1.3.17.jar')
 //    api files('libs/svgandroid.jar')
 }
