@@ -186,7 +186,7 @@ public class CropImageView extends ImageView{
 
             canvas.clipRect(mFrameRect, Region.Op.DIFFERENCE);
             canvas.drawRect(0,0,mImageWidth, mImageHeight, mPaintMask);
-            canvas.clipRect(mFrameRect, Region.Op.INTERSECT );
+            canvas.clipRect(mFrameRect, Region.Op.UNION);
             canvas.drawRect(mFrameRect, mPaintGuide);
             canvas.restore();
         }
