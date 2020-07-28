@@ -1189,13 +1189,14 @@ public class DEF {
 	// private static final String SERIAL_STR[] = { "上", "中", "下", "短", "外" };
 	private static final int CHTYPE_NUM = 1;
 	private static final int CHTYPE_CHAR = 2;
-	private static final int CHTYPE_SERIAL = 3;
+	private static final int CHTYPE_JNUM = 3;
+	private static final int CHTYPE_SERIAL = 4;
 
 	static public int compareFileName(String name1, String name2) {
 		int len1 = name1.length();
 		int len2 = name2.length();
 		int i1, i2;
-		int ch1, ch2;
+		char ch1, ch2;
 		int ct1, ct2;
 
 		for (i1 = i2 = 0; i1 < len1 && i2 < len2; i1++, i2++) {
@@ -1211,37 +1212,175 @@ public class DEF {
 				}
 			}
 			else if (ct1 == CHTYPE_NUM) {
-				String num1 = getNumber(name1, i1);
-				String num2 = getNumber(name2, i2);
+				Log.d("DEF","compareFileName 文字1=" + ch1 + ", 文字2=" + ch2);
+				String num1 = getNumbers(name1, i1);
+				String num2 = getNumbers(name2, i2);
+				int nlen1 = num1.length();
+				int nlen2 = num2.length();
+
+				// カンマを取り除く
+				num1 = num1.replace(",", "");
+				num2 = num2.replace(",", "");
+
+				boolean minus1 = num1.startsWith("-");
+				boolean minus2 = num2.startsWith("-");
+
+				if ( minus1 && !minus2 ){
+					// num2が大きい
+					return -1;
+				}
+				else if ( !minus1 && minus2 ){
+					// num1が大きい
+					return 1;
+				}
+				else {
+					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2);
+					//小数点の位置
+					int index_dot1 = num1.indexOf(".");
+					int index_dot2 = num2.indexOf(".");
+
+					//小数以下の桁数
+					int col_dec1;
+					int col_dec2;
+					if (index_dot1 == -1) {
+						col_dec1 = 0;
+					} else {
+						col_dec1 = nlen1 - index_dot1 - 1;
+					}
+					if (index_dot2 == -1) {
+						col_dec2 = 0;
+					} else {
+						col_dec2 = nlen2 - index_dot2 - 1;
+					}
+
+					// 小数点以下の桁数を合わせる
+					int col_diff = col_dec1 - col_dec2;
+					for (int i = 1; i <= col_diff; i++) {
+						num2 = num2 + "0";
+					}
+					for (int i = -1; i >= col_diff; i--) {
+						num1 = num1 + "0";
+					}
+					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
+					num1 = num1.replace(".", "");
+					num2 = num2.replace(".", "");
+					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
+
+					int num_len1 = num1.length();
+					int num_len2 = num2.length();
+
+					if (!minus1 && !minus2) {
+						// どちらも正の数
+
+						if (num_len1 < num_len2) {
+							int difflen = num_len2 - num_len1;
+							for (int i = 0; i < difflen; i++) {
+								int diff = getNumber('０') - getNumber(num2.charAt(i));
+								if (diff != 0) {
+									// num1が大きければプラス
+									return diff;
+								}
+							}
+							// 残り部分で比較
+							num2 = num2.substring(difflen);
+						} else if (nlen1 > nlen2) {
+							int difflen = num_len1 - num_len2;
+							for (int i = 0; i < difflen; i++) {
+								int diff = getNumber(num1.charAt(i)) - getNumber('0');
+								if (diff != 0) {
+									// num1が大きければプラス
+									return diff;
+								}
+							}
+							// 残り部分で比較
+							num1 = num1.substring(difflen);
+						}
+						// 数字が異なる場合は比較
+						for (int i = 0; i < num1.length(); i++) {
+							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
+							if (diff != 0) {
+								// num1が大きければプラス
+								return diff;
+							}
+						}
+					}
+					else {
+						// どちらも負の数
+
+						// マイナスを取り除く
+						num1 = num1.replace("-", "");
+						num2 = num2.replace("-", "");
+
+						if (num_len1 < num_len2) {
+							int difflen = num_len2 - num_len1;
+							for (int i = 0; i < difflen; i++) {
+								int diff = getNumber('０') - getNumber(num2.charAt(i));
+								if (diff != 0) {
+									// num1が大きければプラス
+									return -diff;
+								}
+							}
+							// 残り部分で比較
+							num2 = num2.substring(difflen);
+						} else if (nlen1 > nlen2) {
+							int difflen = num_len1 - num_len2;
+							for (int i = 0; i < difflen; i++) {
+								int diff = getNumber(num1.charAt(i)) - getNumber('0');
+								if (diff != 0) {
+									// num1が大きければプラス
+									return -diff;
+								}
+							}
+							// 残り部分で比較
+							num1 = num1.substring(difflen);
+						}
+						// 数字が異なる場合は比較
+						for (int i = 0; i < num1.length(); i++) {
+							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
+							if (diff != 0) {
+								// num1が大きければプラス
+								return -diff;
+							}
+						}
+					}
+					i1 += nlen1 - 1;
+					i2 += nlen2 - 1;
+				}
+			}
+			else if (ct1 == CHTYPE_JNUM) {
+				String num1 = getJnums(name1, i1);
+				String num2 = getJnums(name2, i2);
 				int nlen1 = num1.length();
 				int nlen2 = num2.length();
 				if (nlen1 < nlen2) {
 					int difflen = nlen2 - nlen1;
 					for (int i = 0 ; i < difflen ; i ++) {
-						if (num2.charAt(i) != '0') {
+						if (getJnum(num2.charAt(i)) != 0) {
 							// num2の方が大きい
 							return -1;
 						}
 					}
 					// 残り部分で比較
 					num2 = num2.substring(difflen);
-					// num1 = "000000000000000000000000000000".substring(0, nlen2 - nlen1) + num1;
 				}
 				else if (nlen1 > nlen2) {
 					int difflen = nlen1 - nlen2;
 					for (int i = 0 ; i < difflen ; i ++) {
-						if (num1.charAt(i) != '0') {
+						if (getJnum(num1.charAt(i)) > 0) {
 							// num1の方が大きい
 							return 1;
 						}
 					}
 					// 残り部分で比較
 					num1 = num1.substring(difflen);
-					// num2 = "000000000000000000000000000000".substring(0, nlen1 - nlen2) + num2;
 				}
-				if (num1.equals(num2) == false) {
-					// 数字が異なる場合は比較
-					return num1.compareTo(num2);
+				// 数字が異なる場合は比較
+				for (int i = 0 ; i < num1.length() ; i ++) {
+					int diff = getJnum(num1.charAt(i)) - getJnum(num2.charAt(i));
+					if (diff != 0) {
+						// num1の方が大きい
+						return diff;
+					}
 				}
 				i1 += nlen1 - 1;
 				i2 += nlen2 - 1;
@@ -1262,29 +1401,74 @@ public class DEF {
 		return len1 - len2;
 	}
 
-	static private String getNumber(String str, int idx) {
+	static private String getNumbers(String str, int idx) {
 		int i;
 		for (i = idx; i < str.length(); i++) {
 			int ch = str.charAt(i);
-			if (ch < '0' || '9' < ch) {
+			if ((ch < '0' || '9' < ch) && '-' != ch && '.' != ch && ',' != ch) {
 				break;
 			}
 		}
 		return str.substring(idx, i);
 	}
 
-	static private int getSerial(int ch) {
+	static private int getNumber(char ch) {
+		switch (ch) {
+			case '0':
+				return 0;
+			case '1':
+				return 1;
+			case '2':
+				return 2;
+			case '3':
+				return 3;
+			case '4':
+				return 4;
+			case '5':
+				return 5;
+			case '6':
+				return 6;
+			case '7':
+				return 7;
+			case '8':
+				return 8;
+			case '9':
+				return 9;
+			case '.':
+				return 10;
+			case ',':
+				return 11;
+		}
+		return -1;
+	}
+
+	static private String getJnums(String str, int idx) {
+		int i;
+		for (i = idx; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			if (getCharType(ch) != CHTYPE_JNUM) {
+				break;
+			}
+		}
+		return str.substring(idx, i);
+	}
+
+	static private int getSerial(char ch) {
 		switch (ch) {
 			case '上':
 				return 0;
-			case '中':
+			case '前':
 				return 1;
-			case '下':
+			case '中':
 				return 2;
-			case '短':
+			case '後':
 				return 3;
-			case '外':
+			case '下':
 				return 4;
+			case '短':
+				return 5;
+			case '外':
+				return 6;
 		}
 		return -1;
 		// int result[] = {-1, 0};
@@ -1303,19 +1487,133 @@ public class DEF {
 		// return result;
 	}
 
-	static private int getCharType(int ch) {
-		if ('0' <= ch && ch <= '9') {
+	static private int getJnum(char ch) {
+		switch (ch) {
+			case '〇':
+				return 0;
+			case '零':
+				return 1;
+			case '一':
+				return 2;
+			case '壱':
+				return 3;
+			case '二':
+				return 4;
+			case '弐':
+				return 5;
+			case '三':
+				return 6;
+			case '参':
+				return 7;
+			case '四':
+				return 8;
+			case '肆':
+				return 9;
+			case '五':
+				return 10;
+			case '伍':
+				return 11;
+			case '六':
+				return 12;
+			case '陸':
+				return 13;
+			case '七':
+				return 14;
+			case '漆':
+				return 15;
+			case '八':
+				return 16;
+			case '捌':
+				return 17;
+			case '九':
+				return 18;
+			case '玖':
+				return 19;
+			case '十':
+				return 20;
+			case '拾':
+				return 21;
+			case '什':
+				return 22;
+			case '廿':
+				return 23;
+			case '卅':
+				return 24;
+			case '丗':
+				return 25;
+			case '百':
+				return 26;
+			case '佰':
+				return 27;
+			case '千':
+				return 28;
+			case '仟':
+				return 29;
+			case '阡':
+				return 30;
+			case '万':
+				return 31;
+			case '萬':
+				return 32;
+			case '億':
+				return 33;
+			case '兆':
+				return 34;
+		}
+		return -1;
+	}
+
+	static private int getCharType(char ch) {
+		if (('0' <= ch && ch <= '9') || '-' == ch || '.' == ch || ',' == ch) {
 			return CHTYPE_NUM;
 		}
-		else {
-			switch (ch) {
-				case '上':
-				case '中':
-				case '下':
-				case '短':
-				case '外':
-					return CHTYPE_SERIAL;
-			}
+
+		switch (ch) {
+			case '上':
+			case '中':
+			case '下':
+			case '前':
+			case '後':
+			case '短':
+			case '外':
+				return CHTYPE_SERIAL;
+		}
+
+		switch (ch) {
+			case '〇':
+			case '零':
+			case '一':
+			case '壱':
+			case '二':
+			case '弐':
+			case '三':
+			case '参':
+			case '四':
+			case '肆':
+			case '五':
+			case '伍':
+			case '六':
+			case '陸':
+			case '七':
+			case '漆':
+			case '八':
+			case '捌':
+			case '九':
+			case '玖':
+			case '十':
+			case '拾':
+			case '什':
+			case '廿':
+			case '卅':
+			case '丗':
+			case '百':
+			case '佰':
+			case '千':
+			case '仟':
+			case '阡':
+			case '万':
+			case '萬':
+				return CHTYPE_JNUM;
 		}
 		return CHTYPE_CHAR;
 	}

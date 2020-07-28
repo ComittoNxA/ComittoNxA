@@ -1,0 +1,20 @@
+ext {
+    supportCompatVersion = '24.0.3'
+    supportCompatVersion1 = supportCompatVersion
+}// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+    }
+}
