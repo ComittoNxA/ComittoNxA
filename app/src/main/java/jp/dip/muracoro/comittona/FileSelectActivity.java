@@ -221,7 +221,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private int mFileLastIndex;
 
 	private View mEditDlg = null;
-
+	private boolean mInitialize = true;
 
 	private static final int REQUEST_CODE = 1;
 
@@ -1809,13 +1809,13 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		float y = event.getY();
 
 		// 起動処理終了を保存
-		// 起動処理終了を保存
-		SharedPreferences.Editor ed = mSharedPreferences.edit();
-		ed.putString("Initialize", "false");
-		ed.commit();
+		if (mInitialize == true) {
+			SharedPreferences.Editor ed = mSharedPreferences.edit();
+			ed.putString("Initialize", "false");
+			ed.commit();
+			mInitialize = false;
+		}
 
-		ed.putString("Initialize", "false");
-		ed.commit();
 
 		// 押した時はどのエリアか求める
 		if (action == MotionEvent.ACTION_DOWN) {

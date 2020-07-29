@@ -17,7 +17,7 @@ public class MODULE {
 			+ "  libpng\n"
 			+ "  giflib\n"
 			+ "  zlib\n"
-			+ "  AndroidSVG 1.4\n"
+			+ "  AndroidSVG 1.4 (ASLv2.0)\n"
 			+ "  Automatic coloring algorithm(GPL)\n";
 
 	public static boolean isFree() {
