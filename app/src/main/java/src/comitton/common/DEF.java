@@ -1212,7 +1212,7 @@ public class DEF {
 				}
 			}
 			else if (ct1 == CHTYPE_NUM) {
-				Log.d("DEF","compareFileName 文字1=" + ch1 + ", 文字2=" + ch2);
+//				Log.d("DEF","compareFileName 文字1=" + ch1 + ", 文字2=" + ch2);
 				String num1 = getNumbers(name1, i1);
 				String num2 = getNumbers(name2, i2);
 				int nlen1 = num1.length();
@@ -1234,7 +1234,7 @@ public class DEF {
 					return 1;
 				}
 				else {
-					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2);
+//					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2);
 					//小数点の位置
 					int index_dot1 = num1.indexOf(".");
 					int index_dot2 = num2.indexOf(".");
@@ -1261,10 +1261,10 @@ public class DEF {
 					for (int i = -1; i >= col_diff; i--) {
 						num1 = num1 + "0";
 					}
-					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
+//					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
 					num1 = num1.replace(".", "");
 					num2 = num2.replace(".", "");
-					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
+//					Log.d("DEF","compareFileName 数字1=" + num1 + ", 数字2=" + num2 + ", 小数点位置1=" + index_dot1 + ", 小数点位置2=" + index_dot2 + ", 小数桁1=" + col_dec1 + ", 小数桁2=" + col_dec2);
 
 					int num_len1 = num1.length();
 					int num_len2 = num2.length();
@@ -1316,7 +1316,7 @@ public class DEF {
 							for (int i = 0; i < difflen; i++) {
 								int diff = getNumber('０') - getNumber(num2.charAt(i));
 								if (diff != 0) {
-									// num1が大きければプラス
+									// num1が大きければマイナス
 									return -diff;
 								}
 							}
@@ -1327,7 +1327,7 @@ public class DEF {
 							for (int i = 0; i < difflen; i++) {
 								int diff = getNumber(num1.charAt(i)) - getNumber('0');
 								if (diff != 0) {
-									// num1が大きければプラス
+									// num1が大きければマイナス
 									return -diff;
 								}
 							}
@@ -1338,7 +1338,7 @@ public class DEF {
 						for (int i = 0; i < num1.length(); i++) {
 							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
 							if (diff != 0) {
-								// num1が大きければプラス
+								// num1が大きければマイナス
 								return -diff;
 							}
 						}
@@ -1414,6 +1414,8 @@ public class DEF {
 
 	static private int getNumber(char ch) {
 		switch (ch) {
+			case '-':
+				return -1;
 			case '0':
 				return 0;
 			case '1':
@@ -1439,7 +1441,7 @@ public class DEF {
 			case ',':
 				return 11;
 		}
-		return -1;
+		return -2;
 	}
 
 	static private String getJnums(String str, int idx) {
