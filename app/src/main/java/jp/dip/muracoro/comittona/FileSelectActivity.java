@@ -1,10 +1,13 @@
 package jp.dip.muracoro.comittona;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 
 import src.comitton.activity.ExpandActivity;
@@ -20,7 +23,6 @@ import src.comitton.config.SetImageText;
 import src.comitton.config.SetRecorderActivity;
 import src.comitton.data.FileData;
 import src.comitton.data.RecordItem;
-import src.comitton.data.ServerData;
 import src.comitton.dialog.BookmarkDialog;
 import src.comitton.dialog.CloseDialog;
 import src.comitton.dialog.DownloadDialog;
@@ -36,7 +38,6 @@ import src.comitton.filelist.RecordList;
 import src.comitton.filelist.ServerSelect;
 import src.comitton.stream.FileThumbnailLoader;
 import src.comitton.stream.ThumbnailLoader;
-import src.comitton.view.ListItemView;
 import src.comitton.view.list.FileListArea;
 import src.comitton.view.list.ListNoticeListener;
 import src.comitton.view.list.ListScreenView;
@@ -49,6 +50,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -66,7 +68,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.preference.PreferenceManager;
+import android.provider.DocumentsContract;
+import android.provider.DocumentsContract.Document;
+import android.support.v4.provider.DocumentFile;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -83,6 +90,9 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
 import java.io.InputStream;
+import java.util.Set;
+import java.util.prefs.Preferences;
+
 import src.comitton.activity.CropImageActivity;
 import src.comitton.common.ImageAccess;
 import android.content.ContentResolver;
@@ -90,12 +100,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 
-/*
 import android.Manifest;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-*/
 
 @SuppressLint("DefaultLocale")
 public class FileSelectActivity extends Activity implements OnTouchListener, ListNoticeListener, BookmarkListenerInterface, Handler.Callback {
@@ -221,7 +228,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private int mFileLastIndex;
 
 	private View mEditDlg = null;
-	private boolean mInitialize = true;
+	private int mInitialize = 0;
+
+	private StorageManager mStorageManager;
 
 	private static final int REQUEST_CODE = 1;
 
@@ -234,8 +243,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		// 設定の読込
 		mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		Editor ed = mSharedPreferences.edit();
-		String initialize = mSharedPreferences.getString("Initialize", "");
-		if ( "true".equals(initialize)) {
+		mInitialize = mSharedPreferences.getInt("Initialize", 0);
+		if (mInitialize == 3) {
 			//起動処理中が最後まで実行されなかった
 			// ローカルはストレージルートにリセット
 			String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
@@ -243,16 +252,21 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 			ed.putInt("ListMode", FileListArea.LISTMODE_LIST);
 			ed.putBoolean("Thumbnail", false);
+			ed.putInt("Initialize", 1);
 		}
-		// 起動処理開始を保存
-		ed.putString("Initialize", "true");
+		else {
+			// 起動処理開始を保存
+			ed.putInt("Initialize", mInitialize + 1);
+		}
 		ed.commit();
-
 
 		mActivity = this;
 		mDensity = getResources().getDisplayMetrics().scaledDensity;
 		mInformation = new Information(this);
 		// jcifs.Config.setProperty("jcifs.util.loglevel", "0");
+
+		FileAccess.setActivity(mActivity);
+
 
 		// カメラボタンで縦横切替した場合
 		if (savedInstanceState != null) {
@@ -412,20 +426,14 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			// 取得不可エラー
 		}
 
-		/*
-		//==== パーミッション承認状態判定(SDカード書き込み) ====//
-		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-		{
-			//==== 承認要求を行う ====//
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-		}
+
 		//==== パーミッション承認状態判定(マイク使用) ====//
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
 		{
 			//==== 承認要求を行う ====//
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE);
 		}
-*/
+
 
 		// 前回起動時のバージョン取得
 		String prevVerName = mSharedPreferences.getString("LastVer", null);
@@ -502,9 +510,76 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		// }
 	}
 
+	public static final int READ_REQUEST_CODE = 42;
+	public static final int WRITE_REQUEST_CODE = 43;
+//	public static final int REQUEST_SDCARD_ACCESS = 2;
+
+	//	@TargetApi(24)
+	public void startStorageAccessIntent(File file, int requestCode){
+		Intent intent = null;
+		final int takeFlags =(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+		mStorageManager = (StorageManager)mActivity.getSystemService(Context.STORAGE_SERVICE);
+		StorageVolume volume = null;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+			volume = mStorageManager.getStorageVolume(file);
+		}
+
+//		intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+//		startActivityForResult(intent, WRITE_REQUEST_CODE);
+
+		//SDカード以下のアクセス権限を付与してもらう
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+			intent = volume.createOpenDocumentTreeIntent();
+			startActivityForResult(intent, WRITE_REQUEST_CODE);
+		}
+		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+			startActivityForResult(intent, WRITE_REQUEST_CODE);
+//			startActivityForResult(intent, REQUEST_SDCARD_ACCESS);
+		}
+
+	}
+
+
 	// 画面遷移が戻ってきた時の通知
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == DEF.REQUEST_SERVER) {
+		Log.d("FileSelectActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode);
+
+		if (requestCode == WRITE_REQUEST_CODE) {
+			// リネームか削除のとき
+			Log.d("FileSelectActivity", "onActivityResult WRITE_REQUEST_CODE");
+
+			if (resultCode == RESULT_OK) {
+
+				Intent intent = null;
+
+				// IntentからtreeのURIを取得する
+				Uri treeUri = data.getData();
+				Log.d("FileSelectActivity", "onActivityResult result=OK Uri=" + treeUri.toString());
+
+				// 恒常的にPermissionを取得する。
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+					Log.d("FileSelectActivity", "onActivityResult 恒常的にパーミッションを保存します。");
+					mActivity.getContentResolver().takePersistableUriPermission(treeUri,
+							Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+				}
+
+				// Permissionを取ったURIをアプリの設定に保存する
+				Set<String> treeUriSet = null;
+				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+					treeUriSet = mSharedPreferences.getStringSet("permit-uriSet", new HashSet<String>());
+					treeUriSet.add(treeUri.toString());
+					SharedPreferences.Editor ed = mSharedPreferences.edit();
+					ed.putStringSet("permit-uriSet", treeUriSet);
+					ed.commit();
+				}
+
+				FileAccess.onNotify(treeUri);
+
+			}
+		}
+		else if (requestCode == DEF.REQUEST_SERVER) {
 			if (resultCode == RESULT_OK) {
 				int index = data.getExtras().getInt("svrindex");
 				// サーバの選択が変わった
@@ -1042,6 +1117,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
 		switch (id) {
 			case DEF.MESSAGE_FILE_DELETE:
 				dialogBuilder.setTitle("ファイル削除");
@@ -1281,11 +1357,16 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 								filename = filename + fromfile.substring(index);
 							}
 							try {
-								FileAccess.renameTo(mURI, mPath, fromfile, filename, user, pass);
+								boolean ret = FileAccess.renameTo(mURI, mPath, fromfile, filename, user, pass);
 								if (filetype == FileData.FILETYPE_DIR) {
 									filename = filename + "/";
 								}
-								mFileData.setName(filename);
+								if (ret) {
+									mFileData.setName(filename);
+								}
+								else {
+									Toast.makeText(mActivity, "Failed to file rename.", Toast.LENGTH_SHORT).show();
+								}
 							} catch (FileAccessException e) {
 								Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();
 							}
@@ -1335,6 +1416,14 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						String path = mSharedPreferences.getString("LastPath", "");
 						String lastFile = mSharedPreferences.getString("LastFile", "");
 						String lastText = mSharedPreferences.getString("LastText", "");
+
+						// 起動処理終了を保存
+						if (mInitialize != 0) {
+							SharedPreferences.Editor ed = mSharedPreferences.edit();
+							ed.putInt("Initialize", 0);
+							ed.commit();
+							mInitialize = 0;
+						}
 
 						// ダイアログ終了
 						dialog.dismiss();
@@ -1809,11 +1898,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		float y = event.getY();
 
 		// 起動処理終了を保存
-		if (mInitialize == true) {
+		if (mInitialize != 0) {
 			SharedPreferences.Editor ed = mSharedPreferences.edit();
-			ed.putString("Initialize", "false");
+			ed.putInt("Initialize", 0);
 			ed.commit();
-			mInitialize = false;
+			mInitialize = 0;
 		}
 
 
