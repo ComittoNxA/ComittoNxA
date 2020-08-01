@@ -1138,7 +1138,7 @@ public class TextManager {
 		if (mInputBuff == null) {
 			// }
 			// catch (IOException ex) {
-			Log.d("FileList", "Text file load error");
+			Log.d("TextManager", "Text file load error");
 			Message message = new Message();
 			message.what = MSG_ERROR;
 			message.obj = "Text file load error";

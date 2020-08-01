@@ -230,6 +230,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private View mEditDlg = null;
 	private int mInitialize = 0;
 
+	int mCommand;
+
 	private StorageManager mStorageManager;
 
 	private static final int REQUEST_CODE = 1;
@@ -427,12 +429,12 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 
 
-		//==== パーミッション承認状態判定(マイク使用) ====//
-		if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
-		{
-			//==== 承認要求を行う ====//
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE);
-		}
+//		//==== パーミッション承認状態判定(マイク使用) ====//
+//		if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
+//		{
+//			//==== 承認要求を行う ====//
+//			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE);
+//		}
 
 
 		// 前回起動時のバージョン取得
@@ -575,7 +577,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					ed.commit();
 				}
 
-				FileAccess.onNotify(treeUri);
+				onCreateDialog(mCommand);
 
 			}
 		}
@@ -1117,21 +1119,57 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-
+		boolean isDirectory;
+		File file;
 		switch (id) {
 			case DEF.MESSAGE_FILE_DELETE:
+
+				//==== パーミッション承認状態判定(書き込み) ====//
+				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+				{
+					//==== 承認要求を行う ====//
+					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+				}
+
+				isDirectory = mFileData.getName().endsWith("/");
+				file = new File(mPath + mFileData.getName());
+				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
+					// ストレージ個別の承認が未取得
+					mCommand = DEF.MESSAGE_FILE_DELETE;
+					startStorageAccessIntent(file, mActivity.WRITE_REQUEST_CODE);
+				}
+
 				dialogBuilder.setTitle("ファイル削除");
 				dialogBuilder.setMessage(R.string.delMsg);
 				dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
-						// ファイル削除
-						if (mFileData != null) {
-							String user = mServer.getUser();
-							String pass = mServer.getPass();
-							if (mFileData.getType() != FileData.FILETYPE_DIR) {
-								// ファイル単体の場合はそのまま消す
+					// ファイル削除
+					if (mFileData != null) {
+						String user = mServer.getUser();
+						String pass = mServer.getPass();
+						if (mFileData.getType() != FileData.FILETYPE_DIR) {
+							// ファイル単体の場合はそのまま消す
+							try {
+								boolean isExist = FileAccess.delete(mURI, mPath, mFileData.getName(), user, pass);
+								if (!isExist) {
+									// 削除されていたら消す
+									mListScreenView.removeFileList(mFileData);
+								}
+							} catch (FileAccessException e) {
+								Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();
+							}
+							mFileData = null;
+						}
+						else {
+							// ディレクトリの場合は中身を順番に消す
+							RemoveDialog dlg = new RemoveDialog(mActivity, mURI, mPath, user, pass, mFileData.getName(), new RemoveListener() {
+								@Override
+								public void onClose() {
+								// 終了でリスト更新
+								String user = mServer.getUser();
+								String pass = mServer.getPass();
 								try {
-									boolean isExist = FileAccess.delete(mURI, mPath, mFileData.getName(), user, pass);
+									boolean isExist = FileAccess.exist(mURI, mPath, mFileData.getName(), user, pass);
 									if (!isExist) {
 										// 削除されていたら消す
 										mListScreenView.removeFileList(mFileData);
@@ -1140,32 +1178,13 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 									Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();
 								}
 								mFileData = null;
-							}
-							else {
-								// ディレクトリの場合は中身を順番に消す
-								RemoveDialog dlg = new RemoveDialog(mActivity, mURI, mPath, user, pass, mFileData.getName(), new RemoveListener() {
-									@Override
-									public void onClose() {
-										// 終了でリスト更新
-										String user = mServer.getUser();
-										String pass = mServer.getPass();
-										try {
-											boolean isExist = FileAccess.exist(mURI, mPath, mFileData.getName(), user, pass);
-											if (!isExist) {
-												// 削除されていたら消す
-												mListScreenView.removeFileList(mFileData);
-											}
-										} catch (FileAccessException e) {
-											Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();
-										}
-										mFileData = null;
-									}
-								});
-								dlg.show();
-							}
+								}
+							});
+							dlg.show();
 						}
-						dialog.dismiss();
-						loadThumbnail();
+					}
+					dialog.dismiss();
+					loadThumbnail();
 					}
 				});
 				dialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -1305,6 +1324,22 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				break;
 			}
 			case DEF.MESSAGE_FILE_RENAME: {
+
+				//==== パーミッション承認状態判定(書き込み) ====//
+				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+				{
+					//==== 承認要求を行う ====//
+					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+				}
+
+				isDirectory = mFileData.getName().endsWith("/");
+				file = new File(mPath + mFileData.getName());
+				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
+					// ストレージ個別の承認が未取得
+					mCommand = DEF.MESSAGE_FILE_RENAME;
+					startStorageAccessIntent(file, mActivity.WRITE_REQUEST_CODE);
+				}
+
 				// レイアウトの呼び出し
 				LayoutInflater factory = LayoutInflater.from(this);
 				final View inputView = factory.inflate(R.layout.rename, null);

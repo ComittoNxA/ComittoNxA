@@ -322,7 +322,7 @@ public class ImageManager extends InputStream implements Runnable {
 		}
 		catch (IOException ex) {
 			mFileList = new FileListItem[0];
-			Log.d("FileList", ex.getMessage());
+			Log.d("ImageManager", ex.getMessage());
 			Message message = new Message();
 			message.what = DEF.HMSG_ERROR;
 			message.obj = ex.getMessage();

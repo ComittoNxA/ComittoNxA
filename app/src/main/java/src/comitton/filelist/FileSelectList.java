@@ -347,11 +347,12 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			if (e != null) {
 				s = e.getMessage();
 				if (s != null) {
-					Log.e("FileList", s);
+					Log.e("FileSelectList", s);
 				}
 				else {
 					s = "error.";
 				}
+				e.printStackTrace();
 			}
 			sendResult(false, s, thread);
 			return;

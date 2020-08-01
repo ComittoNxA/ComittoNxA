@@ -1,15 +1,10 @@
 package src.comitton.common;
 
 import android.Manifest;
-import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -18,6 +13,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -26,13 +22,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import java.lang.SecurityException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import jcifs.CIFSContext;
+import jcifs.CIFSException;
+import jcifs.Configuration;
+import jcifs.SmbResource;
+import jcifs.config.PropertyConfiguration;
+import jcifs.context.BaseContext;
+import jcifs.smb.NtlmPasswordAuthenticator;
 import jp.dip.muracoro.comittona.FileSelectActivity;
-import jp.dip.muracoro.comittona.R;
 import src.comitton.exception.FileAccessException;
 
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -48,12 +53,13 @@ public class FileAccess {
 	private static final int COMMAND_RENAMETO = 0;
 	private static final int COMMAND_DELETE = 1;
 
+	private static final int KEY_NAME = 0;
+	private static final int KEY_IS_DIRECTORY = 1;
+	private static final int KEY_LENGTH = 2;
+	private static final int KEY_LAST_MODIFIED = 3;
+
 	private static FileSelectActivity mActivity;
-	private static int mCommand;
-	private static String mPath;
-	private static String mFromFile;
-	private static String mToFile;
-	private static Uri mTreeUri;
+	private static Map<String, SmbResource> mResourceMap = new HashMap<String, SmbResource>();
 
 	private static final int REQUEST_CODE = 1;
 
@@ -84,28 +90,98 @@ public class FileAccess {
 	}
 
 	// ユーザ認証付きSambaアクセス
-	public static SmbFile authSmbFile(String url, String user, String pass) throws MalformedURLException {
-		SmbFile sfile;
-		if (user != null && user.length() > 0) {
-			NtlmPasswordAuthentication npa = new NtlmPasswordAuthentication("", user, pass);
-			sfile = new SmbFile(url, npa);
+	private static SmbFile authSmbFile(String url, String user, String pass) throws MalformedURLException {
+		SmbFile sfile = null;
+		NtlmPasswordAuthenticator smbAuth;
+		SmbResource resource = null;
+		CIFSContext context = null;
+		String domain = "";
+		String host = "";
+		String share = "";
+		String path = "";
+		String key = "";
+		int idx;
+
+		Properties prop = new Properties();
+		prop.setProperty("jcifs.smb.client.minVersion", "SMB202");
+		prop.setProperty("jcifs.smb.client.maxVersion", "SMB311");
+		prop.put( "jcifs.traceResources", "true" );
+		Configuration config = null;
+
+		host = url.substring(6);
+		idx = host.indexOf("/");
+		if (idx >= 0){
+			path = host.substring(idx + 1);
+			host = host.substring(0, idx);
+		}
+		idx = path.indexOf("/", 1);
+		if (idx >= 0){
+			share = path.substring(0, idx);
+			path = path.substring(idx);
+		}
+
+		if (user != null && user.length() != 0) {
+			idx = user.indexOf(";");
+			if (idx >= 0){
+				domain = user.substring(0, idx);
+				user = user.substring(idx + 1);
+			}
+		}
+
+		Log.d("FileAccess", "authSmbFile domain=" + domain + ", user=" + user + ", pass=" + pass + ", host=" + host + ", share=" + share + ", path=" + path);
+
+		key = "smb://";
+		if (domain.length() != 0) {
+			key += domain + ";";
+		}
+		if (user.length() != 0) {
+			key += user;
+			if (pass.length() != 0) {
+				key += ":" + pass + "@";
+			}
+		}
+		key += host + "/" + share + "/";
+
+		if (mResourceMap.containsKey(key)) {
+			resource = mResourceMap.get(key);
 		}
 		else {
-			sfile = new SmbFile(url);
+
+			String encUrl = null;
+
+			if (domain != null && domain.length() != 0) {
+				smbAuth = new NtlmPasswordAuthenticator(domain, user, pass);
+			} else if (user != null && user.length() != 0) {
+				smbAuth = new NtlmPasswordAuthenticator(user, pass);
+			} else {
+				smbAuth = new NtlmPasswordAuthenticator();
+			}
+
+			try {
+				config = new PropertyConfiguration(prop);
+				BaseContext bc = new BaseContext(config);
+				context = bc.withCredentials(smbAuth);
+				resource = context.get(key);
+				mResourceMap.put(key, resource);
+			} catch (CIFSException e) {
+				e.printStackTrace();
+			}
 		}
+
+		try {
+			sfile = new SmbFile(resource, path);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
 		return sfile;
 	}
 
 	// ユーザ認証付きSambaストリーム
 	public static SmbFileInputStream authSmbFileInputStream(String url, String user, String pass) throws MalformedURLException, SmbException, UnknownHostException {
 		SmbFileInputStream stream;
-		if (user != null && user.length() > 0) {
-			SmbFile sfile = authSmbFile(url, user, pass);
-			stream = new SmbFileInputStream(sfile);
-		}
-		else {
-			stream = new SmbFileInputStream(url);
-		}
+		SmbFile sfile = authSmbFile(url, user, pass);
+		stream = new SmbFileInputStream(sfile);
 		return stream;
 	}
 
@@ -229,26 +305,24 @@ public class FileAccess {
 				throw new FileAccessException("File access error.");
 			}
 
-			//==== パーミッション承認状態判定(SDカード書き込み) ====//
-			if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-			{
-				//==== 承認要求を行う ====//
-				ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-			}
+			boolean isDirectory = fromfile.endsWith("/");
+			DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
+			Log.d("FileAccess", "renameTo documentfile=" + documentFile);
 
-			mCommand = COMMAND_RENAMETO;
-			mPath = path;
-			mFromFile = fromfile;
-			mToFile = tofile;
+			if (documentFile != null){
+				// ファイルをリネームする。
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					try {
+						Log.d("FileSelectActivity", "onActivityResult ファイルをリネームします。");
 
-			boolean isDirectory = mFromFile.endsWith("/");
-
-			if (getDocumentFile(orgfile, isDirectory) != null) {
-				//パーミッションが取得済み
-				onNotify(mTreeUri);
-			}
-			else{
-				mActivity.startStorageAccessIntent(orgfile, mActivity.WRITE_REQUEST_CODE);
+						File dest = new File(tofile);
+						documentFile.renameTo(tofile);
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 
 		}
@@ -322,26 +396,24 @@ public class FileAccess {
 			// ローカルの場合
 			File orgfile = new File(path + file);
 
-			//==== パーミッション承認状態判定(SDカード書き込み) ====//
-			if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-			{
-				//==== 承認要求を行う ====//
-				ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+			boolean isDirectory = file.endsWith("/");
+			DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
+			Log.d("FileAccess", "renameTo documentfile=" + documentFile);
+
+			if (documentFile != null){
+				// ファイルをリネームする。
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					try {
+						Log.d("FileSelectActivity", "onActivityResult ファイルを削除します。");
+						documentFile.delete();
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 
-			mCommand = COMMAND_DELETE;
-			mPath = path;
-			mFromFile = file;
-
-			boolean isDirectory = mFromFile.endsWith("/");
-
-			if (getDocumentFile(orgfile, isDirectory) != null) {
-				//パーミッションが取得済み
-				onNotify(mTreeUri);
-			}
-			else{
-				mActivity.startStorageAccessIntent(orgfile, mActivity.WRITE_REQUEST_CODE);
-			}
 		}
 		else {
 			// サーバの場合
@@ -365,74 +437,7 @@ public class FileAccess {
 		mActivity = activity;
 	}
 
-	public static void onNotify(Uri treeUri) {
-		System.out.println("停止中の処理を再開する");
-		if (mCommand == COMMAND_RENAMETO) {
-
-			DocumentFile pickedDir = DocumentFile.fromTreeUri(mActivity, treeUri);
-			Log.d("FileAccess", "renameTo pickedDir=" + pickedDir.getName());
-			Log.d("FileAccess", "renameTo mPath=" + mPath + ", mFromFile=" + mFromFile + ", mToFile=" + mToFile);
-
-			DocumentFile documentFile;
-			String frompath = mPath + mFromFile;
-
-//			String[] ele = frompath.split(File.separator);
-//			for (int i = 3; i < ele.length; i++) {
-//				Log.d("FileAccess", "renameTo ele[i]=" + ele[i]);
-//				documentFile = documentFile.findFile(ele[i]);
-//			}
-
-			boolean isDirectory = mFromFile.endsWith("/");
-			documentFile = getDocumentFile(new File(frompath), isDirectory);
-			Log.d("FileAccess", "renameTo documentfile=" + documentFile);
-
-			if (documentFile != null){
-				// ファイルをリネームする。
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-					try {
-						Log.d("FileSelectActivity", "onActivityResult ファイルをリネームします。");
-
-						File dest = new File(mToFile);
-						documentFile.renameTo(mToFile);
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		if (mCommand == COMMAND_DELETE) {
-
-			DocumentFile pickedDir = DocumentFile.fromTreeUri(mActivity, treeUri);
-			Log.d("FileAccess", "renameTo pickedDir=" + pickedDir.getName());
-			Log.d("FileAccess", "renameTo mPath=" + mPath + ", mFromFile=" + mFromFile + ", mToFile=" + mToFile);
-
-			DocumentFile documentFile = pickedDir;
-			String frompath = mPath + mFromFile;
-
-			boolean isDirectory = mFromFile.endsWith("/");
-			documentFile = getDocumentFile(new File(frompath), isDirectory);
-			Log.d("FileAccess", "renameTo documentfile=" + documentFile);
-
-			if (documentFile != null){
-				// ファイルをリネームする。
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-					try {
-						Log.d("FileSelectActivity", "onActivityResult ファイルを削除します。");
-						documentFile.delete();
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
-
-
-
+	// treeUri(=ドライブのルート)のDocumentFileを取得する
 	public static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
 		String baseFolder = getExtSdCardFolder(file);
 		DocumentFile document = null;
@@ -465,8 +470,6 @@ public class FileAccess {
 			if (treeUri == null) {
 				return null;
 			}
-
-			mTreeUri = treeUri;
 
 			// start with root of SD card and then parse through document tree.
 			document = DocumentFile.fromTreeUri(mActivity, treeUri);
