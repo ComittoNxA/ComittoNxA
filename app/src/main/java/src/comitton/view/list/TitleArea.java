@@ -162,15 +162,15 @@ public class TitleArea implements Handler.Callback {
 			canvas.drawText(mSortName, titlecx - mMarginW - mTextSize, mMarginH + mTextAscent, mTextPaint);
 		}
 
-		// メニューボタン描画
-		Bitmap bm;
-		if (mSelectArea == SELECT_MENU) {
-			bm = mMenuBitmapOff;
-		}
-		else {
-			bm = mMenuBitmapOn;
-		}
-		canvas.drawBitmap(bm, titlecx, (mAreaHeight - (mTextSize * 2)) / 2, mBitmapPaint);
+//		// メニューボタン描画
+//		Bitmap bm;
+//		if (mSelectArea == SELECT_MENU) {
+//			bm = mMenuBitmapOff;
+//		}
+//		else {
+//			bm = mMenuBitmapOn;
+//		}
+//		canvas.drawBitmap(bm, titlecx, (mAreaHeight - (mTextSize * 2)) / 2, mBitmapPaint);
 
 		return;
 	}
@@ -298,12 +298,13 @@ public class TitleArea implements Handler.Callback {
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_UP:
 				if (0 <= x && x < mAreaWidth && 0 <= y && y < mAreaHeight) {
-					if (x < mAreaWidth - mAreaHeight) {
-						mSelectArea = SELECT_SORT;
-					}
-					else {
-						mSelectArea = SELECT_MENU;
-					}
+					mSelectArea = SELECT_SORT;
+//					if (x < mAreaWidth - mAreaHeight) {
+//						mSelectArea = SELECT_SORT;
+//					}
+//					else {
+//						mSelectArea = SELECT_MENU;
+//					}
 				}
 				else {
 					mSelectArea = SELECT_NONE;

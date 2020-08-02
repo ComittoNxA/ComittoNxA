@@ -2848,6 +2848,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			loadThumbnail();
 		}
 		else if (listtype == RecordList.TYPE_SERVER || listtype == RecordList.TYPE_MENU) {
+			mListScreenView.notifyUpdate(listtype);
 			return;
 		}
 		else {

@@ -44,15 +44,16 @@ public class RecordList {
 	private static final int INDEX_PAGE = 6;
 	private static final int INDEX_DISPNAME = 7;
 
-	private static final int MENU_TITLE_ID[] = {R.string.shortCut, R.string.delMenu, R.string.thumbMenu, R.string.setMenu,
-			R.string.rotateMenu, R.string.onlineMenu, R.string.noticeMenu, R.string.aboutMenu};
+	private static final int MENU_TITLE_ID[] = {R.string.shortCut, R.string.delMenu, R.string.thumbMenu,
+			R.string.rotateMenu, R.string.onlineMenu, R.string.noticeMenu, R.string.aboutMenu, R.string.setMenu};
 
-	private static final int MENU_ITEM[] = {DEF.MENU_SHORTCUT, DEF.MENU_SIORI, DEF.MENU_THUMBDEL, DEF.MENU_SETTING,
-			DEF.MENU_ROTATE, DEF.MENU_ONLINE, DEF.MENU_NOTICE, DEF.MENU_ABOUT};
+	private static final int MENU_ITEM[] = {DEF.MENU_SHORTCUT, DEF.MENU_SIORI, DEF.MENU_THUMBDEL,
+			DEF.MENU_ROTATE, DEF.MENU_ONLINE, DEF.MENU_NOTICE, DEF.MENU_ABOUT, DEF.MENU_SETTING};
 
-	private static final int MENU_IMAGE[] = {android.R.drawable.ic_menu_myplaces, android.R.drawable.ic_menu_delete, android.R.drawable.ic_menu_delete,
-			android.R.drawable.ic_menu_preferences, android.R.drawable.ic_menu_rotate, android.R.drawable.ic_menu_set_as,
-			android.R.drawable.ic_menu_info_details, android.R.drawable.ic_menu_info_details};
+	private static final int MENU_IMAGE[] = {R.raw.add_smartphone, R.raw.broom,
+			R.raw.broom, R.raw.rotate, R.raw.help,
+			R.raw.note, R.raw.info,
+			R.raw.config};
 
 	private static Context mContext;
 	/**

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import jp.dip.muracoro.comittona.R;
 import src.comitton.common.DEF;
+import src.comitton.common.ImageAccess;
 import src.comitton.common.TextFormatter;
 import src.comitton.data.FileData;
 import src.comitton.data.RecordItem;
@@ -12,6 +13,7 @@ import src.comitton.listener.DrawNoticeListener;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
@@ -32,11 +34,13 @@ public class RecordListArea extends ListArea {
 	private Paint mLinePaint;
 	private Paint mTitlePaint;
 	private Paint mInfoPaint;
+	private Paint mBitmapPaint;
 
 	private String mTitleName;
 
 	private String mTitleSep[][][];
 	private String mInfoSep[][][];
+	private Bitmap mBitmap[];
 
 	private int mTitleSize;
 	private int mTitleAscent;
@@ -45,6 +49,9 @@ public class RecordListArea extends ListArea {
 	private int mInfoSize;
 	private int mInfoAscent;
 	private int mInfoDescent;
+
+	private int mBitmapSize;
+	private int mBitmapColor;
 
 	private Context mContext;
 
@@ -70,6 +77,7 @@ public class RecordListArea extends ListArea {
 		mInfoPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mInfoPaint.setTypeface(Typeface.MONOSPACE);
 		mInfoPaint.setTextAlign(Paint.Align.LEFT);
+		mBitmapPaint = new Paint();
 
 		mDrawNoticeListener = listener;
 	}
@@ -103,12 +111,12 @@ public class RecordListArea extends ListArea {
 
 		int ypos = mTopPos;
 		for (int iy = mTopRow; ypos < cy; iy++) {
-
 			index = iy;
 			if (index >= listnum) {
 				break;
 			}
 			int itemHeight = getRowHeight(index);
+			RecordItem rd = mRecordList.get(index);
 
 			x = baseX;
 			y = baseY + ypos;
@@ -143,7 +151,31 @@ public class RecordListArea extends ListArea {
 			y = baseY + ypos + mItemMargin;
 
 			// タイトル描画
-			if (mTitleSep != null && mInfoSep != null && mTitleSep[index] != null && mInfoSep[index] != null) {
+			if (rd.getType() == RecordItem.TYPE_MENU) {
+				// アイコン描画
+				Bitmap bm = mBitmap[index];
+				canvas.drawBitmap(bm,  x, y + (int)(mTitleSize / 4), mBitmapPaint);
+
+				// タイトル描画
+				for (int j = 0; j < mTitleSep[index].length; j++) {
+					for (int i = 0; i < mTitleSep[index][j].length; i++) {
+						canvas.drawText(mTitleSep[index][j][i], x + mBitmapSize + mItemMargin, y + (mTitleSize / 2) + mTitleAscent, mTitlePaint);
+						y += mTitleSize + mTitleDescent;
+					}
+				}
+
+				// サマリ描画
+				for (int j = 0; j < mInfoSep[index].length; j++) {
+					if (mInfoSep[index][j] == null) {
+						continue;
+					}
+					for (int i = 0; i < mInfoSep[index][j].length; i++) {
+						canvas.drawText(mInfoSep[index][j][i], x + mBitmapSize + mItemMargin, y + mInfoAscent, mInfoPaint);
+						y += mInfoSize + mInfoDescent;
+					}
+				}
+			}
+			else if (mTitleSep != null && mInfoSep != null && mTitleSep[index] != null && mInfoSep[index] != null) {
 				// タイトル描画
 				for (int j = 0; j < mTitleSep[index].length; j++) {
 					for (int i = 0; i < mTitleSep[index][j].length; i++) {
@@ -187,11 +219,14 @@ public class RecordListArea extends ListArea {
 		mCurColor = clr_cur;
 		mSepColor = clr_inf;
 		mLinePaint.setColor(clr_frm);
+//		mBitmapPaint.setColor(clr_inf);
+		mBitmapColor = clr_txt;
 	}
 
 	public void setDrawInfo(int titlesize, int infosize, int margin) {
 		mTitleSize = titlesize;
 		mInfoSize = infosize;
+		mBitmapSize = (int)(mTitleSize * 1.6);
 
 		mItemMargin = (short) margin;
 
@@ -275,6 +310,7 @@ public class RecordListArea extends ListArea {
 
 			mTitleSep = new String[listSize][][];
 			mInfoSep = new String[listSize][][];
+			mBitmap = new Bitmap[listSize];
 
 			// 各項目の行数分割
 			for (int index = 0; index < listSize; index++) {
@@ -327,7 +363,6 @@ public class RecordListArea extends ListArea {
 							String user = rd.getUser();
 							String pass = rd.getPass();
 							String host = rd.getHost();
-
 							uri = "smb://";
 							if (user != null && !user.equals("")) {
 								uri += user;
@@ -343,8 +378,14 @@ public class RecordListArea extends ListArea {
 					mInfoSep[index][0] = TextFormatter.getMultiLine(uri, tcx, mInfoPaint, 5);
 				}
 				else if (rd.getType() == RecordItem.TYPE_MENU){
+					int icon = rd.getIcon();
 					mInfoSep[index] = new String[1][];
 					mInfoSep[index][0] = TextFormatter.getMultiLine("", tcx, mInfoPaint, 5);
+
+					// ビットマップリソースを読み込み
+					Log.d("RecordListArea", "requestLayout MENU icon index=" + index + ", icon=" + icon + ", size=" + mBitmapSize + ", color=" + mBakColor);
+
+					mBitmap[index] = ImageAccess.createIcon(res, icon, mBitmapSize, mBitmapColor);
 				}
 				else {
 					mInfoSep[index] = new String[3][];
