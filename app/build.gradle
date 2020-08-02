@@ -3,7 +3,7 @@ def applicationName = "ComittoNxA"
 def versionMajor = 1
 def versionMinor = 65
 def versionPatch = 1
-def revision = "a"
+def revision = "A"
 
 android {
     compileSdkVersion 30
@@ -13,7 +13,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 30
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
-        versionName "${versionMajor}.${versionMinor}.${revision}${versionPatch}"
+        versionName "${versionMajor}.${versionMinor}${revision}${versionPatch}"
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
@@ -65,6 +65,8 @@ repositories {
 }
 
 dependencies {
+    // SMB2
+    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'
     // SDカード書き込み
     implementation 'com.android.support:support-compat:24.2.1'
     implementation 'com.android.support:appcompat-v7:24.2.1'
@@ -73,12 +75,8 @@ dependencies {
     // 圧縮ファイル
     implementation 'org.apache.commons:commons-compress:1.20'
     implementation 'org.tukaani:xz:1.8'
-    // SVGファイル
-    implementation 'com.caverock:androidsvg-aar:1.4'
     // 画像
     implementation 'com.github.bumptech.glide:glide:3.6.1'
-    // SMB2
-    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'
-//    api files('libs/jcifs-1.3.17.jar')
-//    api files('libs/svgandroid.jar')
+    // SVGファイル
+    implementation 'com.caverock:androidsvg-aar:1.4'
 }

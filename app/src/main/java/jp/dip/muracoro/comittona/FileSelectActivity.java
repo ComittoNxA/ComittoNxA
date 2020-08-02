@@ -429,7 +429,14 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 
 
-//		//==== パーミッション承認状態判定(マイク使用) ====//
+		//==== パーミッション承認状態判定(書き込み) ====//
+		if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+		{
+			//==== 承認要求を行う ====//
+			ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+		}
+
+		//		//==== パーミッション承認状態判定(マイク使用) ====//
 //		if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
 //		{
 //			//==== 承認要求を行う ====//
@@ -449,7 +456,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			// お知らせ表示
 			mInformation.showNotice();
 		}
-
 	}
 
 	@Override
@@ -514,33 +520,41 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 	public static final int READ_REQUEST_CODE = 42;
 	public static final int WRITE_REQUEST_CODE = 43;
-//	public static final int REQUEST_SDCARD_ACCESS = 2;
+	public static final int REQUEST_SDCARD_ACCESS = 2;
 
 	//	@TargetApi(24)
-	public void startStorageAccessIntent(File file, int requestCode){
+	public boolean startStorageAccessIntent(File file, int requestCode){
 		Intent intent = null;
-		final int takeFlags =(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+//		final int takeFlags =(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
 		mStorageManager = (StorageManager)mActivity.getSystemService(Context.STORAGE_SERVICE);
 		StorageVolume volume = null;
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
 			volume = mStorageManager.getStorageVolume(file);
+			// ルートの場合はnullになる
 		}
 
 //		intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 //		startActivityForResult(intent, WRITE_REQUEST_CODE);
 
-		//SDカード以下のアクセス権限を付与してもらう
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-			intent = volume.createOpenDocumentTreeIntent();
-			startActivityForResult(intent, WRITE_REQUEST_CODE);
-		}
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-			startActivityForResult(intent, WRITE_REQUEST_CODE);
+		if (volume != null) {
+			//SDカード以下のアクセス権限を付与してもらう
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+				intent = volume.createOpenDocumentTreeIntent();
+				startActivityForResult(intent, requestCode);
+			}
+			else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+				startActivityForResult(intent, REQUEST_SDCARD_ACCESS);
 //			startActivityForResult(intent, REQUEST_SDCARD_ACCESS);
+				return true;
+			}
+		} else {
+			Toast.makeText(this, "This file cannot be modified.", Toast.LENGTH_SHORT).show();
+			return false;
 		}
-
+		return true;
 	}
 
 
@@ -568,17 +582,18 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				}
 
 				// Permissionを取ったURIをアプリの設定に保存する
-				Set<String> treeUriSet = null;
-				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-					treeUriSet = mSharedPreferences.getStringSet("permit-uriSet", new HashSet<String>());
-					treeUriSet.add(treeUri.toString());
-					SharedPreferences.Editor ed = mSharedPreferences.edit();
-					ed.putStringSet("permit-uriSet", treeUriSet);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					// Android 10.0 なら
+					File file = new File(mPath + mFileData.getName());
+					// ボリュームのマウントされたフォルダを取得する
+					String baseFolder = FileAccess.getExtSdCardFolder(file);
+					// ボリュームのtreeUriを取得する
+					Editor ed = mSharedPreferences.edit();
+					ed.putString("permit-uri:" + baseFolder, treeUri.toString());
 					ed.commit();
 				}
 
 				onCreateDialog(mCommand);
-
 			}
 		}
 		else if (requestCode == DEF.REQUEST_SERVER) {
@@ -1136,7 +1151,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
 					// ストレージ個別の承認が未取得
 					mCommand = DEF.MESSAGE_FILE_DELETE;
-					startStorageAccessIntent(file, mActivity.WRITE_REQUEST_CODE);
+					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
+						break;
+					}
 				}
 
 				dialogBuilder.setTitle("ファイル削除");
@@ -1150,7 +1167,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						if (mFileData.getType() != FileData.FILETYPE_DIR) {
 							// ファイル単体の場合はそのまま消す
 							try {
-								boolean isExist = FileAccess.delete(mURI, mPath, mFileData.getName(), user, pass);
+								boolean isExist = FileAccess.delete(mURI + mPath + mFileData.getName(), user, pass);
 								if (!isExist) {
 									// 削除されていたら消す
 									mListScreenView.removeFileList(mFileData);
@@ -1169,7 +1186,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 								String user = mServer.getUser();
 								String pass = mServer.getPass();
 								try {
-									boolean isExist = FileAccess.exist(mURI, mPath, mFileData.getName(), user, pass);
+									boolean isExist = FileAccess.exists(mURI + mPath + mFileData.getName(), user, pass);
 									if (!isExist) {
 										// 削除されていたら消す
 										mListScreenView.removeFileList(mFileData);
@@ -1337,7 +1354,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
 					// ストレージ個別の承認が未取得
 					mCommand = DEF.MESSAGE_FILE_RENAME;
-					startStorageAccessIntent(file, mActivity.WRITE_REQUEST_CODE);
+					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
+						break;
+					}
 				}
 
 				// レイアウトの呼び出し

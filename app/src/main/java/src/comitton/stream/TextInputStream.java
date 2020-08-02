@@ -1,5 +1,6 @@
 package src.comitton.stream;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -8,6 +9,7 @@ import src.comitton.common.FileAccess;
 
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbRandomAccessFile;
+import src.comitton.exception.FileAccessException;
 
 public class TextInputStream extends InputStream {
 	public static final int HOSTTYPE_ERROR = 0;
@@ -33,11 +35,16 @@ public class TextInputStream extends InputStream {
 		else if (path.length() >= 6 && path.substring(0, 6).equals("smb://")) {
 			// サーバパス
 			mHostType = HOSTTYPE_SAMBA;
-			SmbFile sf = FileAccess.authSmbFile(path, user, pass);
-			if (!sf.exists()) {
+			boolean exists = false;
+			try {
+				exists = FileAccess.exists(path, user, pass);
+			} catch (FileAccessException e) {
+				e.printStackTrace();
+			}
+			if (!exists) {
 				throw new IOException("File not found.");
 			}
-			mSambaRnd = new SmbRandomAccessFile(sf, "r");
+			mSambaRnd = FileAccess.smbRandomAccessFile(path, user, pass);
 		}
 		else {
 			mHostType = HOSTTYPE_ERROR;

@@ -13,6 +13,7 @@ import src.comitton.common.FileAccess;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbRandomAccessFile;
+import src.comitton.exception.FileAccessException;
 
 public class WorkStream extends InputStream {
 	public static final int OFFSET_LCL_FNAME_LEN = 26;
@@ -28,11 +29,16 @@ public class WorkStream extends InputStream {
 		mURI = uri;
 		if (uri != null && uri.length() > 0) {
 			SmbFile file;
-			file = FileAccess.authSmbFile(uri + path, user, pass);
-			if (!file.exists()) {
+			boolean exists = false;
+			try {
+				exists = FileAccess.exists(uri + path, user, pass);
+			} catch (FileAccessException e) {
+				e.printStackTrace();
+			}
+			if (!exists) {
 				throw new IOException("File not found.");
 			}
-			mSambaFile = new SmbRandomAccessFile(file, "r");
+			mSambaFile = FileAccess.smbRandomAccessFile(uri + path, user, pass);
 		}
 		else {
 			mLocalFile = new RandomAccessFile(path, "r");

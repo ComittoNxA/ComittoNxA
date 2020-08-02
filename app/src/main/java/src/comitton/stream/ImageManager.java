@@ -8,8 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +18,7 @@ import java.util.zip.ZipInputStream;
 
 import src.comitton.common.DEF;
 import src.comitton.common.FileAccess;
+import src.comitton.exception.FileAccessException;
 import src.comitton.pdf.PDFManager;
 import src.comitton.pdf.PdfInputStream;
 import src.comitton.pdf.data.PdfCrypt;
@@ -30,7 +29,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -2257,11 +2255,16 @@ public class ImageManager extends InputStream implements Runnable {
 	public void fileAccessInit(String path) throws IOException {
 		// 参照先
 		if (mHostType == HOSTTYPE_SAMBA) {
-			SmbFile sf = FileAccess.authSmbFile(path, mUser, mPass);
-			if (!sf.exists()) {
+			boolean exists = false;
+			try {
+				exists = FileAccess.exists(path, mUser, mPass);
+			} catch (FileAccessException e) {
+				e.printStackTrace();
+			}
+			if (!exists) {
 				throw new IOException("File not found.");
 			}
-			mSambaRnd = new SmbRandomAccessFile(sf, "r");
+			mSambaRnd = FileAccess.smbRandomAccessFile(path, mUser, mPass);
 		}
 		else if (mHostType == HOSTTYPE_LOCAL) {
 			mLocalRnd = new RandomAccessFile(path, "r");
@@ -2438,12 +2441,12 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	/*************************** DirAccess ***************************/
-	private SmbFile mSambaDir;
+	private String mSambaDir;
 	private File mLocalDir;
 //	private WDFile mWebDAVDir;
 	private BufferedInputStream mDirStream;
 
-	private SmbFile mSambaFiles[];
+	private String[][] mSambaFiles;
 	private File mLocalFiles[];
 
 	private int mDirIndex;
@@ -2452,7 +2455,9 @@ public class ImageManager extends InputStream implements Runnable {
 	public void dirAccessInit(String path, String user, String pass) throws IOException {
 		// 参照先
 		if (mHostType == HOSTTYPE_SAMBA) {
-			mSambaDir = FileAccess.authSmbFile(path, user, pass);
+			mSambaDir = path;
+			mUser = user;
+			mPass = pass;
 		}
 		else if (mHostType == HOSTTYPE_LOCAL) {
 			mLocalDir = new File(path);
@@ -2471,7 +2476,7 @@ public class ImageManager extends InputStream implements Runnable {
 		mDirOrgPos = 0;
 		try {
 			if (mHostType == HOSTTYPE_SAMBA) {
-				mSambaFiles = mSambaDir.listFiles();
+				mSambaFiles = FileAccess.getInnerFile(mSambaDir, mUser, mPass);
 			}
 			else if (mHostType == HOSTTYPE_LOCAL) {
 				mLocalFiles = mLocalDir.listFiles();
@@ -2500,7 +2505,7 @@ public class ImageManager extends InputStream implements Runnable {
 					break;
 				}
 
-				name = mSambaFiles[mDirIndex].getName();
+				name = mSambaFiles[mDirIndex][FileAccess.KEY_NAME];
 				int len = name.length();
 				if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
 					flag = true;
@@ -2508,7 +2513,7 @@ public class ImageManager extends InputStream implements Runnable {
 				else {
 					flag = false;
 				}
-				size = mSambaFiles[mDirIndex].length();
+				size = Long.parseLong(mSambaFiles[mDirIndex][FileAccess.KEY_LENGTH]);
 			}
 			else if (mHostType == HOSTTYPE_LOCAL) {
 				// 範囲チェック
@@ -2579,16 +2584,18 @@ public class ImageManager extends InputStream implements Runnable {
 		if (mHostType == HOSTTYPE_SAMBA) {
 			try {
 				//SmbFileInputStreamは妙に遅いっぽいので、通常のファイルでもSmbRandomAccessFileを使う
-				SmbFile sf = FileAccess.authSmbFile(imagefile, mUser, mPass);
-				if (!sf.exists()) {
+				boolean exists = FileAccess.exists(imagefile, mUser, mPass);
+				if (!exists) {
 					throw new IOException("File not found.");
 				}
-				mSambaRnd = new SmbRandomAccessFile(sf, "r");
+				mSambaRnd = FileAccess.smbRandomAccessFile(imagefile, mUser, mPass);
 
 //				mDirStream = new BufferedInputStream(FileAccess.authSmbFileInputStream(imagefile, mUser, mPass), BIS_BUFFSIZE);
 			}
 			catch (IOException e) {
 				throw new IOException(e.getMessage());
+			} catch (FileAccessException e) {
+				e.printStackTrace();
 			}
 		}
 		else if (mHostType == HOSTTYPE_LOCAL) {

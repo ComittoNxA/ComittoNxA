@@ -354,24 +354,27 @@ public class FileThumbnailLoader extends ThumbnailLoader implements Runnable {
 			return false;
 		}
 
-		ArrayList<String> infilename = new ArrayList<String>();
+		String infilename[][] = null;
 
 		if (bm == null) {
 			// ディレクトリの場合は中のファイルを参照
 			if (filename.endsWith("/")) {
 				Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中を検索します。");
-				infilename = FileAccess.getInnerFile(mUri, mPath + filename, mUser, mPass);
+				infilename = FileAccess.getInnerFile(mUri + mPath + filename, mUser, mPass);
 
 				if (infilename == null) {
+					Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中は空でした。");
 					return false;
 				}
-				for (int i = 0; i < infilename.size(); i++) {
-					if (infilename.get(i).endsWith("/")) {
-						if (loadBitmap2(filename + infilename.get(i), index, thum_cx, thum_cy, firstloop, priority, pathcode)) {
+				for (int i = 0; i < infilename.length; i++) {
+					if (infilename[i][FileAccess.KEY_NAME].endsWith("/")) {
+						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にディレクトリがあります。 infilename=" + infilename[i][FileAccess.KEY_NAME]);
+						if (loadBitmap2(filename + infilename[i][FileAccess.KEY_NAME], index, thum_cx, thum_cy, firstloop, priority, pathcode)) {
 								return true;
 						}
-					} else if (infilename.get(0) != null) {
-						if (loadBitmap3(filename + infilename.get(i), index, thum_cx, thum_cy, priority, pathcode)) {
+					} else if (infilename[i][FileAccess.KEY_NAME] != null) {
+						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にファイルがあります。 infilename=" + infilename[i][FileAccess.KEY_NAME]);
+						if (loadBitmap3(filename + infilename[i][FileAccess.KEY_NAME], index, thum_cx, thum_cy, priority, pathcode)) {
 							return true;
 						}
 					} else {
@@ -412,9 +415,9 @@ public class FileThumbnailLoader extends ThumbnailLoader implements Runnable {
 				Log.d("FileThumbnailLoader", "index=" + index + " loadBitmap3 Filename=" + filename + ", type=pdf");
 				type = FILETYPE_PDF;
 			}
-			else {
-				return false;
-			}
+//			else {
+//				return false;
+//			}
 			try {
 				if (type != FILETYPE_IMG) {
 					Log.d("FileThumbnailLoader", "index=" + index + " loadBitmap3 圧縮ファイルを開きます。");
