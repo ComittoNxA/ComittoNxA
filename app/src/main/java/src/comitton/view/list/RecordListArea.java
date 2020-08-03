@@ -383,8 +383,6 @@ public class RecordListArea extends ListArea {
 					mInfoSep[index][0] = TextFormatter.getMultiLine("", tcx, mInfoPaint, 5);
 
 					// ビットマップリソースを読み込み
-					Log.d("RecordListArea", "requestLayout MENU icon index=" + index + ", icon=" + icon + ", size=" + mBitmapSize + ", color=" + mBakColor);
-
 					mBitmap[index] = ImageAccess.createIcon(res, icon, mBitmapSize, mBitmapColor);
 				}
 				else {

@@ -222,7 +222,6 @@ public class ImageManager extends InputStream implements Runnable {
 	private String mRarCharset;
 
 	public ImageManager(String path, String cmpfile, String user, String pass, int sort, Handler handler, String charset, boolean hidden, int openmode, int maxthread) {
-		Log.d("ImageManager", "ImageManager");
 		mFileList = null;
 		mFilePath = path + cmpfile;
 		mUser = user;
@@ -249,7 +248,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void LoadImageList(int memsize, int memnext, int memprev) {
-		Log.d("ImageManager", "LoadImageList");
 		try {
 			if (mFilePath.length() >= 1 && mFilePath.substring(0, 1).equals("/")) {
 				// ローカルパス
@@ -324,7 +322,7 @@ public class ImageManager extends InputStream implements Runnable {
 		}
 		catch (IOException ex) {
 			mFileList = new FileListItem[0];
-			Log.d("FileList", ex.getMessage());
+			Log.d("ImageManager", ex.getMessage());
 			Message message = new Message();
 			message.what = DEF.HMSG_ERROR;
 			message.obj = ex.getMessage();
@@ -333,7 +331,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private void cmpFileList() throws IOException {
-		Log.d("ImageManager", "cmpFileList");
 		// ZIPファイル読み込み
 		byte[] buf = new byte[SIZE_BUFFER];
 		int readSize=0;
@@ -502,19 +499,16 @@ public class ImageManager extends InputStream implements Runnable {
 		mFileList = (FileListItem[]) list.toArray(new FileListItem[0]);
 		// RARであればメモリ確保n
 		if (mFileType == FILETYPE_RAR) {
-			Log.d("ImageManager", "メモリ確保します maxcmplen=" + maxcmplen + ", maxorglen=" + maxorglen);
 			int ret = CallJniLibrary.rarAlloc(maxcmplen, maxorglen);
 			if (ret != 0) {
 				throw new IOException("Memory Alloc Error.");
 			}
-			Log.d("ImageManager", "メモリ確保しました");
 		}
 		mMaxCmpLength = maxcmplen;
 		mMaxOrgLength = maxorglen;
 	}
 
 	public boolean sendProgress(int type, int count) {
-		Log.d("ImageManager", "sendProgress");
 		// 10ファイル単位で通知
 		if (count % 10 == 0) {
 			if (mRunningFlag == false) {
@@ -530,7 +524,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private long zipSearchCentral() throws IOException {
-		Log.d("ImageManager", "zipSearchCentral");
 		long fileLength = cmpDirectLength();
 		int pos = -1;
 		int retsize;
@@ -591,7 +584,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private int getExtraSize(byte [] buf){
-		Log.d("ImageManager", "getExtraSize");
 		int sig = getInt(buf, OFFSET_LCL_SIGNA_LEN);
 		if (sig != 0x04034b50) {
 			// LocalFileHeaderじゃない
@@ -601,7 +593,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private int getCompressedSize(byte [] buf){
-		Log.d("ImageManager", "getCompressedSize");
 		int sig = getInt(buf, OFFSET_LCL_SIGNA_LEN);
 		if (sig != 0x04034b50) {
 			// LocalFileHeaderじゃない
@@ -616,7 +607,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public FileListItem zipFileListItem(byte buf[], long cmppos, long orgpos, int readsize, boolean isCmpSum) {
-		Log.d("ImageManager", "zipFileListItem");
 		int sig = getInt(buf, OFFSET_LCL_SIGNA_LEN);
 		int bflag = getShort(buf, OFFSET_LCL_BFLAG_LEN);
 		int ftime = getShort(buf, OFFSET_LCL_FTIME_LEN);
@@ -678,7 +668,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public FileListItem zipFileListOldItem(byte buf[], long orgpos, int readsize) throws IOException {
-		Log.d("ImageManager", "zipFileListOldItem");
 		int sig = getInt(buf, OFFSET_CTL_SIGNA_LEN);
 
 		if (readsize < SIZE_CENTHEADER) {
@@ -710,7 +699,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public FileListItem zipFileListOldItemLite(byte buf[], long orgpos, int readsize) throws IOException {
-		Log.d("ImageManager", "zipFileListOldItemLite");
 		int sig = getInt(buf, OFFSET_CTL_SIGNA_LEN);
 		if (readsize < SIZE_CENTHEADER) {
 			// データ不正
@@ -768,7 +756,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public FileListItem rar5FileListItem(byte buf[], long cmppos, long orgpos, int readsize) throws IOException {
-		Log.d("ImageManager", "rar5FileListItem");
 		// ヘッダを読み込み、ファイルヘッダだけをFileListItemとして返す
 		// シグネチャ(マーカーブロック)やアーカイブヘッダーなどは読み飛ばす
 		// VINTは2byteまでと決め打ちして簡略化 > vint取得関数を実装
@@ -941,7 +928,6 @@ public class ImageManager extends InputStream implements Runnable {
 	};
 
 	private VintData readVint( byte buf[], int pos ) {
-		Log.d("ImageManager", "readVint");
 		int dat;
 		VintData data = new VintData();
 
@@ -959,7 +945,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private boolean checkUFT8(byte buf[], long start, long len){
-		Log.d("ImageManager", "checkUFT8");
 		// ZIP及びRAR4.xのファイル名がShift-JISではなくUTF-8で保存されている場合の判定関数
 		// ある程度の推測で判断しています
 		// 日本語以外では問題があるのかもしれません
@@ -1004,7 +989,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public FileListItem rarFileListItem(byte buf[], long cmppos, long orgpos, int readsize) throws IOException {
-		Log.d("ImageManager", "rarFileListItem");
 		int hcrc = getShort(buf, OFFSET_RAR_HCRC);
 		int htype = buf[OFFSET_RAR_HTYPE];
 		int hflags = getShort(buf, OFFSET_RAR_HFLAGS);
@@ -1117,7 +1101,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private void DirFileList() throws IOException {
-		Log.d("ImageManager", "DirFileList");
 		int maxorglen = 0;
 
 		// ファイルリストを作成
@@ -1158,12 +1141,9 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// ソート実行
 	public void sort(List<FileListItem> list) {
-		Log.d("ImageManager", "sort mFileSort=" + mFileSort);
 		if (mFileSort != FILESORT_NONE) {
 			Collections.sort(list, new ZipComparator());
 		}
-		Log.d("ImageManager", "sort 最初の要素=" + list.get(0).name);
-		
 	}
 
 	// ソート用比較関数
@@ -1245,7 +1225,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// ページ選択時に表示する文字列を作成
 	public String createPageStr(int page) {
-		Log.d("ImageManager", "createPageStr");
 		// パラメタチェック
 		if (mFileList == null || (page < 0 || mFileList.length <= page)) {
 			return "";
@@ -1265,7 +1244,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void startCacheRead() throws FileNotFoundException {
-		Log.d("ImageManager", "startCacheRead");
 		if (mOpenMode != OPENMODE_VIEW) {
 			// リスト取得モードの時は読み込み不要
 			return;
@@ -1279,7 +1257,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// 画像の並びを逆にする
 	public void reverseOrder() {
-		Log.d("ImageManager", "reverseOrder");
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
@@ -1307,7 +1284,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// キャッシュをクリアする
 	public void clearMemCache() {
-		Log.d("ImageManager", "clearMemCache");
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
@@ -1324,7 +1300,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void run() {
-		Log.d("ImageManager", "run");
 		// 読込用バッファ
 		final int CACHE_FPAGE = 4;
 		final int CACHE_BPAGE = 2;
@@ -1820,7 +1795,6 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	private void sendMessage(Handler handler, int what, int arg1, int arg2, Object obj) {
-		Log.d("ImageManager", "sendMessage arg=" + arg1 + ", " + arg2);
 //		Log.d("mark", "arg=" + arg1 + ", " + arg2);
 		Message message = new Message();
 		message.what = what;
@@ -1832,7 +1806,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// 見開きモードか？
 	private boolean isDualView() {
-		Log.d("ImageManager", "isDualView");
 		if (mScrDispMode == DISPMODE_DUAL) {
 			return true;
 		}
@@ -1846,7 +1819,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 	// 単ページモードか？
 	private boolean isHalfView() {
-		Log.d("ImageManager", "isHalfView");
 		if (mScrDispMode == DISPMODE_HALF) {
 			return true;
 		}
@@ -3513,7 +3485,6 @@ public class ImageManager extends InputStream implements Runnable {
 	 * イメージを並べて作成
 	 */
 	public boolean ImageScaling(int page1, int page2, int half1, int half2, ImageData img1, ImageData img2) {
-		Log.d("ImageManager", "ImageScaling");
 		// boolean fDual = false;
 //		if (mScrDual && page < mFileList.length - 1) {
 //			// 並べるモード && 最終ページではない
@@ -3938,7 +3909,6 @@ public class ImageManager extends InputStream implements Runnable {
 				mFileList[page2].sheight[half2] = height[1];
 				if (memWriteLock(page2, half2, true)) {
 					// スケール作成
-					Log.d("ImageManager", "スケール作成します");
 					sendMessage(mHandler, MSG_CACHE, 0, 2, null);
 //					long sttime = SystemClock.uptimeMillis();
 					int param = CallImgLibrary.ImageScaleParam(mSharpen, mInvert, mGray, mColoring, mMoire, pseland);
@@ -3958,7 +3928,6 @@ public class ImageManager extends InputStream implements Runnable {
 					}
 //					Log.i("jpeg-scaling", "time : " + (int)(SystemClock.uptimeMillis() - sttime));
 					sendMessage(mHandler, MSG_CACHE, -1, 0, null);
-					Log.d("ImageManager", "スケール作成しました");
 				}
 			}
 		}
