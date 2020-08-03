@@ -126,16 +126,18 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 	}
 
 	public boolean downloadFile(String path, String item) throws Exception {
-		boolean isDirectory = FileAccess.isDirectory(mFullPath + path + item, mUser, mPass);
-		if (isDirectory) {
+		SmbFile file = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
+		if (file.isDirectory()) {
 			// ローカルにディレクトリ作成
 			File lfile = new File(mLocal + path + item);
 			lfile.mkdir();
 
 			// 再帰呼び出し
 			String nextpath = path + item;
-			String[][] sfiles = FileAccess.getInnerFile(mFullPath + nextpath, mUser, mPass);
+			SmbFile sfile = FileAccess.authSmbFile(mFullPath + nextpath, mUser, mPass);
+			SmbFile[] sfiles = null;
 
+			sfiles = sfile.listFiles();
 			int filenum = sfiles.length;
 			if (sfiles == null || filenum <= 0) {
 				// ファイルなし
@@ -143,7 +145,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 			}
 			// ディレクトリ内のファイル
 			for (int i = 0; i < filenum; i++) {
-				String name = sfiles[i][FileAccess.KEY_NAME];
+				String name = sfiles[i].getName();
 				downloadFile(nextpath, name);
 				if (mBreak) {
 					// 中断
@@ -166,11 +168,11 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 			// ダウンロード実行
 			try {
 				FileOutputStream localFile = new FileOutputStream(mLocal + path + item + "_dl");
-				boolean exists = FileAccess.exists(mFullPath + path + item, mUser, mPass);
-				if (!exists) {
+				SmbFile sambaFile = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
+				if (!sambaFile.exists()) {
 					throw new Exception("File not found.");
 				}
-				SmbRandomAccessFile sambaFileRnd = FileAccess.smbRandomAccessFile(mFullPath + path + item, mUser, mPass);
+				SmbRandomAccessFile sambaFileRnd = new SmbRandomAccessFile(sambaFile, "r");
 
 				// ファイルサイズ取得
 				long fileSize = sambaFileRnd.length();
@@ -208,6 +210,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 				localFile.close();
 				sambaFileRnd.close();
 				localFile = null;
+				sambaFile = null;
 
 				// リネーム
 				File renameFrom = new File(mLocal + path + item + "_dl");

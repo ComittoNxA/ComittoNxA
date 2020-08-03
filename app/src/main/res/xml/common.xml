@@ -10,7 +10,7 @@
             android:summary="dummy"
             android:title="Charset" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="0"
             android:key="HiddenFile"
             android:summary="Do not show files that start with dot."
             android:title="Not show hidden files in Mac OS X" />

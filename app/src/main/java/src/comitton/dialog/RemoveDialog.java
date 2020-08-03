@@ -170,12 +170,14 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 	}
 
 	public boolean smbRemoveFile(String path, String item) throws Exception {
-		boolean isDirectory = FileAccess.isDirectory(mFullPath + path + item, mUser, mPass);
-		if (isDirectory) {
+		SmbFile file = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
+		if (file.isDirectory()) {
 			// 再帰呼び出し
 			String nextpath = path + item;
-			String[][] sfiles = FileAccess.getInnerFile(mFullPath + nextpath, mUser, mPass);
+			SmbFile sfile = FileAccess.authSmbFile(mFullPath + nextpath, mUser, mPass);
+			SmbFile[] sfiles = null;
 
+			sfiles = sfile.listFiles();
 			int filenum = sfiles.length;
 			if (sfiles == null || filenum <= 0) {
 				// ファイルなし
@@ -183,7 +185,7 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 			}
 			// ディレクトリ内のファイル
 			for (int i = 0; i < filenum; i++) {
-				String name = sfiles[i][FileAccess.KEY_NAME];
+				String name = sfiles[i].getName();
 				if (name.equals("..")) {
 					continue;
 				}
@@ -193,14 +195,17 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 					break;
 				}
 			}
-			FileAccess.delete(mFullPath + nextpath, mUser, mPass);
+			file.delete();
 		}
 		else {
 			// 削除ファイル表示
 			sendMessage(MSG_MESSAGE, path + item, 0, 0);
 
 			// ファイル削除
-			FileAccess.delete(mFullPath + path + item, mUser, mPass);
+			SmbFile sambaFile = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
+			if (sambaFile.exists()) {
+				sambaFile.delete();
+			}
 		}
 		return true;
 	}

@@ -18,7 +18,7 @@
             android:summary="dummy"
             android:title="Sort Type" />
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="2"
             android:dialogTitle="Back Key Mode"
             android:entries="@array/backmode_name_list"
             android:entryValues="@array/backmode_value_list"
@@ -26,7 +26,7 @@
             android:summary="dummy"
             android:title="Back Key Mode" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="ResumeOpen"
             android:summary="Open the file that was last opened automatically when the application starts."
             android:title="Open the last file on startup" />
@@ -46,7 +46,7 @@
             android:summary="Show extension in the file name."
             android:title="Show Extension" />
         <ListPreference
-            android:defaultValue="2"
+            android:defaultValue="1"
             android:dialogTitle="Show Delete File"
             android:entries="@array/filemenu_name_list"
             android:entryValues="@array/filemenu_value_list"
@@ -54,7 +54,7 @@
             android:summary="dummy"
             android:title="Show Delete Menu" />
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="1"
             android:dialogTitle="Show Rename Menu"
             android:entries="@array/filemenu_name_list"
             android:entryValues="@array/filemenu_value_list"

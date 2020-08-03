@@ -141,7 +141,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 		
 		File lfiles[] = null;
 		SmbFile sfile = null;
-		String[][] sfiles = null;
+		SmbFile[] sfiles = null;
 //		WDFileData[] wdfiles = null;
 
 		ArrayList<FileData> fileList = null;
@@ -157,7 +157,9 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			}
 			else if (mListMode == LISTMODE_SERVER) {
 				// サーバの場合のファイル一覧取得
-				sfiles = FileAccess.getInnerFile(mUri + mPath, mUser, mPass);
+				// サーバの場合のファイル一覧取得
+				sfile = FileAccess.authSmbFile(mUri + mPath, mUser, mPass);
+				sfiles = sfile.listFiles();
 				if (sfiles == null) {
 					flag = true;
 				}
@@ -233,7 +235,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					size = lfiles[i].length();
 					date = lfiles[i].lastModified();
 				} else if (mListMode == LISTMODE_SERVER) {
-					name = sfiles[i][FileAccess.KEY_NAME];
+					name = sfiles[i].getName();
 					Log.d("FileSelectList", "run name=" + name);
 					int len = name.length();
 					if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
@@ -241,8 +243,8 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					} else {
 						flag = false;
 					}
-					size = Long.parseLong(sfiles[i][FileAccess.KEY_LENGTH]);
-					date = Long.parseLong(sfiles[i][FileAccess.KEY_LAST_MODIFIED]);
+					size = sfiles[i].length();
+					date = sfiles[i].lastModified();
 				}
 				else {
 					// WebDAV

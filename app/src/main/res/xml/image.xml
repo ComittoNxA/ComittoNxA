@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     <PreferenceCategory android:title="Initial Settings" >
         <ListPreference
-            android:defaultValue="2"
+            android:defaultValue="5"
             android:dialogTitle="Initial Scale Mode"
             android:entries="@array/scale_name_list"
             android:entryValues="@array/scale_value_list"
@@ -18,7 +18,7 @@
             android:summary="dummy"
             android:title="Initial View Mode" />
         <ListPreference
-            android:defaultValue="2"
+            android:defaultValue="4"
             android:dialogTitle="Image Interpolation"
             android:entries="@array/algomode_name_list"
             android:entryValues="@array/algomode_value_list"
@@ -34,7 +34,7 @@
             android:summary="dummy"
             android:title="Strength to remove the white margin." />
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="1"
             android:dialogTitle="Jpeg Decode Quality"
             android:entries="@array/quality_name_list"
             android:entryValues="@array/quality_value_list"
@@ -100,7 +100,7 @@
             android:summary="dummy"
             android:title="Magnification of the Loupe" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="CMargin"
             android:summary="Insert Margin in the middle of Dual View"
             android:title="Center Margin" />
@@ -139,12 +139,12 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Operation Settings" >
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="ConfirmBack"
             android:summary="Display a confirmation message when you exit via the back button."
             android:title="Confirmation on exit(*)" />
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="2"
             android:dialogTitle="Operation in last/top page"
             android:entries="@array/lastpage_name_list"
             android:entryValues="@array/lastpage_value_list"
@@ -200,7 +200,7 @@
             android:summary="dummy"
             android:title="Operation by Vol Key(*)" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="TapScrl"
             android:summary="Also perform scroll by tapping."
             android:title="Scrolling with the tap(*)" />
@@ -210,7 +210,7 @@
             android:summary="move to next / prev page by flicking."
             android:title="Move page with the flick(*)" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="FlickEdge"
             android:summary="To page turning only when you flick from the edge of the page."
             android:title="Flick from the edge(*)" />

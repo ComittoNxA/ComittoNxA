@@ -430,10 +430,10 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 
 		//==== パーミッション承認状態判定(書き込み) ====//
-		if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+		if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
 		{
 			//==== 承認要求を行う ====//
-			ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+			ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
 		}
 
 		//		//==== パーミッション承認状態判定(マイク使用) ====//

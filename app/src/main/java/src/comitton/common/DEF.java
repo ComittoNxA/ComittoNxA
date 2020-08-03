@@ -392,11 +392,11 @@ public class DEF {
 	public static final int DEFAULT_NOISESCRL = 1; // 20ドット
 	public static final int DEFAULT_NOISEUNDER = 8; // 800
 	public static final int DEFAULT_NOISEOVER = 15; // 1500
-	public static final int DEFAULT_VOLSCRL = 28; // 32ドット
+	public static final int DEFAULT_VOLSCRL = 6; // 32ドット
 	public static final int DEFAULT_SCRLRNGW = 6; // 35% ((6+1)*5)
 	public static final int DEFAULT_SCRLRNGH = 6; // 35% ((6+1)*5)
 	public static final int DEFAULT_ITEMMARGIN = 10; // スクロール感度:10sp
-	public static final int DEFAULT_EFFECTTIME = 5; // スクロール時間:250msec
+	public static final int DEFAULT_EFFECTTIME = 3; // スクロール時間:250msec
 	public static final int DEFAULT_MOMENTMODE = 8; // スクロール減速:フレーム1/8ずつ減速
 	public static final int DEFAULT_AUTOPLAY = 2; // 1.5sec(0.5 * (5 + 1))
 	public static final boolean DEF_SAVEPAGE = true; // ページ移動時にしおりを保存
@@ -1405,7 +1405,8 @@ public class DEF {
 		int i;
 		for (i = idx; i < str.length(); i++) {
 			int ch = str.charAt(i);
-			if ((ch < '0' || '9' < ch) && '-' != ch && '.' != ch && ',' != ch) {
+//			if ((ch < '0' || '9' < ch) && '-' != ch && '.' != ch && ',' != ch) {
+			if ((ch < '0' || '9' < ch) && '.' != ch && ',' != ch) {
 				break;
 			}
 		}
@@ -1414,8 +1415,8 @@ public class DEF {
 
 	static private int getNumber(char ch) {
 		switch (ch) {
-			case '-':
-				return -1;
+//			case '-':
+//				return -1;
 			case '0':
 				return 0;
 			case '1':
@@ -1566,7 +1567,8 @@ public class DEF {
 	}
 
 	static private int getCharType(char ch) {
-		if (('0' <= ch && ch <= '9') || '-' == ch || '.' == ch || ',' == ch) {
+//		if (('0' <= ch && ch <= '9') || '-' == ch || '.' == ch || ',' == ch) {
+		if (('0' <= ch && ch <= '9') || '.' == ch || ',' == ch) {
 			return CHTYPE_NUM;
 		}
 

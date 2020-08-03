@@ -299,7 +299,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getIniScale(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_INISCALE, "2");
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_INISCALE, "5");
 		if( val < 0 || val >= ScaleName.length ){
 			val = 0;
 		}

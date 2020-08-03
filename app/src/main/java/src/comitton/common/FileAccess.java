@@ -44,6 +44,7 @@ import jcifs.context.SingletonContext;
 import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbRandomAccessFile;
 import jp.dip.muracoro.comittona.FileSelectActivity;
+import src.comitton.data.FileData;
 import src.comitton.exception.FileAccessException;
 
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -93,7 +94,7 @@ public class FileAccess {
 	}
 
 	// ユーザ認証付きSambaアクセス
-	private static SmbFile authSmbFile(String url, String user, String pass) throws MalformedURLException {
+	public static SmbFile authSmbFile(String url, String user, String pass) throws MalformedURLException {
 		SmbFile sfile = null;
 		NtlmPasswordAuthenticator smbAuth;
 		SmbResource resource = null;
@@ -223,8 +224,8 @@ public class FileAccess {
 		return ret;
 	}
 
-	public static String[][] getInnerFile(String url, String user, String pass) {
-		Log.d("FileAccess", "getInnerFile url=" + url + ", user=" + user + ", pass=" + pass);
+	public static ArrayList<String> listFiles(String url, String user, String pass) {
+		Log.d("FileAccess", "listFiles url=" + url + ", user=" + user + ", pass=" + pass);
 		boolean isLocal;
 
 		File lfiles[] = null;
@@ -238,7 +239,7 @@ public class FileAccess {
 			isLocal = false;
 		}
 
-		Log.d("FileAccess", "getInnerFile isLocal=" + isLocal);
+		Log.d("FileAccess", "listFiles isLocal=" + isLocal);
 
 		if (isLocal) {
 			// ローカルの場合のファイル一覧取得
@@ -271,61 +272,49 @@ public class FileAccess {
 			length = sfiles.length;
 		}
 
-		Log.d("FileAccess", "getInnerFile length=" + length);
+		Log.d("FileAccess", "listFiles length=" + length);
 
-		ArrayList<String[]> file_list = new ArrayList<String[]>();
-		ArrayList<String[]> dir_list = new ArrayList<String[]>();
-
-		String name;
-		String flag;
+		ArrayList<String> file_list = new ArrayList<String>();
+		ArrayList<String> dir_list = new ArrayList<String>();
+		String name = new String();
+		boolean flag;
 		for (int i = 0; i < length; i++) {
-			String file[] = new String[4];
 			if (isLocal) {
-				file[KEY_NAME] = lfiles[i].getName();
-				file[KEY_IS_DIRECTORY] = String.valueOf(lfiles[i].isDirectory());
-				file[KEY_LENGTH] = String.valueOf(lfiles[i].length());
-				file[KEY_LAST_MODIFIED] = String.valueOf(lfiles[i].lastModified());
+				name = lfiles[i].getName();
+				flag = lfiles[i].isDirectory();
 			}
 			else {
-				try {
-					file[KEY_NAME] = sfiles[i].getName();
-					file[KEY_IS_DIRECTORY] = String.valueOf(sfiles[i].isDirectory());
-					file[KEY_LENGTH] = String.valueOf(sfiles[i].length());
-					file[KEY_LAST_MODIFIED] = String.valueOf(sfiles[i].lastModified());
-				} catch (SmbException e) {
-					e.printStackTrace();
+				name = sfiles[i].getName();
+				int len = name.length();
+				if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
+					flag = true;
+				} else {
+					flag = false;
 				}
 			}
 
-			if (file[KEY_IS_DIRECTORY] != "true") {
+			if (!flag) {
 				// 通常のファイル
-				String ext = DEF.getExtension(file[KEY_NAME]);
+				String ext = DEF.getExtension(name);
 				if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif")/* || ext.equals(".bmp")*/
 						|| ext.equals(".zip") || ext.equals(".rar") || ext.equals(".cbz") || ext.equals(".cbr") || ext.equals(".pdf") || ext.equals(".epub")) {
-					 file_list.add(file);
+					 file_list.add(name);
 				}
 			}else{
-				if (isLocal) {
-					file[KEY_NAME] = file[KEY_NAME] + "/";
-				}
-				dir_list.add(file);
+				dir_list.add(name + "/");
 			}
 		}
 
-//		if (file_list.size() > 0) {
-//			Collections.sort(file_list);
-//		}
-//		if (dir_list.size() > 0) {
-//				Collections.sort(file_list);
-//		}
-		file_list.addAll(dir_list);
-		Log.d("FileAccess", "getInnerFile fie_list.length=" + file_list.size());
-		String[][] filelist = new String[file_list.size()][4];
-		for (int i = 0; i < file_list.size(); i++) {
-			filelist[i] = file_list.get(i);
+		Log.d("FileAccess", "listFiles file_list.length=" + file_list.size() + ", dir_list.length=" + dir_list.size());
+		if (file_list.size() > 0) {
+			Collections.sort(file_list);
 		}
-		Log.d("FileAccess", "getInnerFile fielist.length=" + filelist.length);
-		return filelist;
+		if (dir_list.size() > 0) {
+			Collections.sort(dir_list);
+		}
+		file_list.addAll(dir_list);
+		Log.d("FileAccess", "listFiles file_list.length=" + file_list.size());
+		return file_list;
 	}
 	
 	public static boolean renameTo(String uri, String path, String fromfile, String tofile, String user, String pass) throws FileAccessException {
