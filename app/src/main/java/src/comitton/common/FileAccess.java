@@ -109,7 +109,9 @@ public class FileAccess {
 		Properties prop = new Properties();
 		prop.setProperty("jcifs.smb.client.minVersion", "SMB202");
 		prop.setProperty("jcifs.smb.client.maxVersion", "SMB311");
-		prop.put( "jcifs.traceResources", "true" );
+		prop.put( "jcifs.traceResources", true);
+		prop.put( "jcifs.smb.allowNTLMFallback", true);
+		prop.put( "jcifs.smb.lmCompatibility", 1);
 		Configuration config = null;
 
 		host = url.substring(6);
@@ -160,34 +162,11 @@ public class FileAccess {
 			config = new PropertyConfiguration(prop);
 			BaseContext bc = new BaseContext(config);
 			context = SingletonContext.getInstance().withCredentials(smbAuth);
-//			context = bc.withCredentials(smbAuth);
-//			resource = context.get(key);
-//			mResourceMap.put(key, resource);
 		} catch (CIFSException e) {
 			e.printStackTrace();
 		}
 
 		sfile = new SmbFile(url, context);
-//		try {
-//			sfile = new SmbFile(resource, path);
-//		} catch (UnknownHostException e) {
-//			e.printStackTrace();
-//		}
-
-//		try {
-//			sfile.connect();
-//			break;
-//		} catch (IOException e) {
-//			mResourceMap.remove(key);
-//			e.printStackTrace();
-//			try {
-//				Thread.sleep(100);
-//			} catch (InterruptedException ex) {
-//				ex.printStackTrace();
-//			}
-//			continue;
-//		}
-
 		return sfile;
 	}
 
