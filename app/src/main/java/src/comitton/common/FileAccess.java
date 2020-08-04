@@ -340,7 +340,7 @@ public class FileAccess {
 				throw new FileAccessException("File access error.");
 			}
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				boolean isDirectory = fromfile.endsWith("/");
 				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
 				Log.d("FileAccess", "renameTo documentfile=" + documentFile);
@@ -435,7 +435,7 @@ public class FileAccess {
 			// ローカルの場合
 			File orgfile = new File(url);
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				boolean isDirectory = url.endsWith("/");
 				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
 				Log.d("FileAccess", "delete documentfile=" + documentFile);
@@ -486,7 +486,7 @@ public class FileAccess {
 		Log.d("FileAccess", "getDocumentFile baseFolder=" + baseFolder);
 
 		if (baseFolder == null) {
-			return false;
+			return true;
 		}
 
 		String treeUriString = "";
@@ -592,6 +592,7 @@ public class FileAccess {
 		List<String> paths = new ArrayList<>();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 			for (File file : mActivity.getExternalFilesDirs("external")) {
+//				if (file != null && !file.equals(mActivity.getExternalFilesDir("external"))) {
 				if (file != null) {
 					int index = file.getAbsolutePath().lastIndexOf("/Android/data");
 					if (index < 0) {
