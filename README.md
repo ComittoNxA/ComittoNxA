@@ -4,7 +4,7 @@
 ソースの再利用は自由です.  
 利用しているライブラリはそれぞれのライセンスに従ってください.  
 
-本ソースは、[ComittoNおよびComittoNxN](https://drive.google.com/drive/mobile/folders/0Bzx6UxEo3Pg0SXNIQVdRVnVqemM?usp=drive_open)、[ComittoNxM](https://www.axfc.net/u/3792235)、[ComittoNxT](https://www.axfc.net/u/3978158)のソースを元にしています。
+本ソースは、[ComittoNおよびComittoNxN](https://docs.google.com/open?id=0Bzx6UxEo3Pg0SXNIQVdRVnVqemM)、[ComittoNxM](https://www.axfc.net/u/3792235)、[ComittoNxT](https://www.axfc.net/u/3978158)のソースを元にしています。
 
 対応バージョンはAndroid2.3以上です.  
 動作確認は1台でしか行っていません.(Android10.0)  

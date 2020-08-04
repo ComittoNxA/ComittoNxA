@@ -13,7 +13,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 
 public class DEF {
-	public static final String DOWNLOAD_URL = "https://docs.google.com/open?id=0Bzx6UxEo3Pg0SXNIQVdRVnVqemM";
+	public static final String DOWNLOAD_URL = "https://github.com/ComittoNxA/ComittoNxA";
 	public static final int MESSAGE_FILE_DELETE = 1000;
 	public static final int MESSAGE_RECORD_DELETE = 1001;
 	public static final int MESSAGE_LASTPAGE = 1002;
