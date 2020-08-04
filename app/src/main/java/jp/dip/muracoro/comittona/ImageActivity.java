@@ -350,7 +350,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private int mPinchRange;
 	private int mTapPattern;
 	private int mTapRate;
-	private boolean mVerticalSwipe = true;
+	private boolean mVerticalSwipe = false;
 
 
 
@@ -2126,11 +2126,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 						callZoomAreaDraw(x, y);
 					}
 					else {
-						// 縦フリックメニュー表示処理
-						if (this.mTouchFirst && (Math.abs(this.mTouchBeginY - y) > mMoveRange && Math.abs(this.mTouchBeginY - y) > Math.abs(this.mTouchBeginX - x) * 2)) {
-						// タッチ後に範囲を超えたときに、縦の移動が横の移動の2倍を超えている場合は縦フリックモードへ
-							mVerticalSwipe = true;					
-						}
+//						// 縦フリックメニュー表示処理
+//						if (this.mTouchFirst && (Math.abs(this.mTouchBeginY - y) > mMoveRange && Math.abs(this.mTouchBeginY - y) > Math.abs(this.mTouchBeginX - x) * 2)) {
+//						// タッチ後に範囲を超えたときに、縦の移動が横の移動の2倍を超えている場合は縦フリックモードへ
+//							mVerticalSwipe = true;					
+//						}
 						// ページ戻or進、スクロール処理
 						if (this.mTouchFirst && (Math.abs(this.mTouchBeginX - x) > mMoveRange || Math.abs(this.mTouchBeginY - y) > mMoveRange)) {
 							// タッチ後に範囲を超えて移動した場合はスクロールモードへ
@@ -2181,34 +2181,32 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 				break;
 			case MotionEvent.ACTION_UP:
 			{
-				if (mVerticalSwipe) {
-					// 縦フリックの指を離した
-//					Toast.makeText(this, "メニューを表示します", Toast.LENGTH_SHORT).show();
-					mVerticalSwipe = false;
-					if (mPageSelect == PAGE_INPUT) {
-						// ページ番号入力
-						if (PageSelectDialog.mIsOpened == false) {
-							PageSelectDialog pageDlg = new PageSelectDialog(this, mImmEnable);
-							pageDlg.setParams(mCurrentPage, mImageMgr.length(), mPageWay == DEF.PAGEWAY_RIGHT);
-							pageDlg.setPageSelectListear(this);
-							pageDlg.show();
-							mPageDlg = pageDlg;
-						}
-					}
-					else if (mPageSelect == PAGE_THUMB) {
-						// サムネイルページ選択
-						if (PageThumbnail.mIsOpened == false) {
-							PageThumbnail thumbDlg = new PageThumbnail(this);
-							thumbDlg.setParams(mCurrentPage, mPageWay == DEF.PAGEWAY_RIGHT, mImageMgr, mThumID);
-							thumbDlg.setPageSelectListear(this);
-							thumbDlg.show();
-							mThumbDlg = thumbDlg;
-						}
-					}
-					openMiniMenu();
-//					mGuideView.eventTouchDown((int)(cx/3), (int)(mClickArea/2), cx, cy, true);
-//					int result = mGuideView.eventTouchUp((int)x, (int)y);
-				}
+//				if (mVerticalSwipe) {
+//					// 縦フリックの指を離した
+//					//Toast.makeText(this, "メニューを表示します", Toast.LENGTH_SHORT).show();
+//					mVerticalSwipe = false;
+//					if (mPageSelect == PAGE_INPUT) {
+//						// ページ番号入力
+//						if (PageSelectDialog.mIsOpened == false) {
+//							PageSelectDialog pageDlg = new PageSelectDialog(this, mImmEnable);
+//							pageDlg.setParams(mCurrentPage, mImageMgr.length(), mPageWay == DEF.PAGEWAY_RIGHT);
+//							pageDlg.setPageSelectListear(this);
+//							pageDlg.show();
+//							mPageDlg = pageDlg;
+//						}
+//					}
+//					else if (mPageSelect == PAGE_THUMB) {
+//						// サムネイルページ選択
+//						if (PageThumbnail.mIsOpened == false) {
+//							PageThumbnail thumbDlg = new PageThumbnail(this);
+//							thumbDlg.setParams(mCurrentPage, mPageWay == DEF.PAGEWAY_RIGHT, mImageMgr, mThumID);
+//							thumbDlg.setPageSelectListear(this);
+//							thumbDlg.show();
+//							mThumbDlg = thumbDlg;
+//						}
+//					}
+//					openMiniMenu();
+//				}
 				// 選択されたコマンド
 				int result = mGuideView.eventTouchUp((int)x, (int)y);
 
