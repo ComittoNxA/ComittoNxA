@@ -1139,20 +1139,21 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		switch (id) {
 			case DEF.MESSAGE_FILE_DELETE:
 
-				//==== パーミッション承認状態判定(書き込み) ====//
-				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-				{
-					//==== 承認要求を行う ====//
-					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-				}
+				if (mURI.startsWith("/")) {
+					//==== パーミッション承認状態判定(書き込み) ====//
+					if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+						//==== 承認要求を行う ====//
+						ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+					}
 
-				isDirectory = mFileData.getName().endsWith("/");
-				file = new File(mPath + mFileData.getName());
-				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
-					// ストレージ個別の承認が未取得
-					mCommand = DEF.MESSAGE_FILE_DELETE;
-					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
-						break;
+					isDirectory = mFileData.getName().endsWith("/");
+					file = new File(mPath + mFileData.getName());
+					if (FileAccess.getDocumentFile(file, isDirectory) == null) {
+						// ストレージ個別の承認が未取得
+						mCommand = DEF.MESSAGE_FILE_DELETE;
+						if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
+							break;
+						}
 					}
 				}
 
@@ -1166,6 +1167,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						String pass = mServer.getPass();
 						if (mFileData.getType() != FileData.FILETYPE_DIR) {
 							// ファイル単体の場合はそのまま消す
+							Log.d("FileSelectActivity", "delete ファイルを削除します。");
 							try {
 								boolean isExist = FileAccess.delete(mURI + mPath + mFileData.getName(), user, pass);
 								if (!isExist) {
@@ -1179,14 +1181,15 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						}
 						else {
 							// ディレクトリの場合は中身を順番に消す
+							Log.d("FileSelectActivity", "delete ディレクトリを削除します。");
 							RemoveDialog dlg = new RemoveDialog(mActivity, mURI, mPath, user, pass, mFileData.getName(), new RemoveListener() {
 								@Override
 								public void onClose() {
 								// 終了でリスト更新
-								String user = mServer.getUser();
-								String pass = mServer.getPass();
 								try {
-									boolean isExist = FileAccess.exists(mURI + mPath + mFileData.getName(), user, pass);
+									String user = mServer.getUser();
+									String pass = mServer.getPass();
+									boolean isExist = FileAccess.delete(mURI + mPath + mFileData.getName(), user, pass);
 									if (!isExist) {
 										// 削除されていたら消す
 										mListScreenView.removeFileList(mFileData);
@@ -2057,6 +2060,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		else if (mTouchArea == ListScreenView.AREATYPE_DIRLIST) {
 			if (mListScreenView.sendTouchEvent(action, x, y)) {
+				mListScreenView.notifyUpdate(RecordList.TYPE_DIRECTORY);
 				mListScreenView.mDirListArea.sendTouchEvent(action, x, y);
 			}
 			else {
@@ -2066,6 +2070,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		else if (mTouchArea == ListScreenView.AREATYPE_SERVERLIST) {
 			if (mListScreenView.sendTouchEvent(action, x, y)) {
+				mListScreenView.notifyUpdate(RecordList.TYPE_SERVER);
 				mListScreenView.mServerListArea.sendTouchEvent(action, x, y);
 			}
 			else {

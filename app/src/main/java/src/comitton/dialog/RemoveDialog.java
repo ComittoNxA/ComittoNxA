@@ -1,6 +1,7 @@
 package src.comitton.dialog;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.EventListener;
 
 import src.comitton.common.FileAccess;
@@ -15,6 +16,7 @@ import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
@@ -46,6 +48,7 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 	public RemoveDialog(Context context, String uri, String path, String user, String pass, String item, RemoveListener removeListener) {
 		super(context);
 		Window dlgWindow = getWindow();
+		Log.d("RemoveDialog", "RemoveDialog uri=" + uri + ", path=" + path + ", user=" + user + ", pass=" + pass + ", item=" + item);
 
 		// 画面をスリープ有効
 		dlgWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -130,20 +133,18 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 	}
 
 	public boolean localRemoveFile(String path, String item) throws Exception {
-		File file = new File(mFullPath + path + item);
-		if (file.isDirectory()) {
+		String nextpath = path + item;
+		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
+		if (isDirectory) {
 			// 再帰呼び出し
-			String nextpath = path + item;
-			File sfile = new File(mFullPath + nextpath);
-			File[] sfiles = null;
+			ArrayList<String> lfiles = FileAccess.listFiles(mFullPath + nextpath, mUser , mPass);
 
-			sfiles = sfile.listFiles();
-			int filenum = sfiles.length;
-			if (sfiles != null && filenum > 0) {
+			int filenum = lfiles.size();
+			if (lfiles != null && filenum > 0) {
 				// ファイルあり
 				// ディレクトリ内のファイル
 				for (int i = 0; i < filenum; i++) {
-					String name = sfiles[i].getName();
+					String name = lfiles.get(i);
 					if (name.equals("..")) {
 						continue;
 					}
@@ -154,57 +155,54 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 					}
 				}
 			}
-			file.delete();
+			FileAccess.delete(mFullPath + nextpath, mUser , mPass);
 		}
 		else {
 			// 削除ファイル表示
 			sendMessage(MSG_MESSAGE, path + item, 0, 0);
 
 			// ファイル削除
-			File localFile = new File(mFullPath + path + item);
-			if (localFile.exists()) {
-				localFile.delete();
+			boolean exists = FileAccess.exists(mFullPath + nextpath, mUser , mPass);
+			if (exists) {
+				FileAccess.delete(mFullPath + nextpath, mUser , mPass);
 			}
 		}
 		return true;
 	}
 
 	public boolean smbRemoveFile(String path, String item) throws Exception {
-		SmbFile file = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
-		if (file.isDirectory()) {
+		String nextpath = path + item;
+		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
+		if (isDirectory) {
 			// 再帰呼び出し
-			String nextpath = path + item;
-			SmbFile sfile = FileAccess.authSmbFile(mFullPath + nextpath, mUser, mPass);
-			SmbFile[] sfiles = null;
+			ArrayList<String> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser , mPass);
 
-			sfiles = sfile.listFiles();
-			int filenum = sfiles.length;
-			if (sfiles == null || filenum <= 0) {
-				// ファイルなし
-				return true;
-			}
-			// ディレクトリ内のファイル
-			for (int i = 0; i < filenum; i++) {
-				String name = sfiles[i].getName();
-				if (name.equals("..")) {
-					continue;
-				}
-				smbRemoveFile(nextpath, name);
-				if (mBreak) {
-					// 中断
-					break;
+			int filenum = sfiles.size();
+			if (sfiles != null && filenum > 0) {
+				// ファイルあり
+				// ディレクトリ内のファイル
+				for (int i = 0; i < filenum; i++) {
+					String name = sfiles.get(i);
+					if (name.equals("..")) {
+						continue;
+					}
+					localRemoveFile(nextpath, name);
+					if (mBreak) {
+						// 中断
+						break;
+					}
 				}
 			}
-			file.delete();
+			FileAccess.delete(mFullPath + nextpath, mUser , mPass);
 		}
 		else {
 			// 削除ファイル表示
 			sendMessage(MSG_MESSAGE, path + item, 0, 0);
 
 			// ファイル削除
-			SmbFile sambaFile = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
-			if (sambaFile.exists()) {
-				sambaFile.delete();
+			boolean exists = FileAccess.exists(mFullPath + nextpath, mUser , mPass);
+			if (exists) {
+				FileAccess.delete(mFullPath + nextpath, mUser , mPass);
 			}
 		}
 		return true;

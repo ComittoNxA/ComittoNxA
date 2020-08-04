@@ -202,7 +202,11 @@ public class FileAccess {
 
 	public static boolean isDirectory(String url, String user, String pass) throws MalformedURLException, SmbException {
 		Log.d("FileAccess", "isDirectory url=" + url + ", user=" + user + ", pass=" + pass);
-		return FileAccess.authSmbFile(url, user, pass).isDirectory();
+		if (url.endsWith("/")) {
+			return true;
+		}
+		return false;
+//		return FileAccess.authSmbFile(url, user, pass).isDirectory();
 	}
 
 	public static String createUrl(String url, String user, String pass) {
@@ -437,7 +441,7 @@ public class FileAccess {
 				Log.d("FileAccess", "delete documentfile=" + documentFile);
 
 				if (documentFile != null) {
-					// ファイルをリネームする。
+					// ファイルを削除する。
 					try {
 						Log.d("FileAccess", "delete ファイルを削除します。");
 						documentFile.delete();

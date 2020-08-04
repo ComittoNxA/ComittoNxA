@@ -3574,6 +3574,26 @@ public class ImageManager extends InputStream implements Runnable {
 		if (mMarginCut != 0 && mMarginCut != 5) {
 			// 余白カットありで縦横比を維持の場合
 
+			// カットしてサイズがマイナスになったらプラスに戻す
+			if (src_y[0] - top[0] - bottom[0] <= 20) {
+				top[0] = (src_y[0] / 2) - 10;
+				bottom[0] = (src_y[0] / 2) - 10;
+			}
+			if (src_x[0] - left[0] - right[0] <= 20) {
+				left[0] = (src_x[0] / 2) - 10;
+				right[0] = (src_x[0] / 2) - 10;
+			}
+			if (page2 != -1) {
+				if (src_y[1] - top[1] - bottom[1] <= 20) {
+					top[1] = (src_y[1] / 2) - 10;
+					bottom[1] = (src_y[1] / 2) - 10;
+				}
+				if (src_x[1] - left[1] - right[1] <= 20) {
+					left[1] = (src_x[1] / 2) - 10;
+					right[1] = (src_x[1] / 2) - 10;
+				}
+			}
+			
 			// 上下のカット率を少ないほうに合わせる
 			if (page2 != -1) {
 				if (top[0] * 1000 / src_y[0] > top[1] * 1000 / src_y[1]) {
