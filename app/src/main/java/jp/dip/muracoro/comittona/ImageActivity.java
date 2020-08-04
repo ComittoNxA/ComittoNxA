@@ -112,7 +112,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 
 	// 上下の操作領域タッチ後何msでボタンを表示するか
 	private static final int LONGTAP_TIMER_UI = 400;
-	private static final int LONGTAP_TIMER_BTM = 1000;
+	private static final int LONGTAP_TIMER_BTM = 800;
 
 	private final int mSdkVersion = android.os.Build.VERSION.SDK_INT;
 
@@ -350,6 +350,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private int mPinchRange;
 	private int mTapPattern;
 	private int mTapRate;
+	private boolean mVerticalSwipe = true;
+
+
 
 	private final int MAX_TOUCHPOINT = 4;
 	private final int TERM_MOMENT = 200;
@@ -435,6 +438,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private ListDialog mListDialog;
 	private CheckDialog mCheckDialog;
 	private MenuDialog mMenuDialog;
+
+	private PageSelectDialog mPageDlg = null;
+	private PageThumbnail mThumbDlg = null;
 
 	/**
 	 * 画面が作成された時に発生します。
@@ -2120,8 +2126,13 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 						callZoomAreaDraw(x, y);
 					}
 					else {
+						// 縦フリックメニュー表示処理
+						if (this.mTouchFirst && (Math.abs(this.mTouchBeginY - y) > mMoveRange && Math.abs(this.mTouchBeginY - y) > Math.abs(this.mTouchBeginX - x) * 2)) {
+						// タッチ後に範囲を超えたときに、縦の移動が横の移動の2倍を超えている場合は縦フリックモードへ
+							mVerticalSwipe = true;					
+						}
 						// ページ戻or進、スクロール処理
-						if (this.mTouchFirst && ((Math.abs(this.mTouchBeginX - x) > mMoveRange || Math.abs(this.mTouchBeginY - y) > mMoveRange))) {
+						if (this.mTouchFirst && (Math.abs(this.mTouchBeginX - x) > mMoveRange || Math.abs(this.mTouchBeginY - y) > mMoveRange)) {
 							// タッチ後に範囲を超えて移動した場合はスクロールモードへ
 							this.mTouchFirst = false;
 							mLongTouchCount ++;
@@ -2130,7 +2141,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 							mImageView.scrollStart(mTouchBeginX, mTouchBeginY, RANGE_FLICK, mScroll);
 						}
 
-						if (this.mTouchFirst == false) {
+						if (this.mTouchFirst == false || mVerticalSwipe == false) {
 							// スクロールモード
 							long now = SystemClock.uptimeMillis();
 							mImageView.scrollMoveAmount(x - mTouchPoint[0].x, y - mTouchPoint[0].y, mScroll, true);
@@ -2170,6 +2181,34 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 				break;
 			case MotionEvent.ACTION_UP:
 			{
+				if (mVerticalSwipe) {
+					// 縦フリックの指を離した
+//					Toast.makeText(this, "メニューを表示します", Toast.LENGTH_SHORT).show();
+					mVerticalSwipe = false;
+					if (mPageSelect == PAGE_INPUT) {
+						// ページ番号入力
+						if (PageSelectDialog.mIsOpened == false) {
+							PageSelectDialog pageDlg = new PageSelectDialog(this, mImmEnable);
+							pageDlg.setParams(mCurrentPage, mImageMgr.length(), mPageWay == DEF.PAGEWAY_RIGHT);
+							pageDlg.setPageSelectListear(this);
+							pageDlg.show();
+							mPageDlg = pageDlg;
+						}
+					}
+					else if (mPageSelect == PAGE_THUMB) {
+						// サムネイルページ選択
+						if (PageThumbnail.mIsOpened == false) {
+							PageThumbnail thumbDlg = new PageThumbnail(this);
+							thumbDlg.setParams(mCurrentPage, mPageWay == DEF.PAGEWAY_RIGHT, mImageMgr, mThumID);
+							thumbDlg.setPageSelectListear(this);
+							thumbDlg.show();
+							mThumbDlg = thumbDlg;
+						}
+					}
+					openMiniMenu();
+//					mGuideView.eventTouchDown((int)(cx/3), (int)(mClickArea/2), cx, cy, true);
+//					int result = mGuideView.eventTouchUp((int)x, (int)y);
+				}
 				// 選択されたコマンド
 				int result = mGuideView.eventTouchUp((int)x, (int)y);
 
@@ -3029,6 +3068,34 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	}
 
 	// メニューを開く
+	private void openMiniMenu() {
+		if (mImageMgr == null || mImageView == null || mMenuDialog != null) {
+			return;
+		}
+
+		if (mAutoPlay) {
+			// オートプレイ中は解除
+			setAutoPlay(false);
+		}
+
+		Resources res = getResources();
+		mMenuDialog = new MenuDialog(this, mImageView.getWidth(), mImageView.getHeight(), true, false, true,this);
+
+		// 操作カテゴリ
+		mMenuDialog.addSection(res.getString(R.string.operateSec));
+		// 見開き設定
+		mMenuDialog.addItem(DEF.MENU_IMGVIEW, res.getString(R.string.tguide02));
+		// 画像サイズ
+		mMenuDialog.addItem(DEF.MENU_IMGSIZE, res.getString(R.string.tguide03));
+		// 余白削除
+		mMenuDialog.addItem(DEF.MENU_MGNCUT, res.getString(R.string.mgnCutMenu));
+		// 画面回転
+		mMenuDialog.addItem(DEF.MENU_ROTATE, res.getString(R.string.rotateMenu));
+
+		mMenuDialog.show();
+	}
+
+	// メニューを開く
 	private void openBookmarkMenu() {
 		if (mImageMgr == null || mImageView == null || mMenuDialog != null) {
 			return;
@@ -3075,6 +3142,16 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private void execCommand(int id) {
 		// メニュー選択
 		// ページ戻りにはしない
+
+		// ページ番号入力が開いていたら閉じる
+		if (PageSelectDialog.mIsOpened == true) {
+			mPageDlg.dismiss();
+		}
+		// サムネイルページ選択が開いていたら閉じる
+		if (PageThumbnail.mIsOpened == true) {
+			mThumbDlg.dismiss();
+		}
+
 		mPageBack = false;
 		switch (id) {
 			case DEF.MENU_IMGCONF: {

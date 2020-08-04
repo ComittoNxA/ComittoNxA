@@ -46,15 +46,20 @@ public class MenuDialog extends Dialog implements OnTouchListener, OnDismissList
 
 	public MenuDialog(Activity context, int cx, int cy, boolean isclose, MenuSelectListener listener) {
 		super(context);
-		MenuDialogProc(context, cx, cy, isclose, false, listener);
+		MenuDialogProc(context, cx, cy, isclose, false, false, listener);
 	}
 
 	public MenuDialog(Activity context, int cx, int cy, boolean isclose, boolean halfview, MenuSelectListener listener) {
 		super(context);
-		MenuDialogProc(context, cx, cy, isclose, halfview, listener);
+		MenuDialogProc(context, cx, cy, isclose, halfview, false, listener);
 	}
 
-	private void MenuDialogProc(Activity context, int cx, int cy, boolean isclose, boolean halfview, MenuSelectListener listener) {
+	public MenuDialog(Activity context, int cx, int cy, boolean isclose, boolean halfview, boolean top, MenuSelectListener listener) {
+		super(context);
+		MenuDialogProc(context, cx, cy, isclose, halfview, top, listener);
+	}
+
+	private void MenuDialogProc(Activity context, int cx, int cy, boolean isclose, boolean halfview, boolean top, MenuSelectListener listener) {
 		Window dlgWindow = getWindow();
 
 		// タイトルなし
@@ -69,7 +74,7 @@ public class MenuDialog extends Dialog implements OnTouchListener, OnDismissList
 
 		// 画面下に表示
 		WindowManager.LayoutParams wmlp=dlgWindow.getAttributes();
-		wmlp.gravity =Gravity.BOTTOM | (halfview ? Gravity.RIGHT : 0);
+		wmlp.gravity =(top ? Gravity.TOP : Gravity.BOTTOM) | (halfview ? Gravity.RIGHT : 0);
 		dlgWindow.setAttributes(wmlp);
 		setCanceledOnTouchOutside(true);
 		setOnDismissListener(this);
