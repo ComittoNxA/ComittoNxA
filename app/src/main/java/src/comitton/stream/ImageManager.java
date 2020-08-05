@@ -3628,7 +3628,7 @@ public class ImageManager extends InputStream implements Runnable {
 						else {
 							left[1] = 0;
 							right[1] = 0;
-						}
+						} 
 						Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[1] + ", 左=" + left[1] + ", 右=" + right[1]);
 					} else {
 						int width = x1 * y0 / y1;
