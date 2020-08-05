@@ -79,7 +79,8 @@ dependencies {
     //implementation 'com.github.bumptech.glide:glide:3.6.1'
 
     // SMB2接続用ライブラリ
-    // (MD4未実装対策のためbouncycastleをspongycastleに変更してコンパイル実施)
+    // (MD4未実装対策のためbouncycastleをspongycastleに変更)
+    // (jcifs.util.MD4を旧jcifsから移植、jcifs.util.Cryptに反映)
     api files('libs/jcifs-ng-2.1.5-SNAPSHOT.jar')
     // MD4を含むライブラリ
     implementation 'com.madgag.spongycastle:core:1.54.0.0'
