@@ -109,9 +109,7 @@ public class FileAccess {
 		Properties prop = new Properties();
 		prop.setProperty("jcifs.smb.client.minVersion", "SMB202");
 		prop.setProperty("jcifs.smb.client.maxVersion", "SMB311");
-		prop.put( "jcifs.traceResources", true);
-		prop.put( "jcifs.smb.allowNTLMFallback", true);
-		prop.put( "jcifs.smb.lmCompatibility", 1);
+		prop.put( "jcifs.traceResources", "true");
 		Configuration config = null;
 
 		host = url.substring(6);
