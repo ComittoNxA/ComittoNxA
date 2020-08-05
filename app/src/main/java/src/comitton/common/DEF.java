@@ -375,7 +375,7 @@ public class DEF {
 	public static final int DEFAULT_SCROLL = 2;
 	public static final int DEFAULT_ORGWIDTH = 0;
 	public static final int DEFAULT_ORGHEIGHT = 0;
-	public static final int DEFAULT_TAPRANGE = 6;
+	public static final int DEFAULT_TAPRANGE = 6; // スクロール開始の感度
 	public static final int DEFAULT_MARGIN = 0;
 	public static final int DEFAULT_LONGTAP = 4;
 	public static final int DEFAULT_WADJUST = 25; // -25～+25(1%単位)
@@ -395,7 +395,7 @@ public class DEF {
 	public static final int DEFAULT_VOLSCRL = 6; // 32ドット
 	public static final int DEFAULT_SCRLRNGW = 6; // 35% ((6+1)*5)
 	public static final int DEFAULT_SCRLRNGH = 6; // 35% ((6+1)*5)
-	public static final int DEFAULT_ITEMMARGIN = 10; // スクロール感度:10sp
+	public static final int DEFAULT_ITEMMARGIN = 10; // 項目の余白:10sp
 	public static final int DEFAULT_EFFECTTIME = 3; // スクロール時間:250msec
 	public static final int DEFAULT_MOMENTMODE = 8; // スクロール減速:フレーム1/8ずつ減速
 	public static final int DEFAULT_AUTOPLAY = 2; // 1.5sec(0.5 * (5 + 1))
@@ -420,7 +420,7 @@ public class DEF {
 	public static final int MAX_PAGERANGE = 25;
 	public static final int MAX_ORGWIDTH = 32;
 	public static final int MAX_ORGHEIGHT = 32;
-	public static final int MAX_TAPRANGE = 25;
+	public static final int MAX_TAPRANGE = 50; // スクロール開始の感度
 	public static final int MAX_MARGIN = 20;
 	public static final int MAX_LONGTAP = 16;
 	public static final int MAX_WADJUST = DEFAULT_WADJUST * 2;

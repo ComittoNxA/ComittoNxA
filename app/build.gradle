@@ -65,11 +65,11 @@ repositories {
 }
 
 dependencies {
-    // SMB2
-    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'
-    // SDカード書き込み
+    // SDカード書き込み用 Android API
     implementation 'com.android.support:support-compat:24.2.1'
     implementation 'com.android.support:appcompat-v7:24.2.1'
+    // SVGファイル(アイコン表示用)
+    implementation 'com.caverock:androidsvg-aar:1.4'
     // PDF
     //implementation 'com.joanzapata.pdfview:android-pdfview:1.0.+@aar'
     // 圧縮ファイル
@@ -77,6 +77,17 @@ dependencies {
     //implementation 'org.tukaani:xz:1.8'
     // 画像
     //implementation 'com.github.bumptech.glide:glide:3.6.1'
-    // SVGファイル
-    implementation 'com.caverock:androidsvg-aar:1.4'
+
+    // SMB2接続用ライブラリ
+    // (MD4未実装対策のためbouncycastleをspongycastleに変更してコンパイル実施)
+    api files('libs/jcifs-ng-2.1.5-SNAPSHOT.jar')
+    // MD4を含むライブラリ
+    implementation 'com.madgag.spongycastle:core:1.54.0.0'
+    implementation 'com.madgag.spongycastle:prov:1.54.0.0'
+    implementation 'com.madgag.spongycastle:pkix:1.54.0.0'
+    implementation 'com.madgag.spongycastle:pg:1.54.0.0'
+    // jcifs-ng内部で呼び出しているライブラリ
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+    implementation 'javax.servlet:javax.servlet-api:3.1.0'
 }
