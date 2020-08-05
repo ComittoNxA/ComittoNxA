@@ -59,8 +59,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -1276,20 +1279,35 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						// shortcutIntent.putExtra("Server", mServer.getCode());
 						shortcutIntent.putExtra("ServerSelect", mServer.getSelect());
 						shortcutIntent.putExtra("File", "");
-						// 新規アクティビティとして起動
 						if (mClearTop) {
 							shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 						}
 
 						// ショートカットをHOMEに作成する
-						Intent intent = new Intent();
+						if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+							// Android 8 O API26 以降  
+							Icon icon = Icon.createWithResource(mActivity, R.drawable.icon);
+							ShortcutInfo shortcut = new ShortcutInfo.Builder(mActivity, title)
+									.setShortLabel(title)
+									.setLongLabel(title)
+									.setIcon(icon)
+									.setIntent(shortcutIntent)
+									.build();
+							ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+							shortcutManager.requestPinShortcut(shortcut, null); // フツーのショートカット  
+							// shortcutManager.addDynamicShortcuts(Arrays.asList(shortcut)); // ダイナミックショートカット  
+						}
+						else {
+							// Android 7以前  
+							Intent intent = new Intent();
 
-						intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-						intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
-						Parcelable iconResource = Intent.ShortcutIconResource.fromContext(mActivity, R.drawable.icon);
-						intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
-						intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-						sendBroadcast(intent);
+							intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+							intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
+							Parcelable iconResource = Intent.ShortcutIconResource.fromContext(mActivity, R.drawable.icon);
+							intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
+							intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+							sendBroadcast(intent);
+						}
 					}
 				});
 				dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -1713,6 +1731,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		else if (id == DEF.MENU_SHORTCUT) {
 			// ショートカット名入力ダイアログ表示
 			showDialog(DEF.MESSAGE_SHORTCUT);
+			switchFileList();
 		}
 		else if (id == DEF.MENU_SERVER) {
 			// サーバ選択画面に遷移
@@ -1742,11 +1761,14 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			mListRotaChg = true;
 		}
 		else if (id == DEF.MENU_SIORI) {
+			// しおり削除
 			showShioriDialog();
+			switchFileList();
 		}
 		else if (id == DEF.MENU_THUMBDEL) {
 			// サムネイルキャッシュ削除
 			ThumbnailLoader.deleteThumbnailCache(0); // 0個を残す
+			switchFileList();
 		}
 		else if (id == DEF.MENU_ONLINE) {
 			// 操作方法画面に遷移

@@ -2132,7 +2132,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 //							mVerticalSwipe = true;					
 //						}
 						// ページ戻or進、スクロール処理
-						if (this.mTouchFirst && (Math.abs(this.mTouchBeginX - x) > mMoveRange || Math.abs(this.mTouchBeginY - y) > mMoveRange)) {
+						if (this.mTouchFirst && ((Math.abs(this.mTouchBeginX - x) > mMoveRange || Math.abs(this.mTouchBeginY - y) > mMoveRange))) {
 							// タッチ後に範囲を超えて移動した場合はスクロールモードへ
 							this.mTouchFirst = false;
 							mLongTouchCount ++;

@@ -3593,18 +3593,60 @@ public class ImageManager extends InputStream implements Runnable {
 					right[1] = (src_x[1] / 2) - 10;
 				}
 			}
-			
-			// 上下のカット率を少ないほうに合わせる
-			if (page2 != -1) {
-				if (top[0] * 1000 / src_y[0] > top[1] * 1000 / src_y[1]) {
-					top[0] = top[1] * src_y[0] / src_y[1];
-				} else {
-					top[1] = top[0] * src_y[1] / src_y[1];
-				}
-				if (bottom[0] * 1000 / src_y[0] > bottom[1] * 1000 / src_y[1]) {
-					bottom[0] = bottom[1] * src_y[0] / src_y[1];
-				} else {
-					bottom[1] = bottom[0] * src_y[1] / src_y[0];
+
+			// 高さを揃える場合
+			if (mScrFitDual) {
+				if (page2 != -1) {
+					// 上下のカット率を少ないほうに合わせる
+					if (top[0] * 1000 / src_y[0] > top[1] * 1000 / src_y[1]) {
+						top[0] = top[1] * src_y[0] / src_y[1];
+					} else {
+						top[1] = top[0] * src_y[1] / src_y[1];
+					}
+					if (bottom[0] * 1000 / src_y[0] > bottom[1] * 1000 / src_y[1]) {
+						bottom[0] = bottom[1] * src_y[0] / src_y[1];
+					} else {
+						bottom[1] = bottom[0] * src_y[1] / src_y[0];
+					}
+
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+
+					// 縦横の比率を両方のページで揃える
+					int x0 = src_x[0] - left[0] - right[0];
+					int x1 = src_x[1] - left[1] - right[1];
+					int y0 = src_y[0] - top[0] - bottom[0];
+					int y1 = src_y[1] - top[1] - bottom[1];
+					if (x0 * 1000 / y0 > x1 * 1000 / y1) {
+						int width = x0 * y1 / y0;
+						if (src_x[1] > width) {
+							if (left[1] + right[1] != 0) {
+								left[1] = (src_x[1] - width) * left[1] / (left[1] + right[1]);
+								right[1] = (src_x[1] - width) - left[1];
+							}
+						}
+						else {
+							left[1] = 0;
+							right[1] = 0;
+						}
+						Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[1] + ", 左=" + left[1] + ", 右=" + right[1]);
+					} else {
+						int width = x1 * y0 / y1;
+						if (src_x[0] > width) {
+							if (left[0] + right[0] != 0) {
+								left[0] = (src_x[0] - width) * left[0] / (left[0] + right[0]);
+								right[0] = (src_x[0] - width) - left[0];
+							}
+						}
+						else {
+							left[0] = 0;
+							right[0] = 0;
+						}
+						Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[0] + ", 左=" + left[0] + ", 右=" + right[0]);
+					}
+
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 				}
 			}
 
@@ -3632,8 +3674,8 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 
 			// 元画像の縦横比をカット後の値にする
 			src_x[0] = (src_x[0] - left[0] - right[0]);
