@@ -1283,7 +1283,7 @@ public class DEF {
 							}
 							// 残り部分で比較
 							num2 = num2.substring(difflen);
-						} else if (nlen1 > nlen2) {
+						} else if (num_len1 > num_len2) {
 							int difflen = num_len1 - num_len2;
 							for (int i = 0; i < difflen; i++) {
 								int diff = getNumber(num1.charAt(i)) - getNumber('0');
@@ -1296,14 +1296,17 @@ public class DEF {
 							num1 = num1.substring(difflen);
 						}
 						// 数字が異なる場合は比較
-//						Log.d("DEF", "compareFileName num1=" + num1 + ", num2=" + num2);
-						for (int i = 0; i < num1.length(); i++) {
-//							Log.d("DEF", "compareFileName num1=" + num1 + ", num2=" + num2 + ", i=" + i);
-							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
-							if (diff != 0) {
-								// num1が大きければプラス
-								return diff;
+						if (num1.length() == num2.length()) {
+							for (int i = 0; i < num1.length(); i++) {
+								int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
+								if (diff != 0) {
+									// num1が大きければプラス
+									return diff;
+								}
 							}
+						}
+						else {
+							Log.d("DEF", "compareFileName 長さが違います。 num1=" + num1 + ", num2=" + num2);
 						}
 					}
 					else {
@@ -1324,7 +1327,7 @@ public class DEF {
 							}
 							// 残り部分で比較
 							num2 = num2.substring(difflen);
-						} else if (nlen1 > nlen2) {
+						} else if (num_len1 > num_len2) {
 							int difflen = num_len1 - num_len2;
 							for (int i = 0; i < difflen; i++) {
 								int diff = getNumber(num1.charAt(i)) - getNumber('0');
@@ -1337,12 +1340,17 @@ public class DEF {
 							num1 = num1.substring(difflen);
 						}
 						// 数字が異なる場合は比較
-						for (int i = 0; i < num1.length(); i++) {
-							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
-							if (diff != 0) {
-								// num1が大きければマイナス
-								return -diff;
+						if (num1.length() == num2.length()) {
+							for (int i = 0; i < num1.length(); i++) {
+								int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
+								if (diff != 0) {
+									// num1が大きければマイナス
+									return -diff;
+								}
 							}
+						}
+						else {
+							Log.d("DEF", "compareFileName 長さが違います。 num1=" + num1 + ", num2=" + num2);
 						}
 					}
 					i1 += nlen1 - 1;
