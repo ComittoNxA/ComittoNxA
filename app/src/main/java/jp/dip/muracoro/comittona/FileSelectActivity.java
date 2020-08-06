@@ -248,22 +248,26 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		// 設定の読込
 		mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		Editor ed = mSharedPreferences.edit();
-		mInitialize = mSharedPreferences.getInt("Initialize", 0);
-		if (mInitialize == 3) {
-			//起動処理中が最後まで実行されなかった
-			// ローカルはストレージルートにリセット
-			String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
-			ed.putString("path", path);
+		try {
+			mInitialize = mSharedPreferences.getInt("Initialize", 0);
+			if (mInitialize != 3 && mInitialize == 3) {
+				//起動処理中が最後まで実行されなかった
+				// ローカルはストレージルートにリセット
+				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
+				ed.putString("path", path);
 
-			ed.putInt("ListMode", FileListArea.LISTMODE_LIST);
-			ed.putBoolean("Thumbnail", false);
-			ed.putInt("Initialize", 1);
+				ed.putInt("ListMode", FileListArea.LISTMODE_LIST);
+				ed.putBoolean("Thumbnail", false);
+				ed.putInt("Initialize", 1);
+			} else {
+				// 起動処理開始を保存
+				ed.putInt("Initialize", mInitialize + 1);
+			}
+			ed.commit();
 		}
-		else {
-			// 起動処理開始を保存
-			ed.putInt("Initialize", mInitialize + 1);
+		catch (Exception e){
+			Log.d("FileSelectAvtivity", e.getMessage());
 		}
-		ed.commit();
 
 		mActivity = this;
 		mDensity = getResources().getDisplayMetrics().scaledDensity;
@@ -433,10 +437,10 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 
 		//==== パーミッション承認状態判定(書き込み) ====//
-		if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+		if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
 		{
 			//==== 承認要求を行う ====//
-			ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+			ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
 		}
 
 		//		//==== パーミッション承認状態判定(マイク使用) ====//
@@ -2545,6 +2549,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	 * 履歴系リストの長押し選択表示
 	 */
 	private void showRecordLongClickDialog() {
+		Log.d("FileSelectActivity", "showRecordlongClickDialog 履歴系リストが長押しされました。");
 		if (mListDialog != null) {
 			return;
 		}
@@ -2579,11 +2584,13 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			mListDialog.show();
 		}
 		else if (listtype == RecordList.TYPE_SERVER) {
+			Log.d("FileSelectActivity", "showRecordlongClickDialog サーバリストが長押しされました。");
 			// サーバリストのアイテムが長押しされた
 			int serverindex = mSelectRecord.getServer(); // サーバのキーインデックス
 			ServerSelect server = new ServerSelect(mSharedPreferences, this);
 
 			if (serverindex == ServerSelect.INDEX_LOCAL) {
+				Log.d("FileSelectActivity", "showRecordlongClickDialog ローカルのパスをリセットします。");
 				// ローカルの場合はストレージルートにリセット
 				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
 				//path = DEF.getBaseDirectory();
@@ -2596,6 +2603,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				RecordList.update(recordList, listtype);
 			}
 			else {
+				Log.d("FileSelectActivity", "showRecordlongClickDialog リモートのサーバ設定ダイアログを表示します。");
 				showDialog(DEF.MESSAGE_EDITSERVER);
 			}
 		}
@@ -3529,6 +3537,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 	@Override
 	public void onItemLongClick(int listtype, int position) {
+		Log.d("FileSelectActivity", "onItemLongClick 画面が長押しされました。");
 		if (listtype == RecordList.TYPE_FILELIST) {
 			if (mTouchState) {
 				// フリックされてたら反応しない
@@ -3544,9 +3553,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			}
 		}
 		else {
+			Log.d("FileSelectActivity", "onItemLongClick ファイルリスト以外が長押しされました。");
 			mSelectRecord = mListScreenView.getRecordItem(listtype, position);
 			mSelectPos = position;
 			if (mSelectRecord == null) {
+				Log.d("FileSelectActivity", "onItemLongClick 選択されたレコードがnullです。");
 				return;
 			}
 			// 履歴長押し

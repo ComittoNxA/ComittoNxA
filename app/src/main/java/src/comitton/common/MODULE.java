@@ -7,7 +7,7 @@ import jp.dip.muracoro.comittona.R;
 
 public class MODULE {
 	public static final String ABOUT_TITLE = "ComittoNxA";
-	public static final String ABOUT_INFO = "\nLast Update : 2020/08/05\n  Version 1.65A1\n\n"
+	public static final String ABOUT_INFO = "\nLast Update : 2020/08/06\n  Version 1.65A2\n\n"
 			+ "Special thanks!!\n  Icon Designed by Sigeyuki Koresawa\n\n\n"
 			+ "Using Library\n"
 			+ "  jcifs-ng 2.1.5 (LGPL v2.1)\n"

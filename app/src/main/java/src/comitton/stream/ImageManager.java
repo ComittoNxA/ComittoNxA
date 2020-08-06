@@ -3594,9 +3594,11 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 
-			// 高さを揃える場合
+
 			if (mScrFitDual) {
+				// 高さを揃える場合
 				if (page2 != -1) {
+					// 画像2があれば
 					// 上下のカット率を少ないほうに合わせる
 					if (top[0] * 1000 / src_y[0] > top[1] * 1000 / src_y[1]) {
 						top[0] = top[1] * src_y[0] / src_y[1];
@@ -3611,8 +3613,15 @@ public class ImageManager extends InputStream implements Runnable {
 
 					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
 					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+				}
+			}
 
-					// 縦横の比率を両方のページで揃える
+			if (DEF.checkPortrait(disp_x, disp_y) == true && page2 != -1) {
+				// 縦画面の場合 and 画像2があれば
+				if (mScrScaleMode == DEF.SCALE_FIT_WIDTH2 || mScrScaleMode == DEF.SCALE_FIT_ALL2) {
+					// 幅に合わせて表示（見開き対応） or 全体を表示（見開き対応）
+					
+					// 左右の画像の縦横比を揃える
 					int x0 = src_x[0] - left[0] - right[0];
 					int x1 = src_x[1] - left[1] - right[1];
 					int y0 = src_y[0] - top[0] - bottom[0];
@@ -3624,11 +3633,10 @@ public class ImageManager extends InputStream implements Runnable {
 								left[1] = (src_x[1] - width) * left[1] / (left[1] + right[1]);
 								right[1] = (src_x[1] - width) - left[1];
 							}
-						}
-						else {
+						} else {
 							left[1] = 0;
 							right[1] = 0;
-						} 
+						}
 						Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[1] + ", 左=" + left[1] + ", 右=" + right[1]);
 					} else {
 						int width = x1 * y0 / y1;
@@ -3637,8 +3645,7 @@ public class ImageManager extends InputStream implements Runnable {
 								left[0] = (src_x[0] - width) * left[0] / (left[0] + right[0]);
 								right[0] = (src_x[0] - width) - left[0];
 							}
-						}
-						else {
+						} else {
 							left[0] = 0;
 							right[0] = 0;
 						}
@@ -3648,43 +3655,49 @@ public class ImageManager extends InputStream implements Runnable {
 					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
 					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 				}
-			}
 
-			// 左右のカット率を画面の縦横比より細くしない
-			if (left[0] + right[0] > 0) {
-				int x = (src_x[0] - left[0] - right[0]);
-				int y = (src_y[0] - top[0] - bottom[0]);
-				if (x * 1000 / disp_x < y * 1000 / disp_y) {
-					int margin_x = (int) ((float) src_x[0] - ((float) y * ((float) disp_x / (float) disp_y)));
-					margin_x = Math.max(0, margin_x);
-					left[0] = margin_x * left[0] / (left[0] + right[0]);
-					right[0] = margin_x - left[0];
-				}
-			}
-			if (page2 != -1) {
-				if (left[1] + right[1] > 0) {
-					int x = (src_x[1] - left[1] - right[1]);
-					int y = (src_y[1] - top[1] - bottom[1]);
-					if (x * 1000 / disp_x2 < y * 1000 / disp_y) {
-						int margin_x = (int) ((float) src_x[1] - ((float) y * ((float) disp_x2 / (float) disp_y)));
-						margin_x = Math.max(0, margin_x);
-						left[1] = margin_x * left[1] / (left[1] + right[1]);
-						right[1] = margin_x - left[1];
+				if (mScrScaleMode == DEF.SCALE_FIT_ALL2) {
+					// 表示サイズが全体を表示（見開き対応）の場合
+
+					// 横幅を画面の縦横比より細くしない
+					if (left[0] + right[0] > 0) {
+						int x = (src_x[0] - left[0] - right[0]);
+						int y = (src_y[0] - top[0] - bottom[0]);
+						if (x * 1000 / disp_x < y * 1000 / disp_y) {
+							int margin_x = (int) ((float) src_x[0] - ((float) y * ((float) disp_x / (float) disp_y)));
+							margin_x = Math.max(0, margin_x);
+							left[0] = margin_x * left[0] / (left[0] + right[0]);
+							right[0] = margin_x - left[0];
+						}
 					}
+					if (page2 != -1) {
+						if (left[1] + right[1] > 0) {
+							int x = (src_x[1] - left[1] - right[1]);
+							int y = (src_y[1] - top[1] - bottom[1]);
+							if (x * 1000 / disp_x2 < y * 1000 / disp_y) {
+								int margin_x = (int) ((float) src_x[1] - ((float) y * ((float) disp_x2 / (float) disp_y)));
+								margin_x = Math.max(0, margin_x);
+								left[1] = margin_x * left[1] / (left[1] + right[1]);
+								right[1] = margin_x - left[1];
+							}
+						}
+					}
+
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+
+					// 元画像の縦横比をカット後の値にする
+					src_x[0] = (src_x[0] - left[0] - right[0]);
+					src_y[0] = (src_y[0] - top[0] - bottom[0]);
+					src_x[1] = (src_x[1] - left[1] - right[1]);
+					src_y[1] = (src_y[1] - top[1] - bottom[1]);
 				}
 			}
 
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
-
-			// 元画像の縦横比をカット後の値にする
-			src_x[0] = (src_x[0] - left[0] - right[0]);
-			src_y[0] = (src_y[0] - top[0] - bottom[0]);
-			src_x[1] = (src_x[1] - left[1] - right[1]);
-			src_y[1] = (src_y[1] - top[1] - bottom[1]);
 		}
 		else if(mMarginCut == 5) {
-			// 元画像の縦横比をカット後の値にする
+			// 余白削除モードが縦横比無視の場合
+			// 元画像の縦横比を画面サイズにする
 			src_x[0] = disp_x;
 			src_y[0] = disp_y;
 			src_x[1] = disp_x2;

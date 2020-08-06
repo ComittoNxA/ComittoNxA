@@ -1296,7 +1296,9 @@ public class DEF {
 							num1 = num1.substring(difflen);
 						}
 						// 数字が異なる場合は比較
+//						Log.d("DEF", "compareFileName num1=" + num1 + ", num2=" + num2);
 						for (int i = 0; i < num1.length(); i++) {
+//							Log.d("DEF", "compareFileName num1=" + num1 + ", num2=" + num2 + ", i=" + i);
 							int diff = getNumber(num1.charAt(i)) - getNumber(num2.charAt(i));
 							if (diff != 0) {
 								// num1が大きければプラス

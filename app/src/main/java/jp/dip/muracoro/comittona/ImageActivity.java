@@ -352,8 +352,6 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private int mTapRate;
 	private boolean mVerticalSwipe = false;
 
-
-
 	private final int MAX_TOUCHPOINT = 4;
 	private final int TERM_MOMENT = 200;
 	private int mTouchPointNum;
@@ -2141,7 +2139,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 							mImageView.scrollStart(mTouchBeginX, mTouchBeginY, RANGE_FLICK, mScroll);
 						}
 
-						if (this.mTouchFirst == false || mVerticalSwipe == false) {
+						if (this.mTouchFirst == false && mVerticalSwipe == false) {
+//						if (this.mTouchFirst == false) {
 							// スクロールモード
 							long now = SystemClock.uptimeMillis();
 							mImageView.scrollMoveAmount(x - mTouchPoint[0].x, y - mTouchPoint[0].y, mScroll, true);
@@ -3563,9 +3562,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mMaxThread = SetImageDetailActivity.getMaxThread(sharedPreferences);
 			if (mMaxThread == 0) {
 				mMaxThread = Runtime.getRuntime().availableProcessors();
-				if (mMaxThread > 7) {
+				if (mMaxThread > 3) {
 					// ひとつ落とす
-					mMaxThread = 7;
+					mMaxThread = 3;
 				}
 				else if (mMaxThread <= 0) {
 					mMaxThread = 1;
