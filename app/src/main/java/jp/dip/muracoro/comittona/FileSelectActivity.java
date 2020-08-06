@@ -2082,7 +2082,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		else if (mTouchArea == ListScreenView.AREATYPE_DIRLIST) {
 			if (mListScreenView.sendTouchEvent(action, x, y)) {
-				mListScreenView.notifyUpdate(RecordList.TYPE_DIRECTORY);
 				mListScreenView.mDirListArea.sendTouchEvent(action, x, y);
 			}
 			else {
@@ -2092,7 +2091,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		}
 		else if (mTouchArea == ListScreenView.AREATYPE_SERVERLIST) {
 			if (mListScreenView.sendTouchEvent(action, x, y)) {
-				mListScreenView.notifyUpdate(RecordList.TYPE_SERVER);
 				mListScreenView.mServerListArea.sendTouchEvent(action, x, y);
 			}
 			else {

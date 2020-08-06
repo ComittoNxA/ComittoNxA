@@ -116,7 +116,9 @@ public class RecordListArea extends ListArea {
 				break;
 			}
 			int itemHeight = getRowHeight(index);
+			Log.d("RecordListArea", "drawListItems 1 size=" + mRecordList.size() + ", index=" + index);
 			RecordItem rd = mRecordList.get(index);
+			Log.d("RecordListArea", "drawListItems 2 size=" + mRecordList.size() + ", index=" + index);
 
 			x = baseX;
 			y = baseY + ypos;
