@@ -115,11 +115,16 @@ public class RecordListArea extends ListArea {
 			if (index >= listnum) {
 				break;
 			}
-			int itemHeight = getRowHeight(index);
-			Log.d("RecordListArea", "drawListItems 1 size=" + mRecordList.size() + ", index=" + index);
-			RecordItem rd = mRecordList.get(index);
-			Log.d("RecordListArea", "drawListItems 2 size=" + mRecordList.size() + ", index=" + index);
-
+			int itemHeight = 0;
+			RecordItem rd = null;
+			try {
+				// タイミングによってｍRecordListが0個になっていて落ちるため
+				itemHeight = getRowHeight(index);
+				rd = mRecordList.get(index);
+			}
+			catch (Exception e) {
+				;
+			}
 			x = baseX;
 			y = baseY + ypos;
 
@@ -153,7 +158,7 @@ public class RecordListArea extends ListArea {
 			y = baseY + ypos + mItemMargin;
 
 			// タイトル描画
-			if (rd.getType() == RecordItem.TYPE_MENU) {
+			if (rd != null && rd.getType() == RecordItem.TYPE_MENU) {
 				// アイコン描画
 				Bitmap bm = mBitmap[index];
 				canvas.drawBitmap(bm,  x, y + (int)(mTitleSize / 4), mBitmapPaint);
