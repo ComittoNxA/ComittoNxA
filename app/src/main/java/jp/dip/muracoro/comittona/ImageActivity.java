@@ -39,6 +39,8 @@ import src.comitton.view.GuideView;
 import src.comitton.view.image.MyImageView;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -440,6 +442,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private PageSelectDialog mPageDlg = null;
 	private PageThumbnail mThumbDlg = null;
 
+	private int mResult = 0;
 	/**
 	 * 画面が作成された時に発生します。
 	 *
@@ -2011,11 +2014,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 					}
 					// 下部押下
 					mOperation = TOUCH_COMMAND;
-					if( x <= mClickArea || x>= cx - mClickArea) {
-						startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
-						// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)
-						mGuideView.eventTouchDown((int)x, (int)y, cx, cy, false);
-					}
+//					if( x <= mClickArea || x>= cx - mClickArea) {
+//						startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
+//						// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)
+//						mGuideView.eventTouchDown((int)x, (int)y, cx, cy, false);
+//					}
 					// 文書情報を表示
 					mGuideView.setPageText(mImageMgr.createPageStr(mSelectPage));
 					mGuideView.setPageColor(mTopColor1);
@@ -2208,7 +2211,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 //				}
 				// 選択されたコマンド
 				int result = mGuideView.eventTouchUp((int)x, (int)y);
-
+				mResult = result;
 				// 情報表示クリア
 				mGuideView.setPageText(null);
 				mGuideView.setPageColor(Color.argb(0, 0, 0, 0));
@@ -2248,27 +2251,52 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 					}
 					else if (result == 0x4002 || result == 0x4003) {
 						// 先頭/末尾ボタン
-						if (result == 0x4003) {
-							// 左側ボタン
-							int leftpage = mPageWay == DEF.PAGEWAY_RIGHT ? mImageMgr.length() - 1 : 0;
-							if (mSelectPage != leftpage) {
-								mSelectPage = leftpage;
-							}
+						mResult = result;
+						AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+						if ((mResult == 0x4002 && mPageWay == DEF.PAGEWAY_RIGHT) || (mResult == 0x4003 && mPageWay != DEF.PAGEWAY_RIGHT)) {
+							dialogBuilder.setTitle(R.string.pageTop);
 						}
 						else {
-							// 右側ボタン
-							int rightpage = mPageWay == DEF.PAGEWAY_RIGHT ? 0 : mImageMgr.length() - 1;
-							if (mSelectPage != rightpage) {
-								mSelectPage = rightpage;
+							dialogBuilder.setTitle(R.string.pageLast);
+						}
+						dialogBuilder.setMessage(null);
+						dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int whichButton) {
+
+								if (mResult == 0x4003) {
+									// 左側ボタン
+									int leftpage = mPageWay == DEF.PAGEWAY_RIGHT ? mImageMgr.length() - 1 : 0;
+									if (mSelectPage != leftpage) {
+										mSelectPage = leftpage;
+									}
+								}
+								else {
+									// 右側ボタン
+									int rightpage = mPageWay == DEF.PAGEWAY_RIGHT ? 0 : mImageMgr.length() - 1;
+									if (mSelectPage != rightpage) {
+										mSelectPage = rightpage;
+									}
+								}
+								// ページ選択確定
+								if (mSelectPage != mCurrentPage) {
+									// ページ変更時に振動
+									mCurrentPage = mSelectPage;
+									mPageBack = false;
+									setBitmapImage();
+								}
+
+								dialog.dismiss();
 							}
-						}
-						// ページ選択確定
-						if (mSelectPage != mCurrentPage) {
-							// ページ変更時に振動
-							mCurrentPage = mSelectPage;
-							mPageBack = false;
-							setBitmapImage();
-						}
+						});
+						dialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int whichButton) {
+								// dialog.cancel();
+							}
+						});
+						Dialog dialog = dialogBuilder.create();
+						dialog.show();
+
 					}
 					else {
 						// 下部選択の場合は対応する操作を実行

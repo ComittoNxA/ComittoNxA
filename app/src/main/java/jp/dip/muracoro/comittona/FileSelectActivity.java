@@ -2547,7 +2547,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	 * 履歴系リストの長押し選択表示
 	 */
 	private void showRecordLongClickDialog() {
-		Log.d("FileSelectActivity", "showRecordlongClickDialog 履歴系リストが長押しされました。");
 		if (mListDialog != null) {
 			return;
 		}
@@ -2582,13 +2581,11 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			mListDialog.show();
 		}
 		else if (listtype == RecordList.TYPE_SERVER) {
-			Log.d("FileSelectActivity", "showRecordlongClickDialog サーバリストが長押しされました。");
 			// サーバリストのアイテムが長押しされた
 			int serverindex = mSelectRecord.getServer(); // サーバのキーインデックス
 			ServerSelect server = new ServerSelect(mSharedPreferences, this);
 
 			if (serverindex == ServerSelect.INDEX_LOCAL) {
-				Log.d("FileSelectActivity", "showRecordlongClickDialog ローカルのパスをリセットします。");
 				// ローカルの場合はストレージルートにリセット
 				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
 				//path = DEF.getBaseDirectory();
@@ -2601,7 +2598,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				RecordList.update(recordList, listtype);
 			}
 			else {
-				Log.d("FileSelectActivity", "showRecordlongClickDialog リモートのサーバ設定ダイアログを表示します。");
 				showDialog(DEF.MESSAGE_EDITSERVER);
 			}
 		}
@@ -3535,7 +3531,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 	@Override
 	public void onItemLongClick(int listtype, int position) {
-		Log.d("FileSelectActivity", "onItemLongClick 画面が長押しされました。");
 		if (listtype == RecordList.TYPE_FILELIST) {
 			if (mTouchState) {
 				// フリックされてたら反応しない
@@ -3551,11 +3546,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			}
 		}
 		else {
-			Log.d("FileSelectActivity", "onItemLongClick ファイルリスト以外が長押しされました。");
 			mSelectRecord = mListScreenView.getRecordItem(listtype, position);
 			mSelectPos = position;
 			if (mSelectRecord == null) {
-				Log.d("FileSelectActivity", "onItemLongClick 選択されたレコードがnullです。");
 				return;
 			}
 			// 履歴長押し
