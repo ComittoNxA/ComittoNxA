@@ -38,7 +38,7 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 	public final static short AREATYPE_SELECTOR = 0x100;
 	public final static short AREATYPE_LIST = 0x200;
 
-	public final static short AREATYPE_ALL = 0xFF;
+	public final static short AREATYPE_ALL = 0xFFF;
 
 //	public final static short LISTINDEX_FILE = 0;
 //	public final static short LISTINDEX_DIR = 1;
