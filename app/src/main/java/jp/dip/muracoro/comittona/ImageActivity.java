@@ -1431,10 +1431,10 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mImageMgr.setCurrentPage(mCurrentPage, false);
 
 			// 並べて表示以外は1回ループ
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < 1; i++) {
 				// 並べて表示以外は1回のみ読込
 				if (isDualView() == false && i == 1) {
-					continue;
+					break;
 				}
 
 				int idx;
