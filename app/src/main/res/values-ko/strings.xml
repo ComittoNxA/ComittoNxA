@@ -159,7 +159,7 @@
     <string name="svPassTitle">패스워드</string>
     <string name="svNameHist">Comics Server</string>
     <string name="svHostHist">192.168.1.120/comics (예)</string>
-    <string name="svUserHist"></string>
+    <string name="svUserHist">domain;user</string>
     <string name="svPassHist"></string>
     <string name="svNotFound">지정된 서버는 등록되어 있지 않습니다.</string>
     <string name="psAdd100">+100</string>
