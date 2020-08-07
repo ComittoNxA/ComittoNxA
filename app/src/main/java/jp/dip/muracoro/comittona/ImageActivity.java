@@ -1424,17 +1424,17 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		}
 
 		public void run() {
-
+			// 0: 現在のページ, 1: 2ページ目, 2: 前のページ, 3: 前の2ページ目, 4: 次のページ, 5: 次の2ページ目
 			ImageData bm[] = { null, null, null, null, null, null };
 
 			// 仮に現在ページを設定
 			mImageMgr.setCurrentPage(mCurrentPage, false);
 
 			// 並べて表示以外は1回ループ
-			for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < 6; i++) {
 				// 並べて表示以外は1回のみ読込
 				if (isDualView() == false && i == 1) {
-					break;
+					continue;
 				}
 
 				int idx;
