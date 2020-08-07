@@ -114,7 +114,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 
 	// 上下の操作領域タッチ後何msでボタンを表示するか
 	private static final int LONGTAP_TIMER_UI = 400;
-	private static final int LONGTAP_TIMER_BTM = 800;
+	private static final int LONGTAP_TIMER_BTM = 400;
 
 	private final int mSdkVersion = android.os.Build.VERSION.SDK_INT;
 
@@ -2013,7 +2013,10 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 						mSelectPage = mCurrentPage;
 					}
 					// 下部押下
+					startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
 					mOperation = TOUCH_COMMAND;
+					// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)
+					mGuideView.eventTouchDown((int)x, (int)y, cx, cy, false);
 //					if( x <= mClickArea || x>= cx - mClickArea) {
 //						startLongTouchTimer(EVENT_TOUCH_BOTTOM); // ロングタッチのタイマー開始
 //						// 長押し対応のため、再設定する(IMMERSIVEがOFFでも長押し対応するため)

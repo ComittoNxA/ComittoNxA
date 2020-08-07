@@ -11,10 +11,10 @@
       "type": "SINGLE",
       "filters": [],
       "properties": [],
-      "versionCode": 16502,
-      "versionName": "1.65A2",
+      "versionCode": 16503,
+      "versionName": "1.65A3",
       "enabled": true,
-      "outputFile": "ComittoNxA_1.65A2.apk"
+      "outputFile": "ComittoNxA_1.65A3.apk"
     }
   ]
 }
