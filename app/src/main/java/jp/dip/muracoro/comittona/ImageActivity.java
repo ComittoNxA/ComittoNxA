@@ -1425,7 +1425,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 
 		public void run() {
 
-			ImageData bm[] = { null, null };
+			ImageData bm[] = { null, null, null, null, null, null };
 
 			// 仮に現在ページを設定
 			mImageMgr.setCurrentPage(mCurrentPage, false);
