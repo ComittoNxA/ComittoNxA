@@ -3595,9 +3595,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mMaxThread = SetImageDetailActivity.getMaxThread(sharedPreferences);
 			if (mMaxThread == 0) {
 				mMaxThread = Runtime.getRuntime().availableProcessors();
-				if (mMaxThread > 3) {
+				if (mMaxThread > 7) {
 					// ひとつ落とす
-					mMaxThread = 3;
+					mMaxThread = 7;
 				}
 				else if (mMaxThread <= 0) {
 					mMaxThread = 1;
