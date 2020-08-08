@@ -146,7 +146,13 @@ public class ImageAccess {
 //		if (src_cy > dst_cy) {
 		Matrix matrix = new Matrix();
 		matrix.postScale(scale_x, scale_y);
-		bm = Bitmap.createBitmap(bm, x, y, src_cx, src_cy, matrix, true);
+		try {
+			bm = Bitmap.createBitmap(bm, x, y, src_cx, src_cy, matrix, true);
+		}
+		catch (OutOfMemoryError e) {
+			// 異常なサイズのときに落ちる不具合のため
+			return null;
+		}
 //		}
 
 		int bmp_cx = bm.getWidth();

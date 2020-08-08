@@ -219,6 +219,8 @@ public class ListArea implements Handler.Callback, ScrollMoveListener {
 					scrollMove(row, pos);
 				}
 				catch (ArithmeticException e){
+					// 0で除算すると落ちるため
+					// (スクロールする余地のないときにスクロールバーを操作)
 					return -1;
 				}
 			}
