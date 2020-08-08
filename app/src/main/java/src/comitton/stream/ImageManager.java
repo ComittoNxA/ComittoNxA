@@ -3926,7 +3926,7 @@ public class ImageManager extends InputStream implements Runnable {
 			height[1] = height[1] * mScrScale / 100;
 		}
 
-		if (page1 >= 0 && mMemCacheFlag[page1].fSource) {
+		if (page1 >= 0 && mMemCacheFlag[page1].fSource && width[0] > 0 && height[0] > 0) {
 			if (mFileList[page1].swidth[half1] == width[0] && mFileList[page1].sheight[half1] == height[0] && mMemCacheFlag[page1].fScale[half1]) {
 				if (img1 != null) {
 					img1.SclWidth = width[0];
@@ -3962,7 +3962,7 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 		}
-		if (page2 >= 0 && mMemCacheFlag[page2].fSource) {
+		if (page2 >= 0 && mMemCacheFlag[page2].fSource && width[1] > 0 && height[1] > 0) {
 			// 見開き時
 			if (mFileList[page2].swidth[half2] == width[1] && mFileList[page2].sheight[half2] == height[1] && mMemCacheFlag[page2].fScale[half2]) {
 				if (img2 != null) {
