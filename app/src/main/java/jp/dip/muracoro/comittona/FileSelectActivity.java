@@ -250,7 +250,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		Editor ed = mSharedPreferences.edit();
 		try {
 			mInitialize = mSharedPreferences.getInt("Initialize", 0);
-			if (mInitialize != 3 && mInitialize == 3) {
+			if (mInitialize >= 3) {
 				//起動処理中が最後まで実行されなかった
 				// ローカルはストレージルートにリセット
 				String path = Environment.getExternalStorageDirectory().getAbsolutePath() + '/';
@@ -1240,6 +1240,23 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				dialog = dialogBuilder.create();
 				break;
 			case DEF.MESSAGE_DOWNLOAD:
+				//==== パーミッション承認状態判定(書き込み) ====//
+				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+					//==== 承認要求を行う ====//
+					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+				}
+
+//					isDirectory = mFileData.getName().endsWith("/");
+				file = new File(mServer.getPath(ServerSelect.INDEX_LOCAL));
+				Log.d("FileSelectActivity", "onCreateDialog パーミッション取得済みか検査します。");
+				if (FileAccess.isPermit(file) == false) {
+					// ストレージ個別の承認が未取得
+					Log.d("FileSelectActivity", "onCreateDialog ストレージ書き込みの承認を取得します。");
+					mCommand = DEF.MESSAGE_FILE_DELETE;
+					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
+						break;
+					}
+				}
 				dialogBuilder.setTitle("Download");
 				dialogBuilder.setMessage("");
 				dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
