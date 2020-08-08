@@ -127,70 +127,177 @@ int GetMarginSize(int Page, int Half, int Index, int SclWidth, int SclHeight, in
 
     int CheckCX = OrgWidth * range / 100;
     int CheckCY = OrgHeight * range / 100;
-    int overcnt;
+    bool MODE_WHITE, MODE_BLACK;
+    int whitecnt, blackcnt;
 
     if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 余白調査範囲 CheckCX=%d, CheckCY=%d", Page, Half, CheckCX, CheckCY);
     for (yy = 0 ; yy < CheckCY ; yy ++) {
         orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
-        overcnt = 0;	// 白でないカウンタ
+        MODE_WHITE = true;
+        MODE_BLACK = true;
+        whitecnt = 0;	// 白でないカウンタ
+        blackcnt = 0;	// 黒でないカウンタ
         top = yy;
         for (xx = 0 ; xx < OrgWidth ; xx ++) {
             // 白チェック
-            if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
+            if (MODE_WHITE) {
+                if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
+                    whitecnt ++;
+                }
+            }
+            // 黒チェック
+            if (MODE_BLACK) {
+                if (!BLACK_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
+                    blackcnt ++;
+                }
             }
         }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
+
+        if (MODE_WHITE) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (whitecnt >= OrgWidth * limit / 1000) {
+                // 5%以上
+                MODE_WHITE = false;
+            }
+        }
+
+        if (MODE_BLACK) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (blackcnt >= OrgWidth * limit / 1000) {
+                // 5%以上
+                MODE_BLACK = false;
+            }
+        }
+        
+        if (!MODE_WHITE && !MODE_BLACK) {
             break;
         }
     }
+    
     for (int yy = OrgHeight - 1 ; yy >= OrgHeight - CheckCY ; yy --) {
         orgbuff1 = gLinesPtr[yy + HOKAN_DOTS / 2];
-        overcnt = 0;	// 白でないカウンタ
+        MODE_WHITE = true;
+        MODE_BLACK = true;
+        whitecnt = 0;	// 白でないカウンタ
+        blackcnt = 0;	// 黒でないカウンタ
         bottom = OrgHeight - 1 - yy;
         for (xx = 0 ; xx < OrgWidth ; xx ++) {
             // 白チェック
-            if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
+            if (MODE_WHITE) {
+                if (!WHITE_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
+                    whitecnt ++;
+                }
+            }
+            // 黒チェック
+            if (MODE_BLACK) {
+                if (!BLACK_CHECK(orgbuff1[xx + HOKAN_DOTS / 2])) {
+                    blackcnt ++;
+                }
             }
         }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
+
+        if (MODE_WHITE) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (whitecnt >= OrgWidth * limit / 1000) {
+                // 5%以上
+                MODE_WHITE = false;
+            }
+        }
+
+        if (MODE_BLACK) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (blackcnt >= OrgWidth * limit / 1000) {
+                // 5%以上
+                MODE_BLACK = false;
+            }
+        }
+        
+        if (!MODE_WHITE && !MODE_BLACK) {
             break;
         }
     }
     if (debug) LOGD("GetMarginSize Page=%d, Half=%d, 縦カット値 上=%d, 下=%d", Page, Half, top, bottom);
 
     for (xx = 0 ; xx < CheckCX ; xx ++) {
-        overcnt = 0;	// 白でないカウンタ
+        MODE_WHITE = true;
+        MODE_BLACK = true;
+        whitecnt = 0;	// 白でないカウンタ
+        blackcnt = 0;	// 黒でないカウンタ
         left = xx;
         for (yy = top + 1 ; yy < OrgHeight - bottom ; yy ++) {
             // 白チェック
-            if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
+            if (MODE_WHITE) {
+                if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
+                    whitecnt ++;
+                }
+            }
+            // 黒チェック
+            if (MODE_BLACK) {
+                if (!BLACK_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
+                    blackcnt ++;
+                }
             }
         }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
+
+        if (MODE_WHITE) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (whitecnt >= (OrgHeight - top - bottom) * limit / 1000) {
+                // 5%以上
+                MODE_WHITE = false;
+            }
+        }
+
+        if (MODE_BLACK) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (blackcnt >= (OrgHeight - top - bottom) * limit / 1000) {
+                // 5%以上
+                MODE_BLACK = false;
+            }
+        }
+        
+        if (!MODE_WHITE && !MODE_BLACK) {
             break;
         }
     }
+
     for (int xx = OrgWidth - 1 ; xx >= OrgWidth - CheckCX ; xx --) {
-        overcnt = 0;	// 白でないカウンタ
+        MODE_WHITE = true;
+        MODE_BLACK = true;
+        whitecnt = 0;	// 白でないカウンタ
+        blackcnt = 0;	// 黒でないカウンタ
         right = OrgWidth - 1 - xx;
         for (yy = top + 1 ; yy < OrgHeight - bottom ; yy ++) {
             // 白チェック
-            if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
-                overcnt ++;
+            if (MODE_WHITE) {
+                if (!WHITE_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
+                    whitecnt ++;
+                }
+            }
+            // 黒チェック
+            if (MODE_BLACK) {
+                if (!BLACK_CHECK(gLinesPtr[yy + HOKAN_DOTS / 2][xx + HOKAN_DOTS / 2])) {
+                    blackcnt ++;
+                }
             }
         }
-        // 0.5%以上がオーバーしたら余白ではないとする
-        if (overcnt >= OrgWidth * limit / 1000) {
-            // 5%以上
+
+        if (MODE_WHITE) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (whitecnt >= (OrgHeight - top - bottom) * limit / 1000) {
+                // 5%以上
+                MODE_WHITE = false;
+            }
+        }
+
+        if (MODE_BLACK) {
+            // 0.5%以上がオーバーしたら余白ではないとする
+            if (blackcnt >= (OrgHeight - top - bottom) * limit / 1000) {
+                // 5%以上
+                MODE_BLACK = false;
+            }
+        }
+        
+        if (!MODE_WHITE && !MODE_BLACK) {
             break;
         }
     }

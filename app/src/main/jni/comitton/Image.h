@@ -28,6 +28,7 @@
 
 //#define WHITE_CHECK(rgb) (((rgb>>11) & 0x0010) && ((rgb>>5) & 0x0020) && (rgb & 0x0010))
 #define WHITE_CHECK(rgb) ((rgb & 0x8410) == 0x8410)
+#define BLACK_CHECK(rgb) ((rgb & 0x8410) == 0x0000)
 
 #define HOKAN_DOTS	4
 #define SCLBUFFNUM	500
