@@ -7,7 +7,7 @@ import jp.dip.muracoro.comittona.R;
 
 public class MODULE {
 	public static final String ABOUT_TITLE = "ComittoNxA";
-	public static final String ABOUT_INFO = "\nLast Update : 2020/08/07\n  Version 1.65A3\n\n"
+	public static final String ABOUT_INFO = "\nLast Update : 2020/08/08\n  Version 1.65A4\n\n"
 			+ "Special thanks!!\n  Icon Designed by Sigeyuki Koresawa\n\n\n"
 			+ "Using Library\n"
 			+ "  jcifs-ng 2.1.5 (LGPL v2.1)\n"
@@ -17,7 +17,7 @@ public class MODULE {
 			+ "  libpng\n"
 			+ "  giflib\n"
 			+ "  zlib\n"
-			+ "  AndroidSVG 1.4 (ASLv2.0)\n"
+			+ "  AndroidSVG 1.4 (ASL v2.0)\n"
 			+ "  Automatic coloring algorithm(GPL)\n";
 
 	public static boolean isFree() {

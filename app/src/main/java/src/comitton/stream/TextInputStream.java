@@ -99,10 +99,11 @@ public class TextInputStream extends InputStream {
 	}
 
 	public void fileClose() throws IOException {
-		if (mSambaRnd != null) {
-			mSambaRnd.close();
-			mSambaRnd = null;
-		}
+// 閲覧終了時に固まるのでコメントアウト
+//		if (mSambaRnd != null) {
+//			mSambaRnd.close();
+//			mSambaRnd = null;
+//		}
 		if (mLocalRnd != null) {
 			mLocalRnd.close();
 			mLocalRnd = null;

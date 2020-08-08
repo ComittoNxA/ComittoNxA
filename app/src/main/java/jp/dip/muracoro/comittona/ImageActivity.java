@@ -113,8 +113,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private static final int PAGE_THUMB = 2;
 
 	// 上下の操作領域タッチ後何msでボタンを表示するか
-	private static final int LONGTAP_TIMER_UI = 400;
-	private static final int LONGTAP_TIMER_BTM = 400;
+	private static final int LONGTAP_TIMER_UI = 0;
+	private static final int LONGTAP_TIMER_BTM = 0;
 
 	private final int mSdkVersion = android.os.Build.VERSION.SDK_INT;
 
