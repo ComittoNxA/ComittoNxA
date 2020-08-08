@@ -147,6 +147,7 @@ public class FileAccess {
 		try {
 			config = new PropertyConfiguration(prop);
 			BaseContext bc = new BaseContext(config);
+			// 接続数リークを避ける呼び出し方法
 			context = SingletonContext.getInstance().withCredentials(smbAuth);
 		} catch (CIFSException e) {
 			e.printStackTrace();
