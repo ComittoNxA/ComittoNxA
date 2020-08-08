@@ -465,6 +465,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 		}
 
 		mNamePaint.setTextAlign(Paint.Align.LEFT);
+		mInfoPaint.setTextAlign(Paint.Align.LEFT);
 
 		int ypos = mTopPos;
 		for (int iy = mTopRow ; ypos < cy ; iy ++) {

@@ -527,6 +527,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 	public static final int READ_REQUEST_CODE = 42;
 	public static final int WRITE_REQUEST_CODE = 43;
+	public static final int OPEN_REQUEST_CODE = 44;
 	public static final int REQUEST_SDCARD_ACCESS = 2;
 
 	//	@TargetApi(24)
@@ -585,12 +586,12 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 							Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
 					// Permissionを取ったURIをアプリの設定に保存する
-					File file = new File(mPath + mFileData.getName());
+					File file = new File(mServer.getPath(ServerSelect.INDEX_LOCAL));
 					// ボリュームのマウントされたフォルダを取得する
 					String baseFolder = FileAccess.getExtSdCardFolder(file);
 					// ボリュームのtreeUriを保存する
 					Editor ed = mSharedPreferences.edit();
-					ed.putString("permit-uri:" + baseFolder, treeUri.toString());
+					ed.putString("permit-uri:" + requestCode + ":" + baseFolder, treeUri.toString());
 					ed.commit();
 				}
 
@@ -1252,7 +1253,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 				if (FileAccess.isPermit(file) == false) {
 					// ストレージ個別の承認が未取得
 					Log.d("FileSelectActivity", "onCreateDialog ストレージ書き込みの承認を取得します。");
-					mCommand = DEF.MESSAGE_FILE_DELETE;
+					mCommand = DEF.MESSAGE_DOWNLOAD;
 					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
 						break;
 					}

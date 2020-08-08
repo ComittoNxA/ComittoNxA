@@ -1,23 +1,17 @@
 package src.comitton.common;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -27,12 +21,9 @@ import java.util.Collections;
 
 import java.lang.SecurityException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import jcifs.CIFSContext;
 import jcifs.CIFSException;
@@ -44,13 +35,10 @@ import jcifs.context.SingletonContext;
 import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbRandomAccessFile;
 import jp.dip.muracoro.comittona.FileSelectActivity;
-import src.comitton.data.FileData;
 import src.comitton.exception.FileAccessException;
 
-import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import jcifs.smb.SmbFileInputStream;
 
 
 public class FileAccess {
@@ -177,13 +165,62 @@ public class FileAccess {
 		return stream;
 	}
 
-	public static boolean isDirectory(String url, String user, String pass) throws MalformedURLException, SmbException {
-		Log.d("FileAccess", "isDirectory url=" + url + ", user=" + user + ", pass=" + pass);
-		if (url.endsWith("/")) {
-			return true;
+	// ローカルファイルのOutputStream
+	public static OutputStream localOutputStream(String url) throws FileAccessException {
+		Log.d("FileAccess", "localOutputStream url=" + url);
+		boolean result;
+		if (url.startsWith("/")) {
+			// ローカルの場合
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				File orgfile = new File(url);
+				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, false);
+				Log.d("FileAccess", "localOutputStream documentfile=" + documentFile);
+
+				if (documentFile == null || !documentFile.exists()) {
+					// ファイルがなければ作成する
+					int idx = url.lastIndexOf("/");
+					if (idx > 0) {
+						String path = url.substring(0, idx);
+						String item = url.substring(idx + 1);
+						try {
+							documentFile = FileAccess.getDocumentFile(new File(path), true);
+//							documentFile.createFile("application/octet-stream", item);
+							documentFile.createFile("*/*", item);
+							documentFile = FileAccess.getDocumentFile(orgfile, false);
+						Log.d("FileAccess", "localOutputStream createfile=" + documentFile);
+						} catch (Exception e) {
+							Log.e("FileAccess", "localOutputStream " + e.getMessage());
+							e.printStackTrace();
+						}
+					}
+				}
+				try {
+					return mActivity.getContentResolver().openOutputStream(documentFile.getUri(), "w");
+//					ParcelFileDescriptor pfd = mActivity.getContentResolver().openFileDescriptor(documentFile.getUri(), "w");
+//					return new FileOutputStream(pfd.getFileDescriptor());
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				try {
+					File orgfile = new File(url);
+					if (!orgfile.exists()) {
+						// ファイルがなければ作成する
+						orgfile.createNewFile();
+					}
+					return new FileOutputStream(orgfile);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
 		}
-		return false;
-//		return FileAccess.authSmbFile(url, user, pass).isDirectory();
+		return null;
 	}
 
 	public static String createUrl(String url, String user, String pass) {
@@ -203,6 +240,54 @@ public class FileAccess {
 		}
 		ret += "@" + url.substring(6);
 		return ret;
+	}
+
+	// ファイル存在チェック
+	public static boolean exists(String url, String user, String pass) throws FileAccessException {
+		Log.d("FileAccess", "exists url=" + url + ", user=" + user + ", pass=" + pass);
+		boolean result;
+		if (url.startsWith("/")) {
+			// ローカルの場合/
+			File orgfile = new File(url);
+			result = orgfile.exists();
+		}
+		else {
+			// サーバの場合
+			SmbFile orgfile;
+			try {
+				orgfile = FileAccess.authSmbFile(url, user, pass);
+			} catch (MalformedURLException e) {
+				throw new FileAccessException(e);
+			}
+			try {
+				result = orgfile.exists();
+			} catch (SmbException e) {
+				throw new FileAccessException(e);
+			}
+		}
+		return result;
+	}
+
+	public static boolean isDirectory(String url, String user, String pass) throws MalformedURLException, SmbException {
+		Log.d("FileAccess", "isDirectory url=" + url + ", user=" + user + ", pass=" + pass);
+		boolean result = false;
+		if (url.startsWith("/")) {
+			// ローカルの場合/
+			File orgfile = new File(url);
+			result = orgfile.isDirectory();
+		}
+		else {
+			// サーバの場合
+			SmbFile orgfile;
+			orgfile = FileAccess.authSmbFile(url, user, pass);
+			try {
+				result = orgfile.isDirectory();
+			} catch (SmbException e) {
+				result = false;
+			}
+		}
+		return result;
+//		return FileAccess.authSmbFile(url, user, pass).isDirectory();
 	}
 
 	public static ArrayList<String> listFiles(String url, String user, String pass) {
@@ -317,7 +402,7 @@ public class FileAccess {
 				throw new FileAccessException("File access error.");
 			}
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				boolean isDirectory = fromfile.endsWith("/");
 				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
 				Log.d("FileAccess", "renameTo documentfile=" + documentFile);
@@ -378,32 +463,6 @@ public class FileAccess {
 		return true;
 	}
 
-	// ファイル存在チェック
-	public static boolean exists(String url, String user, String pass) throws FileAccessException {
-		Log.d("FileAccess", "exists url=" + url + ", user=" + user + ", pass=" + pass);
-		boolean result;
-		if (url.startsWith("/")) {
-			// ローカルの場合/
-			File orgfile = new File(url);
-			result = orgfile.exists();
-		}
-		else {
-			// サーバの場合
-			SmbFile orgfile;
-			try {
-				orgfile = FileAccess.authSmbFile(url, user, pass);
-			} catch (MalformedURLException e) {
-				throw new FileAccessException(e);
-			}
-			try {
-				result = orgfile.exists();
-			} catch (SmbException e) {
-				throw new FileAccessException(e);
-			}
-		}
-		return result;
-	}
-
 	// ファイル削除
 	public static boolean delete(String url, String user, String pass) throws FileAccessException {
 		Log.d("FileAccess", "delete url=" + url + ", user=" + user + ", pass=" + pass );
@@ -412,7 +471,7 @@ public class FileAccess {
 			// ローカルの場合
 			File orgfile = new File(url);
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				boolean isDirectory = url.endsWith("/");
 				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
 				Log.d("FileAccess", "delete documentfile=" + documentFile);
@@ -452,10 +511,63 @@ public class FileAccess {
 		return false;
 	}
 
+	// ディレクトリ作成
+	public static boolean mkdir(String url, String item, String user, String pass) throws FileAccessException {
+		Log.d("FileAccess", "mkdir url=" + url + ", item=" + item + ", user=" + user + ", pass=" + pass );
+		boolean result;
+		if (url.startsWith("/")) {
+			// ローカルの場合
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				boolean isDirectory = url.endsWith("/");
+				File orgfile = new File(url);
+				DocumentFile documentFile = FileAccess.getDocumentFile(orgfile, isDirectory);
+				Log.d("FileAccess", "mkdir documentfile=" + documentFile);
+				
+				if (documentFile != null) {
+					// ファイルを削除する。
+					try {
+						Log.d("FileAccess", "mkdir ディレクトリを削除します。 item=" + item);
+						DocumentFile ret = documentFile.createDirectory(item);
+						if (ret != null) {
+							return true;
+						}
+						else {
+							return false;
+						}
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			else {
+				File orgfile = new File(url + item);
+				return orgfile.mkdir();
+			}
+
+		}
+		else {
+			// サーバの場合
+			SmbFile orgfile;
+			try {
+				orgfile = FileAccess.authSmbFile(url + item, user, pass);
+			} catch (MalformedURLException e) {
+				throw new FileAccessException(e);
+			}
+			try {
+				orgfile.mkdir();
+				result = orgfile.exists();
+			} catch (SmbException e) {
+				throw new FileAccessException(e);
+			}
+		}
+		return false;
+	}
+
 	public static void setActivity(FileSelectActivity activity) {
 		mActivity = activity;
 	}
-
 
 	public static boolean isPermit(final File file) {
 		Log.d("FileAccess", "getDocumentFile START");

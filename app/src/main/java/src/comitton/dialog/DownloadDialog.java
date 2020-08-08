@@ -2,6 +2,8 @@ package src.comitton.dialog;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 
 import src.comitton.common.DEF;
 import src.comitton.common.FileAccess;
@@ -17,6 +19,7 @@ import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
@@ -126,26 +129,26 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 	}
 
 	public boolean downloadFile(String path, String item) throws Exception {
-		SmbFile file = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
-		if (file.isDirectory()) {
+		boolean isDirectory = FileAccess.isDirectory(mFullPath + path + item, mUser, mPass);
+		if (isDirectory) {
 			// ローカルにディレクトリ作成
-			File lfile = new File(mLocal + path + item);
-			lfile.mkdir();
+			boolean ret = FileAccess.mkdir(mLocal + path, item, mUser, mPass);
+			if (ret == false) {
+				return false;
+			}
 
 			// 再帰呼び出し
 			String nextpath = path + item;
-			SmbFile sfile = FileAccess.authSmbFile(mFullPath + nextpath, mUser, mPass);
-			SmbFile[] sfiles = null;
+			ArrayList<String> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
 
-			sfiles = sfile.listFiles();
-			int filenum = sfiles.length;
+			int filenum = sfiles.size();
 			if (sfiles == null || filenum <= 0) {
 				// ファイルなし
 				return true;
 			}
 			// ディレクトリ内のファイル
 			for (int i = 0; i < filenum; i++) {
-				String name = sfiles[i].getName();
+				String name = sfiles.get(i);
 				downloadFile(nextpath, name);
 				if (mBreak) {
 					// 中断
@@ -167,12 +170,12 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 			/* || ext.equals(".bmp") || ext.equals(".gif") ) {*/
 			// ダウンロード実行
 			try {
-				FileOutputStream localFile = new FileOutputStream(mLocal + path + item + "_dl");
-				SmbFile sambaFile = FileAccess.authSmbFile(mFullPath + path + item, mUser, mPass);
-				if (!sambaFile.exists()) {
+				OutputStream localFile = FileAccess.localOutputStream(mLocal + path + item + "_dl");
+				Boolean exists = FileAccess.exists(mFullPath + path + item, mUser, mPass);
+				if (!exists) {
 					throw new Exception("File not found.");
 				}
-				SmbRandomAccessFile sambaFileRnd = new SmbRandomAccessFile(sambaFile, "r");
+				SmbRandomAccessFile sambaFileRnd = FileAccess.smbRandomAccessFile(mFullPath + path + item, mUser, mPass);
 
 				// ファイルサイズ取得
 				long fileSize = sambaFileRnd.length();
@@ -193,16 +196,20 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 					if (mBreak) {
 						// 中断
 						localFile = null;
-						File removeFile = new File(mLocal + path + item + "_dl");
-						removeFile.delete();
+						FileAccess.delete(mLocal + path + item + "_dl", mUser, mPass);
 						return false;
 					}
 					if (size <= 0) {
 						break;
 					}
-					// 書き込み
-					localFile.write(buff, 0, size);
-
+					try {
+						// 書き込み
+						localFile.write(buff, 0, size);
+					}
+					catch (Exception e) {
+						Log.e("DownloadDialog", "downloadFile " + e.getMessage());
+						e.printStackTrace();
+					}
 					total += size;
 					sendMessage(MSG_PROGRESS, null, (int)total, (int)fileSize);
 				}
@@ -210,28 +217,30 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 				localFile.close();
 				sambaFileRnd.close();
 				localFile = null;
-				sambaFile = null;
 
 				// リネーム
 				File renameFrom = new File(mLocal + path + item + "_dl");
 				File renameTo = null;
-				String filename = item.substring(0, item.length() - 4);
-				String extname = item.substring(item.length() - 4);
+				String newFileName = null;
+				int idx = item.lastIndexOf(".");
+				String filename = item.substring(0, idx);
+				String extname = item.substring(idx);
 
 				for (int i = 0; i < 10; i++) {
 					if (i == 0) {
-						renameTo = new File(mLocal + path + item);
+						newFileName = item;
 					}
 					else {
-						renameTo = new File(mLocal + path + filename + "(" + i + ")" + extname);
+						newFileName = filename + "(" + i + ")" + extname;
 					}
-					if (!renameTo.exists()) {
+					exists = FileAccess.exists(mLocal + path + newFileName, mUser, mPass);
+					if (!exists) {
 						break;
 					}
 				}
-				if (!renameFrom.renameTo(renameTo)) {
+				if (!FileAccess.renameTo("", mLocal + path, item + "_dl", newFileName, mUser, mPass)) {
 					// リネーム失敗ならダウンロードしたファイルを削除
-					renameFrom.delete();
+					FileAccess.delete(mLocal + path + item + "_dl", mUser, mPass);
 				}
 			}
 			catch (Exception e) {
