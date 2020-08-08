@@ -205,18 +205,22 @@ public class ListArea implements Handler.Callback, ScrollMoveListener {
 		if (mFirstScroll == true) {
 			// 高速スクロール中
 			if (action == MotionEvent.ACTION_MOVE) {
-				int height = mAreaHeight - mRangeScrollerY * 2;
-				int ypos = (int)(y - mRangeScrollerY);
-				int row, pos;
-				if (ypos >= height) {
-					row = mTailRow;
-					pos = mTailPos;
+				try {
+					int height = mAreaHeight - mRangeScrollerY * 2;
+					int ypos = (int) (y - mRangeScrollerY);
+					int row, pos;
+					if (ypos >= height) {
+						row = mTailRow;
+						pos = mTailPos;
+					} else {
+						row = (int) (ypos * mTailRow / mRangeHeight);
+						pos = 0;
+					}
+					scrollMove(row, pos);
 				}
-				else {
-					row = (int)(ypos * mTailRow / mRangeHeight);
-					pos = 0;
+				catch (ArithmeticException e){
+					return -1;
 				}
-				scrollMove(row, pos);
 			}
 			else if (action == MotionEvent.ACTION_UP) {
 				mFirstScroll = false;
