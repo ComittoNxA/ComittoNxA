@@ -3679,12 +3679,12 @@ public class ImageManager extends InputStream implements Runnable {
 				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
 				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 
-				// 元画像の縦横比をカット後の値にする
-				src_x[0] = (src_x[0] - left[0] - right[0]);
-				src_y[0] = (src_y[0] - top[0] - bottom[0]);
-				src_x[1] = (src_x[1] - left[1] - right[1]);
-				src_y[1] = (src_y[1] - top[1] - bottom[1]);
 			}
+			// 元画像の縦横比をカット後の値にする
+			src_x[0] = (src_x[0] - left[0] - right[0]);
+			src_y[0] = (src_y[0] - top[0] - bottom[0]);
+			src_x[1] = (src_x[1] - left[1] - right[1]);
+			src_y[1] = (src_y[1] - top[1] - bottom[1]);
 
 		}
 		

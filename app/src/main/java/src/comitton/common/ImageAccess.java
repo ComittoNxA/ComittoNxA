@@ -100,7 +100,7 @@ public class ImageAccess {
 					}
 				}
 				// 0.8%以上がオーバーしたら余白ではないとする
-				if (overcnt >= src_cx * 0.008) {
+				if (overcnt >= (src_cy - CutT - CutB) * 0.008) {
 					// 0.8%以上
 					break;
 				}
@@ -116,7 +116,7 @@ public class ImageAccess {
 					}
 				}
 				// 0.8%以上がオーバーしたら余白ではないとする
-				if (overcnt >= src_cx * 0.008) {
+				if (overcnt >= (src_cy - CutT - CutB) * 0.008) {
 					// 0.8%以上
 					break;
 				}
@@ -221,7 +221,6 @@ public class ImageAccess {
 			float dsH = (float)sizeH / (float)h;
 			canvas.scale(dsW, dsH);
 			svg.renderToCanvas(canvas);
-//			canvas.drawPicture(picture);
 			if (drawcolor != null) {
 				bm = setColor(bm,drawcolor);
 			}
@@ -230,35 +229,6 @@ public class ImageAccess {
 			// 読み込み失敗
 		}
 
-
-
-//		SVG.registerExternalFileResolver(myResolver);
-//		if (drawcolor != null) {
-//			svg = SVGParser.getSVGFromResource(res, resid, 0xFF1A1A1A, drawcolor);
-//		}
-//		else {
-//			svg = SVGParser.getSVGFromResource(res, resid);
-//		}
-//	    Picture picture = svg.getPicture();
-//	    int w = picture.getWidth();
-//	    int h = picture.getHeight();
-//	    float dsW = (float)sizeW / (float)w;
-//	    float dsH = (float)sizeH / (float)h;
-
-//	    float ds = Math.min(dsW, dsH);
-//	    canvas.scale(dsW, dsH);
-//	    canvas.drawPicture(picture);
-
-//		FileOutputStream os;
-//		try {
-//			os = new FileOutputStream("/sdcard/pic" + resid, true);
-//		    picture.writeToStream(os);
-//			os.close();
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 		return bm;
 	}
 
@@ -281,23 +251,11 @@ public class ImageAccess {
 			float dsH = (float)size / (float)h;
 			canvas.scale(dsW, dsH);
 			svg.renderToCanvas(canvas);
-//			canvas.drawPicture(picture);
 		}
 			catch (Exception ex) {
 			// 読み込み失敗
 		}
-//		svg = SVGParser.getSVGFromResource(res, resid);
-		//InputStream is = res.openRawResource(resid);
-	    //Picture picture = Picture.createFromStream(is);
 
-//		Picture picture = svg.getPicture();
-//		int w = picture.getWidth();
-//		int h = picture.getHeight();
-//		//int w = picture.getWidth();
-//	    //int h = picture.getHeight();
-//	    float ds = (float)size / (float)Math.max(w, h);
-//	    canvas.scale(ds, ds);
-//	    canvas.drawPicture(picture);
 		return bm;
 	}
 
