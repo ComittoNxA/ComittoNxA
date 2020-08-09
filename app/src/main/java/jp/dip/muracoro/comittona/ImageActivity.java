@@ -3550,8 +3550,18 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mAutoPlayTerm = DEF.calcAutoPlay(SetImageDetailActivity.getAutoPlay(sharedPreferences));
 			mPageSelect = SetImageText.getPageSelect(sharedPreferences);
 
-			mCenter = SetImageTextDetailActivity.getCenter(sharedPreferences);
-			mShadow = SetImageTextDetailActivity.getGradation(sharedPreferences);
+			if (SetImageActivity.getCenterMargin(sharedPreferences)) {
+				mCenter = SetImageTextDetailActivity.getCenter(sharedPreferences);
+			} 
+			else {
+				mCenter = 0;
+			}
+			if (SetImageActivity.getCenterShadow(sharedPreferences)) {
+				mShadow = SetImageTextDetailActivity.getGradation(sharedPreferences);
+			}
+			else {
+				mShadow = 0;
+			}
 			mMargin = SetImageTextDetailActivity.getMargin(sharedPreferences);
 			if (mSdkVersion >= 19) {
 				// KitKat以降のみ設定読み込み

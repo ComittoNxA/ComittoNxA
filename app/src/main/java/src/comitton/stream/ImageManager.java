@@ -3680,6 +3680,13 @@ public class ImageManager extends InputStream implements Runnable {
 
 				
 			}
+			
+			// 画像が横長なら左右のカットを同じにする
+			if (src_x[0] > src_y[0]) {
+				left[0] = Math.min(left[0], right[0]);
+				right[0] = left[0];
+			}
+			
 
 			// 元画像の縦横比をカット後の値にする
 			src_x[0] = (src_x[0] - left[0] - right[0]);
