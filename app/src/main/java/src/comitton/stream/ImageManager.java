@@ -1270,6 +1270,9 @@ public class ImageManager extends InputStream implements Runnable {
 					int num = mFileList.length;
 					CallImgLibrary.ImageScaleFree(-1, -1);
 					for (int i = 0; i < num; i++) {
+						if (mCloseFlag) {
+							break;
+						}
 						CallImgLibrary.ImageFree(i);
 
 						newlist[num - i - 1] = mFileList[i];
@@ -1297,6 +1300,9 @@ public class ImageManager extends InputStream implements Runnable {
 
 				if (mFileList != null) {
 					for (int i = 0; i < mFileList.length; i++) {
+						if (mCloseFlag) {
+							break;
+						}
 						// キャッシュ状態初期化
 						mMemCacheFlag[i] = new MemCacheFlag();
 					}
@@ -1375,6 +1381,9 @@ public class ImageManager extends InputStream implements Runnable {
 //					Log.d("run.check", "---- Start ----");
 					int iPrio;
 					for (iPrio = 1; iPrio < mMemPriority.length && page == -1; iPrio++) {
+						if (mCloseFlag) {
+							break;
+						}
 						if (mCacheBreak) {
 							// キャッシュ処理中断
 							break;
@@ -1389,18 +1398,12 @@ public class ImageManager extends InputStream implements Runnable {
 						int chkPage = mMemPriority[iPrio] + mCurrentPage;
 						int chkPage2 = mMemPriority[iPrio] + mCurrentPage + (mMemPriority[iPrio] >= 0 ? 1 : -1);
 
-						if (mCloseFlag) {
-							break;
-						}
 						if (0 <= chkPage2 && chkPage2 < mFileList.length && mFileList[chkPage2].width <= 0) {
 							if (!loadBitmapFromStreamSizeCheck(chkPage2)) {
 								break;
 							}
 						}
 
-						if (mCloseFlag) {
-							break;
-						}
 						if (0 <= chkPage && chkPage < mFileList.length) {
 							if (mFileList[chkPage].width <= 0) {
 								if (!loadBitmapFromStreamSizeCheck(chkPage)) {
@@ -1410,9 +1413,6 @@ public class ImageManager extends InputStream implements Runnable {
 
 							// 範囲内の時だけチェック
 							if (mMemCacheFlag[chkPage].fSource == false) {
-								if (mCloseFlag) {
-									break;
-								}
 								if (prevReadPage != chkPage && memWriteLock(chkPage, 0, false)) {
 									// メモリキャッシュ確保OK
 									// Log.d("run", "current" + mCurrentPage + ", chkPage" + chkPage + ", prevPage=" + prevReadPage);
@@ -1430,9 +1430,6 @@ public class ImageManager extends InputStream implements Runnable {
 								break;
 							}
 							else if (mCurrentPage >= 0 && mCurrentPage < mFileList.length) {
-								if (mCloseFlag) {
-									break;
-								}
 								// スケーリング処理を通知
 								try {
 									if (isDualView() == true) {
@@ -1444,6 +1441,9 @@ public class ImageManager extends InputStream implements Runnable {
 										if (chkPage < mCurrentPage) {
 											// 前方向
 											for (p = mCurrentPage - 1 ; p >= chkPage ; p --) {	// 1ページ前からチェック
+												if (mCloseFlag) {
+													break;
+												}
 												if (!DEF.checkPortrait(mFileList[p].width, mFileList[p].height, mScrRotate)) {
 													// 横
 													page1 = p;
@@ -1475,6 +1475,9 @@ public class ImageManager extends InputStream implements Runnable {
 										else {
 											// 後方向
 											for (p = mCurrentPage ; p <= chkPage ; p ++) {	// 1ページ前からチェック
+												if (mCloseFlag) {
+													break;
+												}
 												if (!DEF.checkPortrait(mFileList[p].width, mFileList[p].height, mScrRotate) || (p == mCurrentPage && mCurrentSingle)) {
 													// 横長 又は 先頭が単ページ指定
 													page1 = p;
@@ -1497,9 +1500,6 @@ public class ImageManager extends InputStream implements Runnable {
 											}
 										}
 
-										if (mCloseFlag) {
-											break;
-										}
 										if (page2 == -1) {
 											// 単ページ
 											if (mMemCacheFlag[page1].fSource == true) {
@@ -1608,6 +1608,9 @@ public class ImageManager extends InputStream implements Runnable {
 					page = -1;
 
 					for (range = 0; range < CACHE_RANGE; range++) {
+						if (mCloseFlag) {
+							break;
+						}
 						if (mCacheBreak) {
 							// キャッシュ処理中断
 							break;
@@ -1762,6 +1765,9 @@ public class ImageManager extends InputStream implements Runnable {
 
 						//
 						while (mRunningFlag) {
+							if (mCloseFlag) {
+								break;
+							}
 							// Log.d("run.Load", "---- Start ----");
 							if (!mRunningFlag) {
 								// closeされた場合
@@ -3489,6 +3495,9 @@ public class ImageManager extends InputStream implements Runnable {
 				CallImgLibrary.ImageScaleFree(-1, -1);
 				if (mFileList != null && mMemCacheFlag != null) {
 					for (int i = 0; i < mFileList.length; i++) {
+						if (mCloseFlag) {
+							break;
+						}
 						if (mMemCacheFlag[i].fScale[0] || mMemCacheFlag[i].fScale[1] || mMemCacheFlag[i].fScale[2]) {
 							// 要チェックにする
 							mMemCacheFlag[i].fScale[0] = false;
@@ -4089,6 +4098,9 @@ public class ImageManager extends InputStream implements Runnable {
 						zipStream.getNextEntry();
 						int readsum = 0;
 						while (mRunningFlag == true) {
+							if (mCloseFlag) {
+								break;
+							}
 							int readsize = zipStream.read(buff, 0, buff.length);
 							if (readsize <= 0) {
 								break;
@@ -4109,6 +4121,9 @@ public class ImageManager extends InputStream implements Runnable {
 						// ファイルキャッシュを作成するときはRAR展開不要
 						mRarStream = new RarInputStream(new BufferedInputStream(this, BIS_BUFFSIZE), page, mFileList[page], mHandler);
 						while (mRunningFlag == true) {
+							if (mCloseFlag) {
+								break;
+							}
 							int readsize = mRarStream.read(buff, 0, buff.length);
 							if (readsize <= 0) {
 								break;
@@ -4117,6 +4132,9 @@ public class ImageManager extends InputStream implements Runnable {
 						}
 					} else if (mFileType == FILETYPE_PDF) {
 						while (mRunningFlag == true) {
+							if (mCloseFlag) {
+								break;
+							}
 							int readsize = this.read(buff, 0, buff.length);
 							if (readsize <= 0) {
 								break;
@@ -4125,6 +4143,9 @@ public class ImageManager extends InputStream implements Runnable {
 						}
 					} else {
 						while (mRunningFlag == true) {
+							if (mCloseFlag) {
+								break;
+							}
 							int readsize = this.read(buff, 0, buff.length);
 							if (readsize <= 0) {
 								break;
