@@ -2449,7 +2449,7 @@ public class ImageManager extends InputStream implements Runnable {
 
 	public void cmpClose() throws IOException {
 		if (mSambaRnd != null) {
-			mSambaRnd.close();
+//			mSambaRnd.close();
 			mSambaRnd = null;
 		}
 		if (mLocalRnd != null) {
@@ -2641,7 +2641,7 @@ public class ImageManager extends InputStream implements Runnable {
 	public void dirEndPage() throws IOException {
 		if (mHostType == HOSTTYPE_SAMBA) {
 			if (mSambaRnd != null) {
-				mSambaRnd.close();
+//				mSambaRnd.close();
 				mSambaRnd = null;
 			}
 		}else {
