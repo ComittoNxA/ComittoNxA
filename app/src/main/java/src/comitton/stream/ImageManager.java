@@ -1262,24 +1262,26 @@ public class ImageManager extends InputStream implements Runnable {
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			CallImgLibrary.ImageCancel(0);
-			if (mFileList != null) {
-				FileListItem newlist[] = new FileListItem[mFileList.length];
+			if (!mCloseFlag) {
+				CallImgLibrary.ImageCancel(0);
+				if (mFileList != null) {
+					FileListItem newlist[] = new FileListItem[mFileList.length];
 
-				int num = mFileList.length;
-				CallImgLibrary.ImageScaleFree(-1, -1);
-				for (int i = 0; i < num; i++) {
-					CallImgLibrary.ImageFree(i);
+					int num = mFileList.length;
+					CallImgLibrary.ImageScaleFree(-1, -1);
+					for (int i = 0; i < num; i++) {
+						CallImgLibrary.ImageFree(i);
 
-					newlist[num - i - 1] = mFileList[i];
+						newlist[num - i - 1] = mFileList[i];
 
-					// キャッシュ状態初期化
-					mMemCacheFlag[i] = new MemCacheFlag();
-					if (mCheCacheFlag != null) {
-						mCheCacheFlag[i] = false;
+						// キャッシュ状態初期化
+						mMemCacheFlag[i] = new MemCacheFlag();
+						if (mCheCacheFlag != null) {
+							mCheCacheFlag[i] = false;
+						}
 					}
+					mFileList = newlist;
 				}
-				mFileList = newlist;
 			}
 		}
 	}
@@ -1289,13 +1291,15 @@ public class ImageManager extends InputStream implements Runnable {
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			CallImgLibrary.ImageCancel(0);
-			CallImgLibrary.ImageScaleFree(-1, -1);
+			if (!mCloseFlag) {
+				CallImgLibrary.ImageCancel(0);
+				CallImgLibrary.ImageScaleFree(-1, -1);
 
-			if (mFileList != null) {
-				for (int i = 0 ; i < mFileList.length ; i++) {
-					// キャッシュ状態初期化
-					mMemCacheFlag[i] = new MemCacheFlag();
+				if (mFileList != null) {
+					for (int i = 0; i < mFileList.length; i++) {
+						// キャッシュ状態初期化
+						mMemCacheFlag[i] = new MemCacheFlag();
+					}
 				}
 			}
 		}
@@ -1385,12 +1389,18 @@ public class ImageManager extends InputStream implements Runnable {
 						int chkPage = mMemPriority[iPrio] + mCurrentPage;
 						int chkPage2 = mMemPriority[iPrio] + mCurrentPage + (mMemPriority[iPrio] >= 0 ? 1 : -1);
 
+						if (mCloseFlag) {
+							break;
+						}
 						if (0 <= chkPage2 && chkPage2 < mFileList.length && mFileList[chkPage2].width <= 0) {
 							if (!loadBitmapFromStreamSizeCheck(chkPage2)) {
 								break;
 							}
 						}
 
+						if (mCloseFlag) {
+							break;
+						}
 						if (0 <= chkPage && chkPage < mFileList.length) {
 							if (mFileList[chkPage].width <= 0) {
 								if (!loadBitmapFromStreamSizeCheck(chkPage)) {
@@ -1400,6 +1410,9 @@ public class ImageManager extends InputStream implements Runnable {
 
 							// 範囲内の時だけチェック
 							if (mMemCacheFlag[chkPage].fSource == false) {
+								if (mCloseFlag) {
+									break;
+								}
 								if (prevReadPage != chkPage && memWriteLock(chkPage, 0, false)) {
 									// メモリキャッシュ確保OK
 									// Log.d("run", "current" + mCurrentPage + ", chkPage" + chkPage + ", prevPage=" + prevReadPage);
@@ -1417,6 +1430,9 @@ public class ImageManager extends InputStream implements Runnable {
 								break;
 							}
 							else if (mCurrentPage >= 0 && mCurrentPage < mFileList.length) {
+								if (mCloseFlag) {
+									break;
+								}
 								// スケーリング処理を通知
 								try {
 									if (isDualView() == true) {
@@ -1481,6 +1497,9 @@ public class ImageManager extends InputStream implements Runnable {
 											}
 										}
 
+										if (mCloseFlag) {
+											break;
+										}
 										if (page2 == -1) {
 											// 単ページ
 											if (mMemCacheFlag[page1].fSource == true) {
@@ -1508,9 +1527,6 @@ public class ImageManager extends InputStream implements Runnable {
 													fMemCacheExec = false;
 												}
 											}
-										}
-										if (mCacheBreak) {
-											break;
 										}
 									}
 									else if (isHalfView() == true && !DEF.checkPortrait(mFileList[chkPage].width, mFileList[chkPage].height, mScrRotate)) {
@@ -1875,43 +1891,44 @@ public class ImageManager extends InputStream implements Runnable {
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			mCacheBreak = false;
-			CallImgLibrary.ImageCancel(0);
-			mThreadLoading = false;
-			if (mMemCacheFlag[page].fSource == true) {
-				// メモリキャッシュあり
-				id = new ImageData();
-				id.Page = page;
-				id.Width = mFileList[page].width;
-				id.Height = mFileList[page].height;
-			}
-			else {
-				// メモリキャッシュ無しなので読み込み
-				mCheWriteFlag = false;
-				if (mCacheMode != CACHEMODE_FILE && mHostType == HOSTTYPE_SAMBA) {
-					// メモリキャッシュに保存できない場合はファイルキャッシュする
-					mCheWriteFlag = true;
-					long pos;
-					int len;
-					if (mFileType != FILETYPE_DIR) {
-						pos = mFileList[page].cmppos;
-						len = mFileList[page].cmplen;// + SIZE_CENTHEADER + SIZE_TERMHEADER;
+			if (!mCloseFlag) {
+				mCacheBreak = false;
+				CallImgLibrary.ImageCancel(0);
+				mThreadLoading = false;
+				if (mMemCacheFlag[page].fSource == true) {
+					// メモリキャッシュあり
+					id = new ImageData();
+					id.Page = page;
+					id.Width = mFileList[page].width;
+					id.Height = mFileList[page].height;
+				} else {
+					// メモリキャッシュ無しなので読み込み
+					mCheWriteFlag = false;
+					if (mCacheMode != CACHEMODE_FILE && mHostType == HOSTTYPE_SAMBA) {
+						// メモリキャッシュに保存できない場合はファイルキャッシュする
+						mCheWriteFlag = true;
+						long pos;
+						int len;
+						if (mFileType != FILETYPE_DIR) {
+							pos = mFileList[page].cmppos;
+							len = mFileList[page].cmplen;// + SIZE_CENTHEADER + SIZE_TERMHEADER;
+						} else {
+							pos = mFileList[page].orgpos;
+							len = mFileList[page].orglen;
+						}
+						try {
+							cheSeek(pos, len, page);
+						} catch (IOException e) {
+							Log.e("loadBitmap/cheSeek", e.getMessage());
+							mCheWriteFlag = false;
+						}
 					}
-					else {
-						pos = mFileList[page].orgpos;
-						len = mFileList[page].orglen;
-					}
-					try {
-						cheSeek(pos, len, page);
-					}
-					catch (IOException e) {
-						Log.e("loadBitmap/cheSeek", e.getMessage());
-						mCheWriteFlag = false;
+					if (!mCloseFlag) {
+						id = loadBitmapFromStream(page, notice);
 					}
 				}
-				id = loadBitmapFromStream(page, notice);
+				mThreadLoading = true;
 			}
-			mThreadLoading = true;
 		}
 		return id;
 	}
@@ -3467,15 +3484,17 @@ public class ImageManager extends InputStream implements Runnable {
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			CallImgLibrary.ImageCancel(0);
-			CallImgLibrary.ImageScaleFree(-1, -1);
-			if (mFileList != null && mMemCacheFlag != null) {
-				for (int i = 0; i < mFileList.length; i++) {
-					if (mMemCacheFlag[i].fScale[0] || mMemCacheFlag[i].fScale[1] || mMemCacheFlag[i].fScale[2]) {
-						// 要チェックにする
-						mMemCacheFlag[i].fScale[0] = false;
-						mMemCacheFlag[i].fScale[1] = false;
-						mMemCacheFlag[i].fScale[2] = false;
+			if (!mCloseFlag) {
+				CallImgLibrary.ImageCancel(0);
+				CallImgLibrary.ImageScaleFree(-1, -1);
+				if (mFileList != null && mMemCacheFlag != null) {
+					for (int i = 0; i < mFileList.length; i++) {
+						if (mMemCacheFlag[i].fScale[0] || mMemCacheFlag[i].fScale[1] || mMemCacheFlag[i].fScale[2]) {
+							// 要チェックにする
+							mMemCacheFlag[i].fScale[0] = false;
+							mMemCacheFlag[i].fScale[1] = false;
+							mMemCacheFlag[i].fScale[2] = false;
+						}
 					}
 				}
 			}
@@ -3483,12 +3502,14 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public boolean ImageScalingSync(int page1, int page2, int half1, int half2, ImageData img1, ImageData img2) {
-		boolean ret;
+		boolean ret = false;
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			CallImgLibrary.ImageCancel(0);
-			ret = ImageScaling(page1, page2, half1, half2, img1, img2);
+			if (!mCloseFlag) {
+				CallImgLibrary.ImageCancel(0);
+				ret = ImageScaling(page1, page2, half1, half2, img1, img2);
+			}
 		}
 		return ret;
 	}
@@ -4033,102 +4054,98 @@ public class ImageManager extends InputStream implements Runnable {
 		mCacheBreak = true;
 		CallImgLibrary.ImageCancel(1);
 		synchronized (mLock) {
-			CallImgLibrary.ImageCancel(0);
+			if (!mCloseFlag) {
+				CallImgLibrary.ImageCancel(0);
 
-			// キャッシュ読込モードオン
-			new File(Environment.getExternalStorageDirectory() + "/comittona/").mkdirs();
-			new File(Environment.getExternalStorageDirectory() + "/comittona/share/").mkdirs();
+				// キャッシュ読込モードオン
+				new File(Environment.getExternalStorageDirectory() + "/comittona/").mkdirs();
+				new File(Environment.getExternalStorageDirectory() + "/comittona/share/").mkdirs();
 
-			if(name == null) {
-				name = new String();
-				name = mFileList[page].name;
-			}
-			name = name.replace("\\", "_");
-			name = name.replace("/", "_");
-			String file = Environment.getExternalStorageDirectory() + "/comittona/share/" + name;
-			new File(file).delete();
+				if (name == null) {
+					name = new String();
+					name = mFileList[page].name;
+				}
+				name = name.replace("\\", "_");
+				name = name.replace("/", "_");
+				String file = Environment.getExternalStorageDirectory() + "/comittona/share/" + name;
+				new File(file).delete();
 
-			BufferedOutputStream os;
-			try {
-				os = new BufferedOutputStream(new FileOutputStream(file), 500*1024);
-			}
-			catch (FileNotFoundException e) {
-				Log.e("decodeFile/open", e.getMessage());
-				return null;
-			}
-			byte buff[] = new byte[BIS_BUFFSIZE];
+				BufferedOutputStream os;
+				try {
+					os = new BufferedOutputStream(new FileOutputStream(file), 500 * 1024);
+				} catch (FileNotFoundException e) {
+					Log.e("decodeFile/open", e.getMessage());
+					return null;
+				}
+				byte buff[] = new byte[BIS_BUFFSIZE];
 
-			try {
-				mCheWriteFlag = false;
-				setLoadBitmapStart(page, false);
-				if (mFileType == FILETYPE_ZIP) {
-					// メモリキャッシュ読込時のみZIP展開する
-					// ファイルキャッシュを作成するときはZIP展開不要
-					ZipInputStream zipStream = new ZipInputStream(new BufferedInputStream(this, BIS_BUFFSIZE));
-					zipStream.getNextEntry();
-					int readsum = 0;
-					while (mRunningFlag == true) {
-						int readsize = zipStream.read(buff, 0, buff.length);
-						if (readsize <= 0) {
-							break;
-						}else
-							readsum += readsize;
-						os.write( buff, 0, readsize);
-						// ロード経過をcallback
-						long nowTime = System.currentTimeMillis();
-						if (nowTime - mStartTime > (mMsgCount + 1) * 200) {
-							mMsgCount++;
-							int prog = (int) ((long) readsum * 100 / mDataSize);
-							int rate = (int) ((long) readsum * 10 / (nowTime - mStartTime));
-							sendHandler(MSG_LOADING, prog << 24, rate, null);
+				try {
+					mCheWriteFlag = false;
+					setLoadBitmapStart(page, false);
+					if (mFileType == FILETYPE_ZIP) {
+						// メモリキャッシュ読込時のみZIP展開する
+						// ファイルキャッシュを作成するときはZIP展開不要
+						ZipInputStream zipStream = new ZipInputStream(new BufferedInputStream(this, BIS_BUFFSIZE));
+						zipStream.getNextEntry();
+						int readsum = 0;
+						while (mRunningFlag == true) {
+							int readsize = zipStream.read(buff, 0, buff.length);
+							if (readsize <= 0) {
+								break;
+							} else
+								readsum += readsize;
+							os.write(buff, 0, readsize);
+							// ロード経過をcallback
+							long nowTime = System.currentTimeMillis();
+							if (nowTime - mStartTime > (mMsgCount + 1) * 200) {
+								mMsgCount++;
+								int prog = (int) ((long) readsum * 100 / mDataSize);
+								int rate = (int) ((long) readsum * 10 / (nowTime - mStartTime));
+								sendHandler(MSG_LOADING, prog << 24, rate, null);
+							}
+						}
+					} else if (mFileType == FILETYPE_RAR) {
+						// メモリキャッシュ読込時のみRAR展開する
+						// ファイルキャッシュを作成するときはRAR展開不要
+						mRarStream = new RarInputStream(new BufferedInputStream(this, BIS_BUFFSIZE), page, mFileList[page], mHandler);
+						while (mRunningFlag == true) {
+							int readsize = mRarStream.read(buff, 0, buff.length);
+							if (readsize <= 0) {
+								break;
+							}
+							os.write(buff, 0, readsize);
+						}
+					} else if (mFileType == FILETYPE_PDF) {
+						while (mRunningFlag == true) {
+							int readsize = this.read(buff, 0, buff.length);
+							if (readsize <= 0) {
+								break;
+							}
+							os.write(buff, 0, readsize);
+						}
+					} else {
+						while (mRunningFlag == true) {
+							int readsize = this.read(buff, 0, buff.length);
+							if (readsize <= 0) {
+								break;
+							}
+							os.write(buff, 0, readsize);
 						}
 					}
+					os.flush();
+					os.close();
+					resultPath = file;
+				} catch (IOException e) {
+					Log.e("decodeFile/write", e.getMessage());
+					resultPath = null;
 				}
-				else if (mFileType == FILETYPE_RAR) {
-					// メモリキャッシュ読込時のみRAR展開する
-					// ファイルキャッシュを作成するときはRAR展開不要
-					mRarStream = new RarInputStream(new BufferedInputStream(this, BIS_BUFFSIZE), page, mFileList[page], mHandler);
-					while (mRunningFlag == true) {
-						int readsize = mRarStream.read(buff, 0, buff.length);
-						if (readsize <= 0) {
-							break;
-						}
-						os.write(buff, 0, readsize);
-					}
-				}
-				else if (mFileType == FILETYPE_PDF) {
-					while (mRunningFlag == true) {
-						int readsize = this.read(buff, 0, buff.length);
-						if (readsize <= 0) {
-							break;
-						}
-						os.write(buff, 0, readsize);
-					}
-				}
-				else {
-					while (mRunningFlag == true) {
-						int readsize = this.read(buff, 0, buff.length);
-						if (readsize <= 0) {
-							break;
-						}
-						os.write(buff, 0, readsize);
-					}
-				}
-				os.flush();
-				os.close();
-				resultPath = file;
-			}
-			catch (IOException e) {
-				Log.e("decodeFile/write", e.getMessage());
-				resultPath = null;
-			}
 
-			try {
-				setLoadBitmapEnd();
-			}
-			catch (Exception e) {
-				Log.e("decodeFile/end", e.getMessage());
-				resultPath = null;
+				try {
+					setLoadBitmapEnd();
+				} catch (Exception e) {
+					Log.e("decodeFile/end", e.getMessage());
+					resultPath = null;
+				}
 			}
 		}
 		return resultPath;
