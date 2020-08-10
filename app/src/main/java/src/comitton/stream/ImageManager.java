@@ -2418,11 +2418,11 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void cmpClose() throws IOException {
-// 閲覧終了時に固まるのでコメントアウト
-//		if (mSambaRnd != null) {
-//			mSambaRnd.close();
-//			mSambaRnd = null;
-//		}
+		if (mSambaRnd != null) {
+			// 閲覧終了時に固まるのでコメントアウト
+			//mSambaRnd.close();
+			mSambaRnd = null;
+		}
 		if (mLocalRnd != null) {
 			mLocalRnd.close();
 			mLocalRnd = null;
@@ -2610,12 +2610,17 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void dirEndPage() throws IOException {
-// 閲覧終了時に固まるのでコメントアウト
-//		if (mHostType == HOSTTYPE_SAMBA) {
-//			mSambaRnd.close();
-//		}else {
-			mDirStream.close();
-//		}
+		if (mHostType == HOSTTYPE_SAMBA) {
+			if (mSambaRnd != null) {
+				// 閲覧終了時に固まるのでコメントアウト
+				//mSambaRnd.close();
+				mSambaRnd = null;
+			}
+		}else {
+			if (mDirStream != null) {
+				mDirStream.close();
+			}
+		}
 	}
 
 	public int dirRead(byte buf[], int off, int len) throws IOException {
