@@ -2,6 +2,8 @@ package jp.dip.muracoro.comittona;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -565,9 +567,9 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.d("FileSelectActivity", "onActivityResult requestCode=" + requestCode + ", resultCode=" + resultCode);
 
-		if (requestCode == WRITE_REQUEST_CODE) {
-			// リネームか削除のとき
-			Log.d("FileSelectActivity", "onActivityResult WRITE_REQUEST_CODE");
+		if (requestCode == WRITE_REQUEST_CODE || requestCode == REQUEST_SDCARD_ACCESS) {
+			// リネームか削除かダウンロードのとき
+			Log.d("FileSelectActivity", "onActivityResult WRITE_REQUEST_CODE || REQUEST_SDCARD_ACCESS");
 
 			if (resultCode == RESULT_OK) {
 
@@ -575,7 +577,13 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 
 				// IntentからtreeのURIを取得する
 				Uri treeUri = data.getData();
-				Log.d("FileSelectActivity", "onActivityResult result=OK Uri=" + treeUri.toString());
+				String treeUriDecodeString = "";
+				try {
+					treeUriDecodeString = URLDecoder.decode(treeUri.toString(), "UTF-8");
+					Log.d("FileSelectActivity", "onActivityResult result=OK Uri=" + treeUriDecodeString);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 
 				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 					// Android 7 以上なら
@@ -589,9 +597,18 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					File file = new File(mServer.getPath(ServerSelect.INDEX_LOCAL));
 					// ボリュームのマウントされたフォルダを取得する
 					String baseFolder = FileAccess.getExtSdCardFolder(file);
+
+					// ユーザがアクセス許可したサブディレクトリを取得する
+					int idx = treeUriDecodeString.indexOf(":", 8);
+					if (idx > 0 && idx < treeUriDecodeString.length() - 1) {
+						baseFolder = baseFolder + "/" + treeUriDecodeString.substring(idx + 1); 
+					}
+					Log.d("FileSelectActivity", "onActivityResult result=OK baseFolder=" + baseFolder);
+
+					
 					// ボリュームのtreeUriを保存する
 					Editor ed = mSharedPreferences.edit();
-					ed.putString("permit-uri:" + requestCode + ":" + baseFolder, treeUri.toString());
+					ed.putString("permit-uri:" + baseFolder, treeUri.toString());
 					ed.commit();
 				}
 
@@ -1147,7 +1164,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
 				}
 
-//					isDirectory = mFileData.getName().endsWith("/");
 				file = new File(mPath + mFileData.getName());
 				Log.d("FileSelectActivity", "onCreateDialog パーミッション取得済みか検査します。");
 				if (FileAccess.isPermit(file) == false) {
@@ -1247,7 +1263,6 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
 				}
 
-//					isDirectory = mFileData.getName().endsWith("/");
 				file = new File(mServer.getPath(ServerSelect.INDEX_LOCAL));
 				Log.d("FileSelectActivity", "onCreateDialog パーミッション取得済みか検査します。");
 				if (FileAccess.isPermit(file) == false) {
@@ -1380,18 +1395,16 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			case DEF.MESSAGE_FILE_RENAME: {
 
 				//==== パーミッション承認状態判定(書き込み) ====//
-				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-				{
+				if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 					//==== 承認要求を行う ====//
 					ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
 				}
 
-				isDirectory = mFileData.getName().endsWith("/");
 				file = new File(mPath + mFileData.getName());
 				Log.d("FileSelectActivity", "onCreateDialog パーミッション取得済みか検査します。");
-				if (FileAccess.getDocumentFile(file, isDirectory) == null) {
-					Log.d("FileSelectActivity", "onCreateDialog ストレージ書き込みの承認を取得します。");
+				if (FileAccess.isPermit(file) == false) {
 					// ストレージ個別の承認が未取得
+					Log.d("FileSelectActivity", "onCreateDialog ストレージ書き込みの承認を取得します。");
 					mCommand = DEF.MESSAGE_FILE_RENAME;
 					if (startStorageAccessIntent(file, WRITE_REQUEST_CODE) == false) {
 						break;

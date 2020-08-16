@@ -185,6 +185,7 @@ public class FileAccess {
 						String item = url.substring(idx + 1);
 						try {
 							documentFile = FileAccess.getDocumentFile(new File(path), true);
+							Log.d("FileAccess", "localOutputStream Parent=" + documentFile);
 //							documentFile.createFile("application/octet-stream", item);
 							documentFile.createFile("*/*", item);
 							documentFile = FileAccess.getDocumentFile(orgfile, false);
@@ -571,22 +572,34 @@ public class FileAccess {
 	}
 
 	public static boolean isPermit(final File file) {
-		Log.d("FileAccess", "getDocumentFile START");
+		String treeUriString = "";
+		Log.d("FileAccess", "isPermit START");
 		String baseFolder = getExtSdCardFolder(file);
-		Log.d("FileAccess", "getDocumentFile baseFolder=" + baseFolder);
+		Log.d("FileAccess", "isPermit baseFolder=" + baseFolder);
 
 		if (baseFolder == null) {
 			return true;
 		}
 
-		String treeUriString = "";
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+
+		treeUriString = sharedPreferences.getString("permit-uri:" + baseFolder, "");
+		if (treeUriString != null && treeUriString.length() != 0) {
+			return true;
+		}
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			// Android ７以上なら
-			treeUriString = sharedPreferences.getString("permit-uri:" + baseFolder, "");
-			if (treeUriString != null && treeUriString.length() != 0) {
-				return true;
+			String[] parts = file.toString().substring(baseFolder.length() + 1).split("\\/");
+			for (int i = 0; i < parts.length; i++) {
+				baseFolder = baseFolder + "/" + parts[i];
+				Log.d("FileAccess", "isPermit baseFolder=" + baseFolder);
+				treeUriString = sharedPreferences.getString("permit-uri:" + baseFolder, "");
+				if (treeUriString != null && treeUriString.length() != 0) {
+					return true;
+				}
 			}
+
 		}
 		return false;
 	}
@@ -599,7 +612,7 @@ public class FileAccess {
 		Log.d("FileAccess", "getDocumentFile START");
 		DocumentFile document = null;
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			// Android 10.0 なら
 			String baseFolder = getExtSdCardFolder(file);
 			Log.d("FileAccess", "getDocumentFile baseFolder=" + baseFolder);
@@ -620,40 +633,53 @@ public class FileAccess {
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
 			treeUriString = sharedPreferences.getString("permit-uri:" + baseFolder, "");
 
-			if (treeUriString == null || treeUriString.length() == 0) {
-				return null;
+			if (treeUriString != null && treeUriString.length() != 0) {
+				Uri treeUri = Uri.parse(treeUriString);
+				if (treeUri == null) {
+					return null;
+				}
+				// start with root of SD card and then parse through document tree.
+				document = DocumentFile.fromTreeUri(mActivity, treeUri);
 			}
 
-			Uri treeUri = Uri.parse(treeUriString);
-
-			if (treeUri == null) {
-				return null;
-			}
-
-			// start with root of SD card and then parse through document tree.
-			document = DocumentFile.fromTreeUri(mActivity, treeUri);
-
-			String[] parts = relativePath.split("\\/");
+			String[] parts = file.toString().substring(baseFolder.length() + 1).split("\\/");
 			for (int i = 0; i < parts.length; i++) {
-				DocumentFile nextDocument = document.findFile(parts[i]);
-
-				if (nextDocument == null) {
-					if ((i < parts.length - 1) || isDirectory) {
-						nextDocument = document.createDirectory(parts[i]);
-					} else {
-						nextDocument = document.createFile("image", parts[i]);
+				if (treeUriString == null || treeUriString.length() == 0) {
+					baseFolder = baseFolder + "/" + parts[i];
+					Log.d("FileAccess", "getDocumentFile baseFolder=" + baseFolder);
+					treeUriString = sharedPreferences.getString("permit-uri:" + baseFolder, "");
+					if (treeUriString != null && treeUriString.length() != 0) {
+						Uri treeUri = Uri.parse(treeUriString);
+						if (treeUri == null) {
+							return null;
+						}
+						// start with root of SD card and then parse through document tree.
+						document = DocumentFile.fromTreeUri(mActivity, treeUri);
 					}
 				}
-				document = nextDocument;
+				else {
+					Log.d("FileAccess", "getDocumentFile path=" + parts[i]);
+					DocumentFile nextDocument = document.findFile(parts[i]);
+
+					if (nextDocument == null) {
+						if ((i < parts.length - 1) || isDirectory) {
+							nextDocument = document.createDirectory(parts[i]);
+						} else {
+							nextDocument = document.createFile("*/*", parts[i]);
+						}
+					}
+					document = nextDocument;
+				}
 			}
+
 			if (document != null) {
 				return document;
 			}
 		}
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			// Android 7 以上なら
-			document = DocumentFile.fromFile(file);
-		}
+//		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//			// Android 7 以上なら
+//			document = DocumentFile.fromFile(file);
+//		}
 		return document;
 	}
 

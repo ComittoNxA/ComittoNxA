@@ -103,10 +103,10 @@
             android:summary="現在の設定に名前をつけてファイルに出力します。\n（[sdcard]/comittona/conf/*.setに保存）"
             android:title="設定の保存" />
         <src.comitton.config.ImportSettingPreference
-            android:dialogTitle="設定のファイルの適用"
+            android:dialogTitle="設定ファイルの適用"
             android:key="ImportSetting"
             android:summary="選択したファイルの内容を現在の設定に上書します。\n ([sdcard]/comittona/conf/*.setを参照)"
-            android:title="設定のファイルの適用" />
+            android:title="設定ファイルの適用" />
     </PreferenceCategory>
     <PreferenceCategory android:title="オンラインヘルプ" >
         <PreferenceScreen
