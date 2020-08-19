@@ -142,6 +142,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 		File lfiles[] = null;
 		SmbFile sfile = null;
 		SmbFile[] sfiles = null;
+		String[] fnames = null;
 //		WDFileData[] wdfiles = null;
 
 		ArrayList<FileData> fileList = null;
@@ -157,11 +158,21 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			}
 			else if (mListMode == LISTMODE_SERVER) {
 				// サーバの場合のファイル一覧取得
-				// サーバの場合のファイル一覧取得
 				sfile = FileAccess.authSmbFile(mUri + mPath, mUser, mPass);
-				sfiles = sfile.listFiles();
-				if (sfiles == null) {
-					flag = true;
+				
+				if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
+					// ホスト名までしか指定されていない場合
+					fnames = sfile.list();
+					for(String fname :fnames) {
+						Log.d("FileSelectList", "run fname=" + fname);
+					}
+				}
+				else {
+					// 共有ポイントまで指定済みの場合
+					sfiles = sfile.listFiles();
+					if (sfiles == null) {
+						flag = true;
+					}
 				}
 			}
 			else {
@@ -212,7 +223,14 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			if (mListMode == LISTMODE_LOCAL) {
 				length = lfiles.length;
 			} else if (mListMode == LISTMODE_SERVER) {
-				length = sfiles.length;
+				if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
+					// ホスト名までしか指定されていない場合
+					length = fnames.length;
+				}
+				else {
+					// 共有ポイントまで指定済みの場合
+					length = sfiles.length;
+				}
     		} else {
 //    			length = wdfiles.length;
     		}
@@ -235,16 +253,25 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					size = lfiles[i].length();
 					date = lfiles[i].lastModified();
 				} else if (mListMode == LISTMODE_SERVER) {
-					name = sfiles[i].getName();
-					Log.d("FileSelectList", "run name=" + name);
-					int len = name.length();
-					if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
+					if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
+						// ホスト名までしか指定されていない場合
+						name = fnames[i];
+						// 全部フォルダ扱い
 						flag = true;
-					} else {
-						flag = false;
 					}
-					size = sfiles[i].length();
-					date = sfiles[i].lastModified();
+					else {
+						// 共有ポイントまで指定されている場合
+						name = sfiles[i].getName();
+						Log.d("FileSelectList", "run name=" + name);
+						int len = name.length();
+						if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
+							flag = true;
+						} else {
+							flag = false;
+						}
+						size = sfiles[i].length();
+						date = sfiles[i].lastModified();
+					}
 				}
 				else {
 					// WebDAV
