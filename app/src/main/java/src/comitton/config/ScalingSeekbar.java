@@ -1,8 +1,9 @@
 package src.comitton.config;
 
-import src.comitton.common.DEF;
 import android.content.Context;
 import android.util.AttributeSet;
+
+import src.comitton.common.DEF;
 
 public class ScalingSeekbar extends SeekBarPreference {
 
