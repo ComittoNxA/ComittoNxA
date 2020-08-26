@@ -148,7 +148,8 @@ public class FileAccess {
 			context = SingletonContext.getInstance().withCredentials(smbAuth);
 
 		} else {
-			context = SingletonContext.getInstance().withAnonymousCredentials();
+			context = SingletonContext.getInstance().withGuestCrendentials();
+			//context = SingletonContext.getInstance().withAnonymousCredentials();
 
 			//smbAuth = new NtlmPasswordAuthenticator();
 
