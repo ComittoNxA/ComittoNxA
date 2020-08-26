@@ -45,6 +45,19 @@
             android:key="Extension"
             android:summary="파일 이름 확장명을 표시하는"
             android:title="확장자보기" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="SplitFilename"
+            android:summary="바둑판에서 파일 이름을 [] ()으로 분할하여 표시"
+            android:title="파일 이름의 분할" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="바둑판의 텍스트 줄 수"
+            android:entries="@array/max_lines_name_list"
+            android:entryValues="@array/max_lines_value_list"
+            android:key="MaxLinesFilename"
+            android:summary="dummy"
+            android:title="바둑판의 텍스트 줄 수" />
         <ListPreference
             android:defaultValue="2"
             android:dialogTitle="삭제 메뉴 표시"

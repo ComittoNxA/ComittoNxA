@@ -92,25 +92,23 @@ public class FileAccess {
 		String host = "";
 		String share = "";
 		String path = "";
-		String key = "";
 		int idx;
 
 		// SMBの基本設定
 		Properties prop = new Properties();
 		prop.setProperty("jcifs.smb.client.minVersion", "SMB1");
 		prop.setProperty("jcifs.smb.client.maxVersion", "SMB311");
+		prop.setProperty("jcifs.traceResources", "true");
 		
 //		prop.setProperty("jcifs.smb.client.flags2", "0xc853");
-//
-//		prop.put("jcifs.traceResources", "true");
-//		prop.put("jcifs.smb.client.signingPreferred", "true");
-//		prop.put("jcifs.smb.client.signingEnforced", "true");
-//		prop.put("jcifs.smb.client.ipcSigningEnforced", "true");
-		
+//		prop.setProperty("jcifs.smb.client.signingPreferred", "true");
+//		prop.setProperty("jcifs.smb.client.signingEnforced", "true");
+//		prop.setProperty("jcifs.smb.client.ipcSigningEnforced", "true");
+//		prop.setProperty("jcifs.smb.client.disableSpnegoIntegrity", "true");
 		
 		try {
 			Configuration config = new PropertyConfiguration(prop);
-			//BaseContext bc = new BaseContext(config);
+			//context = new BaseContext(config);
 			// 接続数リークを避ける呼び出し方法
 			SingletonContext.init(prop);
 			//context = SingletonContext.getInstance();
@@ -141,34 +139,25 @@ public class FileAccess {
 
 		Log.d("FileAccess", "authSmbFile domain=" + domain + ", user=" + user + ", pass=" + pass + ", host=" + host + ", share=" + share + ", path=" + path);
 
-//		key = "smb://";
-//		if (domain.length() != 0) {
-//			key += domain + ";";
-//		}
-//		if (user.length() != 0) {
-//			key += user;
-//			if (pass.length() != 0) {
-//				key += ":" + pass + "@";
-//			}
-//		}
-//		key += host + "/" + share + path;
+		if (domain != null && domain.length() != 0) {
+			smbAuth = new NtlmPasswordAuthenticator(domain, user, pass);
+			context = SingletonContext.getInstance().withCredentials(smbAuth);
 
-		String encUrl = null;
-		
-			if (domain != null && domain.length() != 0) {
-				smbAuth = new NtlmPasswordAuthenticator(domain, user, pass);
-				context = SingletonContext.getInstance().withCredentials(smbAuth);
-	
-			} else if (user != null && user.length() != 0) {
-				smbAuth = new NtlmPasswordAuthenticator(user, pass);
-				context = SingletonContext.getInstance().withCredentials(smbAuth);
+		} else if (user != null && user.length() != 0) {
+			smbAuth = new NtlmPasswordAuthenticator(user, pass);
+			context = SingletonContext.getInstance().withCredentials(smbAuth);
 
-			} else {
-				//smbAuth = new NtlmPasswordAuthenticator();
-				//context = SingletonContext.getInstance().withCredentials(smbAuth);
-				context = SingletonContext.getInstance().withAnonymousCredentials();
-				//context = SingletonContext.getInstance().withGuestCrendentials();
-			}
+		} else {
+			context = SingletonContext.getInstance().withAnonymousCredentials();
+
+			//smbAuth = new NtlmPasswordAuthenticator();
+
+			//context = SingletonContext.getInstance().withCredentials(smbAuth);
+			//context = SingletonContext.getInstance().withGuestCrendentials();
+			//context = SingletonContext.getInstance();
+			//context = context.withAnonymousCredentials();
+			//context = context.withCredentials(smbAuth);
+		}
 
 		sfile = new SmbFile(url, context);
 		return sfile;

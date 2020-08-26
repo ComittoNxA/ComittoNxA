@@ -45,6 +45,19 @@
             android:key="Extension"
             android:summary="ファイル名の拡張子を表示する"
             android:title="拡張子の表示" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="SplitFilename"
+            android:summary="タイル表示でファイル名を[]()で分割して表示する"
+            android:title="ファイル名の分割" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="タイル表示のテキストの行数"
+            android:entries="@array/max_lines_name_list"
+            android:entryValues="@array/max_lines_value_list"
+            android:key="MaxLinesFilename"
+            android:summary="dummy"
+            android:title="タイル表示のテキストの行数" />
         <ListPreference
             android:defaultValue="2"
             android:dialogTitle="削除メニューの表示"

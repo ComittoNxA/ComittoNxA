@@ -1,7 +1,6 @@
 package src.comitton.config;
 
 import src.comitton.common.DEF;
-import src.comitton.common.MODULE;
 import jp.dip.muracoro.comittona.R;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +16,8 @@ import android.preference.PreferenceScreen;
 
 public class SetImageDetailActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	private WAdjustSeekbar   mWAdjust;
-	private ScalingSeekbar   mScaling;
+	private WScalingSeekbar mWScaling;
+	private ScalingSeekbar mScaling;
 	private LongTapSeekbar   mLongTap;
 	private ScrlRngWSeekbar   mScrlRngW;
 	private ScrlRngHSeekbar   mScrlRngH;
@@ -50,6 +50,7 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 
 		mLongTap   = (LongTapSeekbar)getPreferenceScreen().findPreference(DEF.KEY_LONGTAP);
 		mWAdjust   = (WAdjustSeekbar)getPreferenceScreen().findPreference(DEF.KEY_WADJUST);
+		mWScaling   = (WScalingSeekbar)getPreferenceScreen().findPreference(DEF.KEY_WSCALING);
 		mScaling   = (ScalingSeekbar)getPreferenceScreen().findPreference(DEF.KEY_SCALING);
 		mScrlRngW  = (ScrlRngWSeekbar)getPreferenceScreen().findPreference(DEF.KEY_SCRLRNGW);
 		mScrlRngH  = (ScrlRngHSeekbar)getPreferenceScreen().findPreference(DEF.KEY_SCRLRNGH);
@@ -83,7 +84,8 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 		// シークバー
 		mLongTap.setSummary(getLongTapSummary(sharedPreferences));
 		mWAdjust.setSummary(getWAdjustSummary(sharedPreferences));
-		mScaling.setSummary(getScalingSummary(sharedPreferences));		// イメージ幅調整
+		mWScaling.setSummary(getWScalingSummary(sharedPreferences));	// イメージ幅調整
+		mScaling.setSummary(getScalingSummary(sharedPreferences));		// イメージ拡大縮小
 		mScrlRngW.setSummary(getScrlRngWSummary(sharedPreferences));
 		mScrlRngH.setSummary(getScrlRngHSummary(sharedPreferences));
 		mAutoPlay.setSummary(getAutoPlaySummary(sharedPreferences));
@@ -109,8 +111,12 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 			// 縦横比調整
 			mWAdjust.setSummary(getWAdjustSummary(sharedPreferences));
 		}
-		else if(key.equals(DEF.KEY_SCALING)){
+		else if(key.equals(DEF.KEY_WSCALING)){
 			// 幅調整
+			mWScaling.setSummary(getWScalingSummary(sharedPreferences));
+		}
+		else if(key.equals(DEF.KEY_SCALING)){
+			// 拡大縮小
 			mScaling.setSummary(getScalingSummary(sharedPreferences));
 		}
 		else if(key.equals(DEF.KEY_SCRLRNGW)){
@@ -145,6 +151,12 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 	public static int getWAdjust(SharedPreferences sharedPreferences){
 		int num;
 		num = DEF.getInt(sharedPreferences, DEF.KEY_WADJUST, DEF.DEFAULT_WADJUST);
+		return num;
+	}
+
+	public static int getWScaling(SharedPreferences sharedPreferences){
+		int num;
+		num = DEF.getInt(sharedPreferences, DEF.KEY_WSCALING, DEF.DEFAULT_WSCALING);
 		return num;
 	}
 
@@ -211,6 +223,15 @@ public class SetImageDetailActivity extends PreferenceActivity implements OnShar
 		String summ2 = res.getString(R.string.aspcSumm2);
 
 		return	DEF.getAdjustStr(val, summ1, summ2);
+	}
+
+	private String getWScalingSummary(SharedPreferences sharedPreferences){
+		int val = getWScaling(sharedPreferences);
+		Resources res = getResources();
+		String summ1 = res.getString(R.string.scalSumm1);
+		String summ2 = res.getString(R.string.scalSumm2);
+
+		return	DEF.getWScalingStr(val, summ1, summ2);
 	}
 
 	private String getScalingSummary(SharedPreferences sharedPreferences){

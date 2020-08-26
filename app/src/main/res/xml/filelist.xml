@@ -45,6 +45,19 @@
             android:key="Extension"
             android:summary="Show extension in the file name."
             android:title="Show Extension" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="SplitFilename"
+            android:summary="Split the file name with []() in Tile View"
+            android:title="Split the file name" />
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="Max lines of Tile View"
+            android:entries="@array/max_lines_name_list"
+            android:entryValues="@array/max_lines_value_list"
+            android:key="MaxLinesFilename"
+            android:summary="dummy"
+            android:title="Max lines of Tile View" />
         <ListPreference
             android:defaultValue="1"
             android:dialogTitle="Show Delete File"

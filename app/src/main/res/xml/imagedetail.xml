@@ -8,13 +8,20 @@
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="Aspect Ratie" />
-        <src.comitton.config.ScalingSeekbar
+        <src.comitton.config.WScalingSeekbar
             android:dialogMessage="Adjust the width of the iamge."
             android:dialogTitle="Image Width"
-            android:key="Scaling"
+            android:key="WScaling"
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="Image Width" />
+        <src.comitton.config.ScalingSeekbar
+            android:dialogMessage="Scale image to specified size"
+            android:dialogTitle="Image scaling"
+            android:key="Scaling"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="Image scaling" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="AccessLamp"

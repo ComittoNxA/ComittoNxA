@@ -3415,8 +3415,9 @@ public class ImageManager extends InputStream implements Runnable {
 	private int mScrAlgoMode;
 	private int mScrRotate;
 	private int mScrScale; // 任意倍率
-	private int mScrWAdjust; // 幅調整
-	private int mScrImgScale; // 幅調整
+	private int mScrWAdjust; // 幅調整縮小
+	private int mScrWidthScale; // 幅調整
+	private int mScrImgScale; // 拡大
 	private int mMarginCut; // 余白削除
 	private int mSharpen;	// シャープ化
 	private int mInvert;	// カラー反転
@@ -3449,10 +3450,11 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	// 設定変更
-	public void setConfig(int mode, int center, boolean fFitDual, int dispMode, boolean noExpand, int algoMode, int rotate, int wadjust, int wscale, int pageway, int mgncut, int quality, int bright, int gamma, boolean sharpen, boolean invert, boolean gray, boolean coloring, boolean pseland, boolean moire, boolean topsingle, boolean scaleinit) {
+	public void setConfig(int mode, int center, boolean fFitDual, int dispMode, boolean noExpand, int algoMode, int rotate, int wadjust, int wscale, int scale, int pageway, int mgncut, int quality, int bright, int gamma, boolean sharpen, boolean invert, boolean gray, boolean coloring, boolean pseland, boolean moire, boolean topsingle, boolean scaleinit) {
+		Log.d("ImageManager", "setConfig wscale=" + wscale + ", scale=" + scale);
 		mScrScaleMode = mode;
 		if (scaleinit) {
-			mScrScale = 100;	// 初期化
+			mScrScale = scale;	// 初期化
 		}
 		mScrCenter = center;
 		mScrFitDual = fFitDual;
@@ -3461,7 +3463,8 @@ public class ImageManager extends InputStream implements Runnable {
 		mScrAlgoMode = algoMode;
 		mScrRotate = rotate;
 		mScrWAdjust = wadjust;
-		mScrImgScale = wscale;
+		mScrWidthScale = wscale;
+		mScrImgScale = scale;
 		mPageWay = pageway;
 		mMarginCut = mgncut;
 		mBright = bright;
@@ -3758,8 +3761,8 @@ public class ImageManager extends InputStream implements Runnable {
 			}
 		}
 		// 画像幅調整
-		if (mScrImgScale != 100) {
-			src_x[0] = src_x[0] * mScrImgScale / 100;
+		if (mScrWidthScale != 100) {
+			src_x[0] = src_x[0] * mScrWidthScale / 100;
 		}
 
 		if (half1 != 0) {
@@ -3783,8 +3786,8 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 			// 画像幅調整
-			if (mScrImgScale != 100) {
-				src_x[1] = src_x[1] * mScrImgScale / 100;
+			if (mScrWidthScale != 100) {
+				src_x[1] = src_x[1] * mScrWidthScale / 100;
 			}
 
 			if (half2 != 0) {

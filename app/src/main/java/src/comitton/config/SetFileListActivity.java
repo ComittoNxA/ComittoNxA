@@ -20,6 +20,7 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 	private ListPreference mListSort;
 	private ListPreference mBackMode;
 
+	private ListPreference mMaxLines;
 	private ListPreference mFileDelMenu;
 	private ListPreference mFileRenMenu;
 
@@ -77,6 +78,7 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 		mListRota  = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_LISTROTA);
 		mListSort  = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_LISTSORT);
 		mBackMode  = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_BACKMODE);
+		mMaxLines = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_MAX_LINES);
 		mFileDelMenu = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_FILEDELMENU);
 		mFileRenMenu = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_FILERENMENU);
 		mFontTitle = (FontTitleSeekbar)getPreferenceScreen().findPreference(DEF.KEY_FONTTITLE);
@@ -115,6 +117,7 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 		mListRota.setSummary(getListRotaSummary(sharedPreferences));	// ファイル選択画面の回転制御
 		mListSort.setSummary(getListSortSummary(sharedPreferences));	// ソート
 		mBackMode.setSummary(getBackModeSummary(sharedPreferences));	// 戻るボタン動作
+		mMaxLines.setSummary(getMaxLinesSummary(sharedPreferences));		// ファイル名の行数
 		mFileDelMenu.setSummary(getFileDelMenuSummary(sharedPreferences));		// 削除メニュー表示
 		mFileRenMenu.setSummary(getFileRenMenuSummary(sharedPreferences));		// 名前変更メニュー表示
 		mFontTitle.setSummary(getFontTitleSummary(sharedPreferences));	// フォントサイズ(px)
@@ -185,6 +188,10 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 			//
 			mListThumbSeek.setSummary(getListThumbSeekSummary(sharedPreferences));
 		}
+		else if(key.equals(DEF.KEY_MAX_LINES)){
+			//
+			mMaxLines.setSummary(getMaxLinesSummary(sharedPreferences));
+		}
 		else if(key.equals(DEF.KEY_FILEDELMENU)){
 			//
 			mFileDelMenu.setSummary(getFileDelMenuSummary(sharedPreferences));
@@ -209,6 +216,14 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 		int val = DEF.getInt(sharedPreferences, DEF.KEY_LISTSORT, "2");
 		if(val < 0 || val > ListSortName.length){
 			val = 0;
+		}
+		return val;
+	}
+
+	public static int getMaxLines(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_MAX_LINES, "2");
+		if(val <= 0 || val > 10){
+			val = 2;
 		}
 		return val;
 	}
@@ -393,6 +408,12 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 		return flag;
 	}
 
+	public static boolean getSplitFilename(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_SPLIT_FILENAME, true);
+		return flag;
+	}
+
 	public static boolean getThumbnailSort(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_THUMBSORT, false);
@@ -441,6 +462,11 @@ public class SetFileListActivity extends PreferenceActivity implements OnSharedP
 		int val = getListSort(sharedPreferences);
 		Resources res = getResources();
 		return res.getString(ListSortName[val]);
+	}
+
+	private String getMaxLinesSummary(SharedPreferences sharedPreferences){
+		int val = getMaxLines(sharedPreferences);
+		return String.valueOf(val);
 	}
 
 	private String getFileDelMenuSummary(SharedPreferences sharedPreferences){

@@ -115,6 +115,10 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
 			mSummary1 = mContext.getString(R.string.aspcSumm1);
 			mSummary2 = mContext.getString(R.string.aspcSumm2);
 		}
+		else if (mKey.equals(DEF.KEY_WSCALING)) {
+			mSummary1 = mContext.getString(R.string.scalSumm1);
+			mSummary2 = mContext.getString(R.string.scalSumm2);
+		}
 		else if (mKey.equals(DEF.KEY_SCALING)) {
 			mSummary1 = mContext.getString(R.string.scalSumm1);
 			mSummary2 = mContext.getString(R.string.scalSumm2);
@@ -222,6 +226,9 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
 		}
 		else if (mKey.equals(DEF.KEY_WADJUST)) {
 			strSummary = DEF.getAdjustStr(num, mSummary1, mSummary2);
+		}
+		else if (mKey.equals(DEF.KEY_WSCALING)) {
+			strSummary = DEF.getWScalingStr(num, mSummary1, mSummary2);
 		}
 		else if (mKey.equals(DEF.KEY_SCALING)) {
 			strSummary = DEF.getScalingStr(num, mSummary1, mSummary2);

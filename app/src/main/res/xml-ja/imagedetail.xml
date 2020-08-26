@@ -8,13 +8,20 @@
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="画面縦横比率の調整" />
-        <src.comitton.config.ScalingSeekbar
+        <src.comitton.config.WScalingSeekbar
             android:dialogMessage="イメージの幅を指定のサイズに拡大/縮小する"
             android:dialogTitle="イメージの幅の調整"
-            android:key="Scaling"
+            android:key="WScaling"
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="イメージ幅の調整" />
+        <src.comitton.config.ScalingSeekbar
+            android:dialogMessage="イメージを指定のサイズに拡大/縮小する"
+            android:dialogTitle="イメージの拡大縮小"
+            android:key="Scaling"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="イメージの拡大縮小" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="AccessLamp"

@@ -777,8 +777,8 @@ public class ListScreenView extends SurfaceView implements SurfaceHolder.Callbac
 		mMenuListArea.setDrawColor(clr_txt, clr_inf, clr_bak, clr_cur, clr_frm);
 	}
 
-	public void setDrawInfo(int tilesize, int titlesize, int infosize, int margin, boolean showext) {
-		mFileListArea.setDrawInfo(tilesize, titlesize, infosize, margin, showext);
+	public void setDrawInfo(int tilesize, int titlesize, int infosize, int margin, boolean showext, boolean splitfilename, int maxlines) {
+		mFileListArea.setDrawInfo(tilesize, titlesize, infosize, margin, showext, splitfilename, maxlines);
 		mDirListArea.setDrawInfo(titlesize, infosize, margin);
 		mServerListArea.setDrawInfo(titlesize, infosize, margin);
 		mFavoListArea.setDrawInfo(titlesize, infosize, margin);

@@ -76,7 +76,8 @@ public class FileListArea extends ListArea implements Handler.Callback {
 
 	private int mMaxLines = 2;
 	private boolean mShowExt;
-	private boolean mSeparate = true;
+	private boolean mSplitFilename;
+//	private boolean mSeparate = true;
 
 	private Paint mBitmapPaint;
 	private Paint mFillPaint;
@@ -371,13 +372,15 @@ public class FileListArea extends ListArea implements Handler.Callback {
 					int dot = name[0].lastIndexOf('.');
 					if (type != FileData.FILETYPE_DIR && type != FileData.FILETYPE_PARENT) {
 						if (dot >= 1 && dot < name[0].length() - 1) {
-							name[3] = name[0].substring(dot + 1);
-							if (mSeparate == true || mShowExt == false) {
+							if (mSplitFilename == true && mShowExt == true) {
+								name[3] = name[0].substring(dot + 1);
+							}
+							if (mSplitFilename == true || mShowExt == false) {
 								name[0] = name[0].substring(0, dot);
 							}
 						}
 					}
-					if (mSeparate == true) {
+					if (mSplitFilename == true) {
 						// 角括弧を取得(2個目以降は無視)
 						int open_braket = name[0].indexOf('[');
 						int close_braket = name[0].indexOf(']');
@@ -407,11 +410,11 @@ public class FileListArea extends ListArea implements Handler.Callback {
 					}
 					//Log.d("comitton", "FileListArea drawTileItems name[0]=\"" + name[0] + "\", name[1]=\"" + name[1] + "\", name[2]=\"" + name[2] + "\", name[3]=\"" + name[3] + "\"");
 
-					mText[0][index] = TextFormatter.getMultiLine(name[0], mItemWidth - mItemMargin * 2, mNamePaint, 10);
-					if (mSeparate == true) {
-						mText[1][index] = TextFormatter.getMultiLine(name[1], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
-						mText[2][index] = TextFormatter.getMultiLine(name[2], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
-						mText[3][index] = TextFormatter.getMultiLine(name[3], mItemWidth - mItemMargin * 2, mInfoPaint, 10);
+					mText[0][index] = TextFormatter.getMultiLine(name[0], mItemWidth - mItemMargin * 2, mNamePaint, mMaxLines);
+					if (mSplitFilename == true) {
+						mText[1][index] = TextFormatter.getMultiLine(name[1], mItemWidth - mItemMargin * 2, mInfoPaint, mMaxLines);
+						mText[2][index] = TextFormatter.getMultiLine(name[2], mItemWidth - mItemMargin * 2, mInfoPaint, mMaxLines);
+						mText[3][index] = TextFormatter.getMultiLine(name[3], mItemWidth - mItemMargin * 2, mInfoPaint, mMaxLines);
 					}
 				}
 
@@ -424,7 +427,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 					}
 				}
 
-				if (mSeparate == true) {
+				if (mSplitFilename == true) {
 
 					if (mText[1][index] != null) {
 						for (int i = 0; i < mText[1][index].length; i++) {
@@ -709,13 +712,15 @@ public class FileListArea extends ListArea implements Handler.Callback {
 		mChangeLayout = true;
 	}
 
-	public void setDrawInfo(int tilesize, int titlesize, int infosize, int margin, boolean showext) {
+	public void setDrawInfo(int tilesize, int titlesize, int infosize, int margin, boolean showext, boolean splitfilename, int maxlines) {
 		mTileSize = tilesize;
 		mTitleSize = titlesize;
 		mInfoSize = infosize;
 		mItemMargin = (short)margin;
 		mShowExt = showext;
-
+		mSplitFilename = splitfilename;
+		mMaxLines = maxlines;
+		
 		// テキスト描画属性設定
 		FontMetrics fm;
 		mNamePaint.setTextSize(mTileSize);
@@ -888,7 +893,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				rowNum = (listSize + (columnNum - 1)) / columnNum;
 
 				// 項目の高さ(タイルは固定)
-				mItemHeight = (short)(mIconHeight + (mTileSize + mTileDescent) * (mMaxLines + 3) + mItemMargin * 3);
+				mItemHeight = (short)(mIconHeight + (mTileSize + mTileDescent) * mMaxLines + mItemMargin * 3);
 				disprange = (mAreaHeight / mItemHeight + 2) * columnNum;
 			}
 			// 項目の幅

@@ -191,6 +191,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 	private boolean mParentMove;
 	private boolean mClearTop;
 	private boolean mShowExt;
+	private boolean mSplitFilename;
+	private int mMaxLines;
 	private int mShowDelMenu;
 	private int mShowRenMenu;
 
@@ -314,7 +316,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mListScreenView.mToolbarArea.setDisplay(mToolbarShow, mToolbarSize, mToolbarLabel, mTldColor, mTlbColor);
 
 		mListScreenView.setDrawColor(mDirColor, mImgColor, mBefColor, mNowColor, mAftColor, mBakColor, mCurColor, mMrkColor, mTlbColor, mTxtColor, mInfColor);
-		mListScreenView.setDrawInfo(mFontTile, mFontMain, mFontSub, mItemMargin, mShowExt);
+		mListScreenView.setDrawInfo(mFontTile, mFontMain, mFontSub, mItemMargin, mShowExt, mSplitFilename, mMaxLines);
 		mListScreenView.setListType(mListType);
 		mListScreenView.setListSortType(RecordList.TYPE_FILELIST, mSortMode); // ソート状態を設定
 		mListScreenView.mFileListArea.setThumbnail(mThumbnail, mThumbSizeW, mThumbSizeH, mListThumbSizeH);
@@ -805,6 +807,8 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mRotateBtn = DEF.RotateBtnList[SetCommonActivity.getRotateBtn(mSharedPreferences)];
 		mClearTop = SetFileListActivity.getCrearTop(mSharedPreferences);
 		mShowExt = SetFileListActivity.getExtension(mSharedPreferences);
+		mSplitFilename = SetFileListActivity.getSplitFilename(mSharedPreferences);
+		mMaxLines = SetFileListActivity.getMaxLines(mSharedPreferences);
 		mThumbSort = SetFileListActivity.getThumbnailSort(mSharedPreferences);
 		mParentMove = SetFileListActivity.getParentMove(mSharedPreferences);
 		mShowDelMenu = SetFileListActivity.getFileDelMenu(mSharedPreferences);
@@ -945,6 +949,12 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 			return true;
 		}
 		if (mShowExt != SetFileListActivity.getExtension(mSharedPreferences)) {
+			return true;
+		}
+		if (mSplitFilename != SetFileListActivity.getSplitFilename(mSharedPreferences)) {
+			return true;
+		}
+		if (mMaxLines != SetFileListActivity.getMaxLines(mSharedPreferences)) {
 			return true;
 		}
 		if (mThumbSort != SetFileListActivity.getThumbnailSort(mSharedPreferences)) {

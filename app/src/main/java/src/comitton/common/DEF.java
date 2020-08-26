@@ -259,6 +259,7 @@ public class DEF {
 	public static final String KEY_MARGIN = "Mergin";
 	public static final String KEY_LONGTAP = "LongTap";
 	public static final String KEY_WADJUST = "WAdjust";
+	public static final String KEY_WSCALING = "WScaling";
 	public static final String KEY_SCALING = "Scaling";
 	public static final String KEY_CENTER = "Center";
 	public static final String KEY_GRADATION = "Gradation";
@@ -312,6 +313,8 @@ public class DEF {
 	public static final String KEY_CLEARTOP = "ClearTop";
 	public static final String KEY_HISTNUM = "RLSave3";
 	public static final String KEY_EXTENSION = "Extension";
+	public static final String KEY_SPLIT_FILENAME = "SplitFilename";
+	public static final String KEY_MAX_LINES = "MaxLinesFilename";
 	public static final String KEY_THUMBSORT = "ThumbSort";
 	public static final String KEY_PARENTMOVE = "ParentMove";
 	public static final String KEY_FILEDELMENU = "FileDelMenu";
@@ -379,7 +382,8 @@ public class DEF {
 	public static final int DEFAULT_MARGIN = 0;
 	public static final int DEFAULT_LONGTAP = 4;
 	public static final int DEFAULT_WADJUST = 25; // -25～+25(1%単位)
-	public static final int DEFAULT_SCALING = 25; // -25～+25(1%単位)
+	public static final int DEFAULT_WSCALING = 25; // -25～+25(1%単位)
+	public static final int DEFAULT_SCALING = 75; // -75～+125(1%単位)
 	public static final int DEFAULT_CENTER = 2; // ドット
 	public static final int DEFAULT_GRADATION = 5; // 0～30%(1%単位)
 	public static final int DEFAULT_FONTTITLE = 10; // 28sp
@@ -424,7 +428,8 @@ public class DEF {
 	public static final int MAX_MARGIN = 20;
 	public static final int MAX_LONGTAP = 16;
 	public static final int MAX_WADJUST = DEFAULT_WADJUST * 2;
-	public static final int MAX_SCALING = DEFAULT_SCALING * 2;
+	public static final int MAX_WSCALING = DEFAULT_WSCALING * 2;
+	public static final int MAX_SCALING = 225;
 	public static final int MAX_CENTER = 30; // 30ドット
 	public static final int MAX_GRADATION = 20; // 20%
 	public static final int MAX_FONTTITLE = 44; // 50ドット
@@ -855,6 +860,11 @@ public class DEF {
 	}
 
 	// 補正(%)の計算
+	static public int calcWScaling(int val) {
+		return (val - DEF.DEFAULT_WSCALING) + 100;
+	}
+
+	// 拡大縮小(%)の計算
 	static public int calcScaling(int val) {
 		return (val - DEF.DEFAULT_SCALING) + 100;
 	}
@@ -1026,9 +1036,9 @@ public class DEF {
 	}
 
 	// サマリ文字列作成(-25%～+25%)
-	static public String getScalingStr(int val, String summ1, String summ2) {
+	static public String getWScalingStr(int val, String summ1, String summ2) {
 		// -25 ～ +25
-		int percent = calcScaling(val) - 100;
+		int percent = calcWScaling(val) - 100;
 		String str;
 
 		if (percent < 0) {
@@ -1039,6 +1049,20 @@ public class DEF {
 		}
 		else {
 			str = summ2;
+		}
+		return str;
+	}
+
+	// サマリ文字列作成(25%～+250%)
+	static public String getScalingStr(int val, String summ1, String summ2) {
+		int percent = calcScaling(val);
+		String str;
+
+		if (percent == 100) {
+			str = summ2;
+		}
+		else {
+			str = percent + " " + summ1;
 		}
 		return str;
 	}

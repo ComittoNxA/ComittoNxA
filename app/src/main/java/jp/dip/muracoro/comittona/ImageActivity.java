@@ -394,6 +394,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	// private boolean mReduce = false;
 
 	private int mWAdjust = 100;
+	private int mWidthScale = 100;
 	private int mImgScale = 100;
 
 	private Vibrator mVibrator;
@@ -1735,11 +1736,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private void setMgrConfig(boolean scaleinit) {
 		if (mImageMgr != null) {
 			mImageMgr.setConfig(mScaleMode, mCenter, mFitDual, mDispMode, mNoExpand, mAlgoMode, mRotate, mWAdjust
-					, mImgScale, mPageWay, mMgnCut, mQuality, mBright, mGamma, mSharpen, mInvert, mGray, mColoring, mPseLand, mMoire, mTopSingle, scaleinit);
+					, mWidthScale, mImgScale, mPageWay, mMgnCut, mQuality, mBright, mGamma, mSharpen, mInvert, mGray, mColoring, mPseLand, mMoire, mTopSingle, scaleinit);
 		}
 		// モードが変わればスケールは初期化
 		if (scaleinit) {
-			mPinchScale = 100;
+			mPinchScale = mImgScale;
 		}
 	}
 
@@ -1843,7 +1844,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
     					if (mPinchCount == 2) {
     						// 100%にする
     						// 任意スケーリング変更中
-    						mPinchScaleSel = 100;
+    						mPinchScaleSel = mImgScale;
     						mImageView.setPinchChanging(mPinchScaleSel);
     						mGuideView.setGuideText(mPinchScaleSel + "%");
     					}
@@ -3569,8 +3570,10 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mMoveRange = DEF.calcTapRangePix(SetImageTextDetailActivity.getTapRange(sharedPreferences), mSDensity);
 			mLongTapZoom = DEF.calcMSec(SetImageDetailActivity.getLongTap(sharedPreferences));
 			mWAdjust = DEF.calcWAdjust(SetImageDetailActivity.getWAdjust(sharedPreferences));
+			mWidthScale = DEF.calcWScaling(SetImageDetailActivity.getWScaling(sharedPreferences));
 			mImgScale = DEF.calcScaling(SetImageDetailActivity.getScaling(sharedPreferences));
-
+			Log.d("ImageActivity", "ReadSetting mWidthScale=" + mWidthScale + ", mImgScale=" + mImgScale);
+			
 			mEffectTime = DEF.calcEffectTime(SetImageTextDetailActivity.getEffectTime(sharedPreferences));
 			mAutoPlayTerm = DEF.calcAutoPlay(SetImageDetailActivity.getAutoPlay(sharedPreferences));
 			mPageSelect = SetImageText.getPageSelect(sharedPreferences);
