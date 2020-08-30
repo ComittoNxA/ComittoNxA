@@ -46,4 +46,5 @@ public class ServerData {
 	public void setPath(String path) {
 		this.mPath = path;
 	}
+
 }

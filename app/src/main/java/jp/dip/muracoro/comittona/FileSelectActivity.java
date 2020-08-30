@@ -2,6 +2,7 @@ package jp.dip.muracoro.comittona;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -834,6 +835,10 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		mSambaSave = SetRecorderActivity.getRecServer(mSharedPreferences);
 
 		mUseThumbnailTap = SetFileListActivity.getThumbnailTap(mSharedPreferences);	// サムネイルタップで長押しメニューの有効化フラグ
+
+		// SMBライブラリの設定
+		//Log.d("FileSelectActivity", "onCreate SmbMode=" + mSharedPreferences.getInt(DEF.KEY_SMBLIB, 1));
+		FileAccess.setSmbMode(SetCommonActivity.getSmbLib(mSharedPreferences));
 
 		if (mListRotaChg == false) {
 			// 手動で切り替えていない
@@ -2750,8 +2755,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 										// サーバのしおり削除
 										if (item == 1) {
 											try {
-												SmbFile file = FileAccess.authSmbFile(key);
-												if (file.exists()) {
+												if (FileAccess.exists(key)) {
 													// 存在するので削除しない
 													continue;
 												}

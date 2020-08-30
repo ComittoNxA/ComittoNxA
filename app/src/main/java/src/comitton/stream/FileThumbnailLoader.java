@@ -2,6 +2,7 @@ package src.comitton.stream;
 
 import java.util.ArrayList;
 
+import jcifs.smb.SmbException;
 import src.comitton.common.DEF;
 import src.comitton.common.FileAccess;
 import src.comitton.common.ImageAccess;
@@ -354,28 +355,32 @@ public class FileThumbnailLoader extends ThumbnailLoader implements Runnable {
 			return false;
 		}
 
-		ArrayList<String> infilename = new ArrayList<String>();
+		ArrayList<FileData> infile = new ArrayList<FileData>();
 
 		if (bm == null) {
 			// ディレクトリの場合は中のファイルを参照
 			if (filename.endsWith("/")) {
 				Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中を検索します。");
-				infilename = FileAccess.listFiles(mUri + mPath + filename, mUser, mPass);
+				try {
+					infile = FileAccess.listFiles(mUri + mPath + filename, mUser, mPass);
+				} catch (SmbException e) {
+					e.printStackTrace();
+				}
 
-				if (infilename == null) {
+				if (infile.size() == 0) {
 					Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中は空でした。");
 					return false;
 				}
-				Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリに " + infilename.size() + " 個のファイルがあります。");
-				for (int i = 0; i < infilename.size(); i++) {
-					if (infilename.get(i).endsWith("/")) {
-						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にディレクトリがあります。 infilename=" + infilename.get(i));
-						if (loadBitmap2(filename + infilename.get(i), index, thum_cx, thum_cy, firstloop, priority, pathcode)) {
+				Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリに " + infile.size() + " 個のファイルがあります。");
+				for (int i = 0; i < infile.size(); i++) {
+					if (infile.get(i).getName().endsWith("/")) {
+						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にディレクトリがあります。 infilename=" + infile.get(i).getName());
+						if (loadBitmap2(filename + infile.get(i).getName(), index, thum_cx, thum_cy, firstloop, priority, pathcode)) {
 								return true;
 						}
-					} else if (infilename.get(i) != null) {
-						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にファイルがあります。 infilename=" + infilename.get(i));
-						if (loadBitmap3(filename + infilename.get(i), index, thum_cx, thum_cy, priority, pathcode)) {
+					} else if (infile.get(i) != null) {
+						Log.d("FileThumbnailLoader","index=" + index + " " + (firstloop ? 1 : 2) + "周目 loadBitmap2 ディレクトリの中にファイルがあります。 infilename=" + infile.get(i).getName());
+						if (loadBitmap3(filename + infile.get(i).getName(), index, thum_cx, thum_cy, priority, pathcode)) {
 							return true;
 						}
 					} else {

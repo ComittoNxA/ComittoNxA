@@ -1,13 +1,13 @@
 package src.comitton.dialog;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.EventListener;
 
 import src.comitton.common.FileAccess;
 
-import jcifs.smb.SmbFile;
 import jp.dip.muracoro.comittona.R;
+import src.comitton.data.FileData;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -137,14 +137,14 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
 		if (isDirectory) {
 			// 再帰呼び出し
-			ArrayList<String> lfiles = FileAccess.listFiles(mFullPath + nextpath, mUser , mPass);
+			ArrayList<FileData> lfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
 
 			int filenum = lfiles.size();
 			if (lfiles != null && filenum > 0) {
 				// ファイルあり
 				// ディレクトリ内のファイル
 				for (int i = 0; i < filenum; i++) {
-					String name = lfiles.get(i);
+					String name = lfiles.get(i).getName();
 					if (name.equals("..")) {
 						continue;
 					}
@@ -175,14 +175,14 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
 		if (isDirectory) {
 			// 再帰呼び出し
-			ArrayList<String> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser , mPass);
+			ArrayList<FileData> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
 
 			int filenum = sfiles.size();
 			if (sfiles != null && filenum > 0) {
 				// ファイルあり
 				// ディレクトリ内のファイル
 				for (int i = 0; i < filenum; i++) {
-					String name = sfiles.get(i);
+					String name = sfiles.get(i).getName();
 					if (name.equals("..")) {
 						continue;
 					}

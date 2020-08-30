@@ -92,14 +92,15 @@ HachaCom氏開発の自炊リーダー用自動着色プラグインのソース
 <h3>動作が不安定な時は</h3>
 <p>
     イメージ表示画面を開くときに落ちる場合には、画像処理スレッド数と使用メモリサイズを少なめにしてください。<br><br>
-    SMBに匿名アクセスができない場合は、ローカルグループポリシーエディターで以下の設定を試してください。
 </p>
-    <ul>
-    <li>「ローカルポリシー」 > 「セキュリティオプション」 > 「アカウント：Guest アカウントの状態」：<b><u>有効</u></b>
-    <li>同 > 「ネットワークアクセス：ローカルアカウントの共有とセキュリティモデル」：<b><u>Guestのみ - ローカル ユーザーがGuestとして認証する</u></b>
-    </ul>
 
 <h3>変更履歴</h3>
+<font color="cyan">Ver1.65A12</font>
+<table width="100%" border="0"><tr>
+    <tr><td class="s1">-</td><td class="s2">暫定的に共通の操作設定にSMB接続ライブラリの種類(jcifs-ngとsmbj)の設定を追加.</td></tr>
+    <tr><td class="s1">-</td><td class="s2">jcifs-ngでSMBに匿名アクセスできなかった不具合をsmbjで解消.</td></tr>
+</table>
+<br>
 <font color="cyan">Ver1.65A11</font>
 <table width="100%" border="0"><tr>
     <tr><td class="s1">-</td><td class="s2">ファイル選択画面の設定にファイル名の分割とテキストの行数の設定を追加.</td></tr>

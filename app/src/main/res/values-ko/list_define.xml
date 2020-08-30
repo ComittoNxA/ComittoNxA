@@ -107,6 +107,14 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="smblib_name_list">
+        <item>jcifs-ng</item>
+        <item>smbj</item>
+    </string-array>
+    <string-array name="smblib_value_list">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
     <string-array name="filesort_name_list">
         <item>정렬 없음</item>
         <item>파일 이름-오름차순</item>

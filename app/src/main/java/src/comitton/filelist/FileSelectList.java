@@ -124,11 +124,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 	public void run() {
 		boolean flag = false;
 		String name = "";
-		short type;
-		short exttype;
 		int state;
-		long size = 0;
-		long date = 0;
 		boolean hit;
 
 		Thread thread = mThread;
@@ -139,61 +135,27 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			marker = null;
 		}
 		
-		File lfiles[] = null;
-		SmbFile sfile = null;
-		SmbFile[] sfiles = null;
-		String[] fnames = null;
-//		WDFileData[] wdfiles = null;
-
 		ArrayList<FileData> fileList = null;
 		mFileList = null;
 
 		try {
-			if (mListMode == LISTMODE_LOCAL) {
-				// ローカルの場合のファイル一覧取得
-				lfiles = new File(mPath).listFiles();
-				if (lfiles == null) {
-					flag = true;
-				}
+
+			fileList = FileAccess.listFiles(mUri + mPath, mUser, mPass);
+			if (fileList.size() == 0) {
+				flag = true;
 			}
-			else if (mListMode == LISTMODE_SERVER) {
-				// サーバの場合のファイル一覧取得
-				sfile = FileAccess.authSmbFile(mUri + mPath, mUser, mPass);
-				
-				if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
-					// ホスト名までしか指定されていない場合
-					fnames = sfile.list();
-					for(String fname :fnames) {
-						Log.d("FileSelectList", "run fname=" + fname);
-					}
-				}
-				else {
-					// 共有ポイントまで指定済みの場合
-					sfiles = sfile.listFiles();
-					if (sfiles == null) {
-						flag = true;
-					}
-				}
-			}
-			else {
-				// WebDAVサーバの場合のファイル一覧取得
-//				wdfile = new WDFile(mUri + mPath, mUser, mPass);
-//				wdfiles = wdfile.listFiles();
-//				if (wdfiles == null) {
-//					flag = true;
-//				}
-			}
+			
 			if (thread.isInterrupted()) {
 				// 処理中断
 				return;
 			}
 
 			if (flag) {
+				// ファイルがない場合
 				Log.d("FileSelectList", "run ファイルがありません。");
-				// ファイル無しの場合は .. を表示
 				fileList = new ArrayList<FileData>();
 				if (!mPath.equals("/") && mParentMove) {
-					// ツールバーがある場合は不要
+					// 親フォルダを表示
 					FileData fileData = new FileData();
 					fileData.setName("..");
 					fileData.setType(FileData.FILETYPE_PARENT);
@@ -219,126 +181,42 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 				return;
 			}
 
-			int length = 0;
-			if (mListMode == LISTMODE_LOCAL) {
-				length = lfiles.length;
-			} else if (mListMode == LISTMODE_SERVER) {
-				if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
-					// ホスト名までしか指定されていない場合
-					length = fnames.length;
-				}
-				else {
-					// 共有ポイントまで指定済みの場合
-					length = sfiles.length;
-				}
-    		} else {
-//    			length = wdfiles.length;
-    		}
-			fileList = new ArrayList<FileData>(length + 1);
-
 			if (!mPath.equals("/") && mParentMove) {
-				// ツールバーがある場合は不要
+				// 親フォルダを表示
 				FileData fileData = new FileData();
 				fileData.setName("..");
 				fileData.setType(FileData.FILETYPE_PARENT);
 				fileData.setState(0);
-				fileList.add(fileData);
+				fileList.add(0, fileData);
 			}
 
-			// ファイル名のリストを作る
-			for (int i = 0; i < length; i++) {
-				if (mListMode == LISTMODE_LOCAL) {
-					name = lfiles[i].getName();
-					flag = lfiles[i].isDirectory();
-					size = lfiles[i].length();
-					date = lfiles[i].lastModified();
-				} else if (mListMode == LISTMODE_SERVER) {
-					if ((mUri + mPath).indexOf("/", 6) == (mUri + mPath).length() - 1) {
-						// ホスト名までしか指定されていない場合
-						name = fnames[i];
-						// 全部フォルダ扱い
-						flag = true;
-					}
-					else {
-						// 共有ポイントまで指定されている場合
-						name = sfiles[i].getName();
-						Log.d("FileSelectList", "run name=" + name);
-						int len = name.length();
-						if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
-							flag = true;
-						} else {
-							flag = false;
-						}
-						size = sfiles[i].length();
-						date = sfiles[i].lastModified();
-					}
+			for (int i = fileList.size() - 1; i >= 0; i--) {
+
+				name = fileList.get(i).getName();
+
+				if (fileList.get(i).getType() == FileData.FILETYPE_DIR
+						|| fileList.get(i).getType() == FileData.FILETYPE_ARC
+						|| fileList.get(i).getType() == FileData.FILETYPE_TXT) {
+					state = mSp.getInt(FileAccess.createUrl(mUri + mPath + name, mUser, mPass), -1);
+					fileList.get(i).setState(state);
 				}
-				else {
-					// WebDAV
-//					name = wdfiles[i].getName();
-//					flag = wdfiles[i].isDirectory();
-//					size = wdfiles[i].length();
-//					date = wdfiles[i].lastModified();
+				if (fileList.get(i).getType() == FileData.FILETYPE_IMG){
+					state = 0;
+					fileList.get(i).setState(state);
 				}
 
-				if (flag) {
-					// ディレクトリの場合
-					int len = name.length();
-					if (len >= 1 && !name.substring(len - 1).equals("/")) {
-						name += "/";
-					}
-					type = FileData.FILETYPE_DIR;
-					exttype = FileData.EXTTYPE_NONE;
-					state = mSp.getInt(FileAccess.createUrl(mUri + mPath + name, mUser, mPass), -1);
-				} else {
+				if (fileList.get(i).getType() != FileData.FILETYPE_DIR && fileList.get(i).getType() != FileData.FILETYPE_PARENT) {
 					// 通常のファイル
 					int len = name.length();
 					if (len < 5) {
-						continue;
+						fileList.remove(i);
 					}
 					if (hidden == true && DEF.checkHiddenFile(name)) {
-						continue;
+						fileList.remove(i);
 					}
-					String ext = DEF.getFileExt(name);
-					if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif")/* || ext.equals(".bmp")*/) {
-//						if (mUri != null && !mUri.equals("")) {
-//							// ネットワーク上のファイル単体はサポートしない
-//							continue;
-//						}
-						type = FileData.FILETYPE_IMG;
-						if (ext.equals(".jpg") || ext.equals(".jpeg")) {
-							exttype = FileData.EXTTYPE_JPG;
-						}
-						else if (ext.equals(".png")) {
-							exttype = FileData.EXTTYPE_PNG;
-						}
-						else {
-							exttype = FileData.EXTTYPE_GIF;
-						}
-						state = 0;
-					}
-					else if (ext.equals(".zip") || ext.equals(".rar") || ext.equals(".cbz") || ext.equals(".cbr") || ext.equals(".pdf") || ext.equals(".epub")) {
-						type = FileData.FILETYPE_ARC;
-						if (ext.equals(".zip") || ext.equals(".cbz") || ext.equals(".epub")) {
-							exttype = FileData.EXTTYPE_ZIP;
-						}
-						else if (ext.equals(".rar") || ext.equals(".cbr")) {
-							exttype = FileData.EXTTYPE_RAR;
-						}
-						else {
-							exttype = FileData.EXTTYPE_PDF;
-						}
-						state = mSp.getInt(FileAccess.createUrl(mUri + mPath + name, mUser, mPass), -1);
-					}
-					else if (ext.equals(".txt") || ext.equals(".xhtml") || ext.equals(".html")) {
-						type = FileData.FILETYPE_TXT;
-						exttype = FileData.EXTTYPE_TXT;
-						state = mSp.getInt(FileAccess.createUrl(mUri + mPath + name, mUser, mPass), -1);
-					}
-					else {
-						continue;
-					}
+					continue;
 				}
+
 				hit = false;
 				if (marker != null) {
 					if (name.toUpperCase().indexOf(marker) != -1) {
@@ -346,25 +224,18 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 						hit = true;
 					}
 				}
+				fileList.get(i).setMarker(hit);
 
-				FileData fileData = new FileData();
-				fileData.setType(type);
-				fileData.setExtType(exttype);
-				fileData.setName(name);
-				fileData.setState(state);
-				fileData.setSize(size);
-				fileData.setDate(date);
-				fileData.setMarker(hit);
 				//マークではなくフィルタに
 				if(mFilter) {
-					//マーカー未設定orディレクトリに適用しない場合のディレクトリは無条件で追加
-					if (marker == null || (mApplyDir == false && flag) ) {
-						fileList.add(fileData);
-					}else if(hit) {
-						fileList.add(fileData);
+					if(marker != null && !hit) {
+						fileList.remove(i);
 					}
-				}else
-					fileList.add(fileData);
+					//マーカー設定andディレクトリに適用する場合のディレクトリは削除
+					if (marker != null && (mApplyDir == true && fileList.get(i).getType() == FileData.FILETYPE_DIR) ) {
+						fileList.remove(i);
+					}
+				}
 
 				if (thread.isInterrupted()) {
 					// 処理中断
@@ -386,19 +257,6 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 			}
 			sendResult(false, s, thread);
 			return;
-		} finally {
-			if (mListMode == LISTMODE_LOCAL) {
-				// ローカルの場合のファイル一覧取得
-				lfiles = null;
-			} else if (mListMode == LISTMODE_SERVER) {
-				// サーバの場合のファイル一覧取得
-				sfiles = null;
-				sfile = null;
-    		} else if (mListMode == LISTMODE_WEBDAV) {
-    			// WebDAVサーバの場合のファイル一覧取得
-//    			wdfiles = null;
-//    			wdfile = null;
-    		}
 		}
 
 		if (thread.isInterrupted()) {

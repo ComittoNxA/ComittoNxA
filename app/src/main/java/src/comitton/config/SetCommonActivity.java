@@ -2,6 +2,8 @@ package src.comitton.config;
 
 import src.comitton.common.DEF;
 import jp.dip.muracoro.comittona.R;
+import src.comitton.common.FileAccess;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -18,11 +20,16 @@ import android.view.Window;
 public class SetCommonActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	private ListPreference mRotateBtn;
 	private ListPreference mCharset;
+	private ListPreference mSmbLib;
 
 	public static final int RotateBtnName[] =
 		{ R.string.rotabtn00	// 使用しない
 		, R.string.rotabtn01	// フォーカスキー
 		, R.string.rotabtn02 };	// シャッターキー
+
+	public static final int SmbLibName[] =
+		{ R.string.smblib00		// jcifs-ng
+		, R.string.smblib01 };	// smbj
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +38,7 @@ public class SetCommonActivity extends PreferenceActivity implements OnSharedPre
 		addPreferencesFromResource(R.xml.common);
 		mRotateBtn  = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_ROTATEBTN);
 		mCharset    = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_CHARSET);
+		mSmbLib  = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_SMBLIB);
 
 		// 項目選択
 		PreferenceScreen onlineHelp = (PreferenceScreen) findPreference(DEF.KEY_COMMHELP);
@@ -56,6 +64,7 @@ public class SetCommonActivity extends PreferenceActivity implements OnSharedPre
 
 		mRotateBtn.setSummary(getRotateBtnSummary(sharedPreferences));	// 回転用ボタン
 		mCharset.setSummary(getCharsetSummary(sharedPreferences));		// 文字コード
+		mSmbLib.setSummary(getSmbLibSummary(sharedPreferences));	// SMBライブラリ
 	}
 
 	@Override
@@ -75,12 +84,17 @@ public class SetCommonActivity extends PreferenceActivity implements OnSharedPre
 			//
 			mCharset.setSummary(getCharsetSummary(sharedPreferences));
 		}
+		else if(key.equals(DEF.KEY_SMBLIB)){
+			//
+			mSmbLib.setSummary(getSmbLibSummary(sharedPreferences));
+			FileAccess.setSmbMode((short)getSmbLib(sharedPreferences));
+		}
 	}
 
 	// 設定の読込
 	public static int getRotateBtn(SharedPreferences sharedPreferences){
 		int val = DEF.getInt(sharedPreferences, DEF.KEY_ROTATEBTN, "1");
-		if (val < 0 || val > RotateBtnName.length){
+		if (val < 0 || val >= RotateBtnName.length){
 			val = 0;
 		}
 		return val;
@@ -89,6 +103,14 @@ public class SetCommonActivity extends PreferenceActivity implements OnSharedPre
 	public static int getCharset(SharedPreferences sharedPreferences){
 		int val = DEF.getInt(sharedPreferences, DEF.KEY_CHARSET, "1");
 		if (val < 0 || val >= DEF.CharsetList.length){
+			val = 1;
+		}
+		return val;
+	}
+
+	public static int getSmbLib(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_SMBLIB, "1");
+		if (val < 0 || val >= SmbLibName.length){
 			val = 1;
 		}
 		return val;
@@ -110,5 +132,11 @@ public class SetCommonActivity extends PreferenceActivity implements OnSharedPre
 	private String getCharsetSummary(SharedPreferences sharedPreferences){
 		int val = getCharset(sharedPreferences);
 		return DEF.CharsetList[val];
+	}
+
+	private String getSmbLibSummary(SharedPreferences sharedPreferences){
+		int val = getSmbLib(sharedPreferences);
+		Resources res = getResources();
+		return res.getString(SmbLibName[val]);
 	}
 }

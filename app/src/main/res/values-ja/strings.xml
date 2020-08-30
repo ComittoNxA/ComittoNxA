@@ -356,6 +356,8 @@
     <string name="rotabtn00">使用しない</string>
     <string name="rotabtn01">カメラフォーカスボタン</string>
     <string name="rotabtn02">カメラシャッターボタン</string>
+    <string name="smblib00">jcifs-ng</string>
+    <string name="smblib01">smbj</string>
     <string name="txgrad00">なし</string>
     <string name="txgrad01">左上→右下</string>
     <string name="txgrad02"> 上 → 下</string>

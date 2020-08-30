@@ -356,6 +356,8 @@
     <string name="rotabtn00">No Use</string>
     <string name="rotabtn01">Camera Focus</string>
     <string name="rotabtn02">Camera Shutter</string>
+    <string name="smblib00">jcifs-ng</string>
+    <string name="smblib01">smbj</string>
     <string name="txgrad00">None</string>
     <string name="txgrad01">Top Left -> Bottom Right</string>
     <string name="txgrad02">Top -> Bottom</string>

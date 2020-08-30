@@ -356,6 +356,8 @@
     <string name="rotabtn00">사용하지</string>
     <string name="rotabtn01">카메라 포커스 버튼</string>
     <string name="rotabtn02">카메라 셔터 버튼</string>
+    <string name="smblib00">jcifs-ng</string>
+    <string name="smblib01">smbj</string>
     <string name="txgrad00">없이</string>
     <string name="txgrad01">왼쪽 → 오른쪽 하단</string>
     <string name="txgrad02">위 → 아래</string>

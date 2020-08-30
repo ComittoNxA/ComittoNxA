@@ -1,16 +1,17 @@
 package src.comitton.dialog;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
 import src.comitton.common.DEF;
 import src.comitton.common.FileAccess;
 
-import jcifs.smb.SmbFile;
 import jcifs.smb.SmbRandomAccessFile;
 import jp.dip.muracoro.comittona.R;
+import src.comitton.data.FileData;
+import src.comitton.stream.WorkStream;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,7 +37,8 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 	public static final int MSG_PROGRESS = 3;
 	public static final int MSG_ERRMSG = 4;
 
-	private String mFullPath;
+	private String mUri;
+	private String mPath;
 	private String mUser;
 	private String mPass;
 	private String mItem;
@@ -73,7 +75,8 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 
 		mContext = context.getApplicationContext();
 
-		mFullPath = uri + path;
+		mUri = uri;
+		mPath = path;
 		mUser = user;
 		mPass = pass;
 		mItem = item;
@@ -129,7 +132,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 	}
 
 	public boolean downloadFile(String path, String item) throws Exception {
-		boolean isDirectory = FileAccess.isDirectory(mFullPath + path + item, mUser, mPass);
+		boolean isDirectory = FileAccess.isDirectory(mUri + mPath + path + item, mUser, mPass);
 		if (isDirectory) {
 			// ローカルにディレクトリ作成
 			boolean ret = FileAccess.mkdir(mLocal + path, item, mUser, mPass);
@@ -139,7 +142,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 
 			// 再帰呼び出し
 			String nextpath = path + item;
-			ArrayList<String> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
+			ArrayList<FileData> sfiles = FileAccess.listFiles(mUri + mPath + nextpath, mUser, mPass);
 
 			int filenum = sfiles.size();
 			if (sfiles == null || filenum <= 0) {
@@ -148,7 +151,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 			}
 			// ディレクトリ内のファイル
 			for (int i = 0; i < filenum; i++) {
-				String name = sfiles.get(i);
+				String name = sfiles.get(i).getName();
 				downloadFile(nextpath, name);
 				if (mBreak) {
 					// 中断
@@ -171,14 +174,14 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 			// ダウンロード実行
 			try {
 				OutputStream localFile = FileAccess.localOutputStream(mLocal + path + item + "_dl");
-				Boolean exists = FileAccess.exists(mFullPath + path + item, mUser, mPass);
+				Boolean exists = FileAccess.exists(mUri + mPath + path + item, mUser, mPass);
 				if (!exists) {
 					throw new Exception("File not found.");
 				}
-				SmbRandomAccessFile sambaFileRnd = FileAccess.smbRandomAccessFile(mFullPath + path + item, mUser, mPass);
+				WorkStream workStream = new WorkStream(mUri, mPath + path + item, mUser, mPass, false);
 
 				// ファイルサイズ取得
-				long fileSize = sambaFileRnd.length();
+				long fileSize = workStream.length();
 				if ((fileSize & 0xFFFFFFFF00000000L) != 0 && (fileSize & 0x00000000FFFFFFFFL) == 0) {
 					fileSize >>= 32;
 				}
@@ -192,7 +195,7 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 				long total = 0;
 				while (true) {
 					// 読み込み
-					size = sambaFileRnd.read(buff, 0, buff.length);
+					size = workStream.read(buff, 0, buff.length);
 					if (mBreak) {
 						// 中断
 						localFile = null;
@@ -215,8 +218,9 @@ public class DownloadDialog extends Dialog implements Runnable, Handler.Callback
 				}
 				// クローズ
 				localFile.close();
-				sambaFileRnd.close();
 				localFile = null;
+				workStream.close();
+				workStream = null;
 
 				// リネーム
 				File renameFrom = new File(mLocal + path + item + "_dl");

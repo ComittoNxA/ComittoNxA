@@ -8,8 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,17 +18,16 @@ import java.util.zip.ZipInputStream;
 
 import src.comitton.common.DEF;
 import src.comitton.common.FileAccess;
+import src.comitton.data.FileData;
 import src.comitton.pdf.PDFManager;
 import src.comitton.pdf.PdfInputStream;
 import src.comitton.pdf.data.PdfCrypt;
 
-import jcifs.smb.SmbFile;
 import jcifs.smb.SmbRandomAccessFile;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -287,8 +284,8 @@ public class ImageManager extends InputStream implements Runnable {
 
 			try {
 				if (mFileType == FILETYPE_DIR) {
-					dirAccessInit(mFilePath, mUser, mPass);
-					DirFileList();
+//					dirAccessInit(mFilePath, mUser, mPass);
+					DirFileList(mFilePath, mUser, mPass);
 				}
 				else if (mFileType == FILETYPE_PDF) {
 					mPDFMgr = new PDFManager(this, mOpenMode == OPENMODE_THUMBNAIL || mOpenMode == OPENMODE_THUMBSORT);
@@ -1102,13 +1099,13 @@ public class ImageManager extends InputStream implements Runnable {
 		return imgfile;
 	}
 
-	private void DirFileList() throws IOException {
+	private void DirFileList(String path, String user, String pass) throws IOException {
 		int maxorglen = 0;
 
 		// ファイルリストを作成
 		List<FileListItem> list = new ArrayList<FileListItem>();
 
-		dirListFiles();
+		dirListFiles(path, user, pass);
 
 		int count = 0;
 		while (true) {
@@ -2278,6 +2275,7 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	/*************************** CompressAccess ***************************/
+	private WorkStream mWorkStream;
 	private SmbRandomAccessFile mSambaRnd;
 	private RandomAccessFile mLocalRnd;
 //	private WebDAVRandomAccessFile mWebDAVRnd;
@@ -2287,14 +2285,12 @@ public class ImageManager extends InputStream implements Runnable {
 	public void fileAccessInit(String path) throws IOException {
 		// 参照先
 		if (mHostType == HOSTTYPE_SAMBA) {
-			SmbFile sf = FileAccess.authSmbFile(path, mUser, mPass);
-			if (!sf.exists()) {
-				throw new IOException("File not found.");
-			}
-			mSambaRnd = new SmbRandomAccessFile(sf, "r");
+//			mSambaRnd = FileAccess.jcifsAccessFile(path, mUser, mPass);
+			mWorkStream = new WorkStream(path, "", mUser, mPass, false);
 		}
 		else if (mHostType == HOSTTYPE_LOCAL) {
-			mLocalRnd = new RandomAccessFile(path, "r");
+//			mLocalRnd = new RandomAccessFile(path, "r");
+			mWorkStream = new WorkStream("", path, mUser, mPass, false);
 		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			mWebDAVRnd = new WebDAVRandomAccessFile(path, mUser, mPass);
@@ -2306,12 +2302,13 @@ public class ImageManager extends InputStream implements Runnable {
 
 	public int cmpDirectRead(byte buf[], int off, int len) throws IOException {
 		int ret = 0;
-		if (mHostType == HOSTTYPE_SAMBA) {
-			ret = mSambaRnd.read(buf, off, len);
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			ret = mLocalRnd.read(buf, off, len);
-		}
+		ret = mWorkStream.read(buf, off, len);
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			ret = mSambaRnd.read(buf, off, len);
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			ret = mLocalRnd.read(buf, off, len);
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			ret = mWebDAVRnd.read(buf, off, len);
 //		}
@@ -2320,12 +2317,13 @@ public class ImageManager extends InputStream implements Runnable {
 
 	public void cmpDirectSeek(long pos) throws IOException {
 		// エントリーサイズ
-		if (mHostType == HOSTTYPE_SAMBA) {
-			mSambaRnd.seek(pos);
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			mLocalRnd.seek(pos);
-		}
+		mWorkStream.seek(pos);
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			mSambaRnd.seek(pos);
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			mLocalRnd.seek(pos);
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			mWebDAVRnd.seek(pos);
 //		}
@@ -2333,34 +2331,37 @@ public class ImageManager extends InputStream implements Runnable {
 
 	public long cmpDirectTell() throws IOException {
 		// エントリーサイズ
-		if (mHostType == HOSTTYPE_SAMBA) {
-			return mSambaRnd.getFilePointer();
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			return mLocalRnd.getFilePointer();
-		}
+		return mWorkStream.getFilePointer();
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			return mSambaRnd.getFilePointer();
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			return mLocalRnd.getFilePointer();
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			return mWebDAVRnd.getFilePointer();
 //		}
-		return 0;
+//		return 0;
 	}
 
 	public long cmpDirectLength() throws IOException {
 		long fileLength = 0;
 
 		// エントリーサイズ
-		if (mHostType == HOSTTYPE_SAMBA) {
-			fileLength = mSambaRnd.length();
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			fileLength = mLocalRnd.length();
-		}
+		fileLength = mWorkStream.length();
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			fileLength = mSambaRnd.length();
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			fileLength = mLocalRnd.length();
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			fileLength = mWebDAVRnd.length();
 //		}
 		if ((fileLength & 0xFFFFFFFF00000000L) == fileLength) {
 			fileLength = (fileLength >> 32) & 0x00000000FFFFFFFFL;
 		}
+		Log.d("ImageManager", "cmpDirectLength filelength=" + fileLength);
 		return fileLength;
 	}
 
@@ -2379,12 +2380,13 @@ public class ImageManager extends InputStream implements Runnable {
 			size = mCmpSize - mCmpPos;
 		}
 		if (size > 0) {
-			if (mHostType == HOSTTYPE_SAMBA) {
-				ret = mSambaRnd.read(buf, off, size);
-			}
-			else if (mHostType == HOSTTYPE_LOCAL) {
-				ret = mLocalRnd.read(buf, off, size);
-			}
+			ret = mWorkStream.read(buf, off, size);
+//			if (mHostType == HOSTTYPE_SAMBA) {
+//				ret = mSambaRnd.read(buf, off, size);
+//			}
+//			else if (mHostType == HOSTTYPE_LOCAL) {
+//				ret = mLocalRnd.read(buf, off, size);
+//			}
 //			else if (mHostType == HOSTTYPE_WEBDAV) {
 //				ret = mWebDAVRnd.read(buf, off, size);
 //			}
@@ -2436,26 +2438,32 @@ public class ImageManager extends InputStream implements Runnable {
 		mCmpSize = size;
 		mCmpPos = 0;
 //		mHeaderPos = 0;
-		if (mHostType == HOSTTYPE_SAMBA) {
-			mSambaRnd.seek(pos);
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			mLocalRnd.seek(pos);
-		}
+		mWorkStream.seek(pos);
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			mSambaRnd.seek(pos);
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			mLocalRnd.seek(pos);
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			mWebDAVRnd.seek(pos);
 //		}
 	}
 
 	public void cmpClose() throws IOException {
-		if (mSambaRnd != null) {
-//			mSambaRnd.close();
-			mSambaRnd = null;
+		if (mWorkStream != null) {
+			mWorkStream.close();
+			mWorkStream = null;
 		}
-		if (mLocalRnd != null) {
-			mLocalRnd.close();
-			mLocalRnd = null;
-		}
+//		if (mSambaRnd != null) {
+//// 閲覧終了時に固まるのでコメントアウト
+////			mSambaRnd.close();
+//			mSambaRnd = null;
+//		}
+//		if (mLocalRnd != null) {
+//			mLocalRnd.close();
+//			mLocalRnd = null;
+//		}
 //		if (mWebDAVRnd != null) {
 //			mWebDAVRnd.close();
 //			mWebDAVRnd = null;
@@ -2468,50 +2476,18 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	/*************************** DirAccess ***************************/
-	private SmbFile mSambaDir;
-	private File mLocalDir;
-//	private WDFile mWebDAVDir;
 	private BufferedInputStream mDirStream;
-
-	private SmbFile mSambaFiles[];
-	private File mLocalFiles[];
+	private ArrayList<FileData> mFiles;
 
 	private int mDirIndex;
 	private int mDirOrgPos;
 
-	public void dirAccessInit(String path, String user, String pass) throws IOException {
-		// 参照先
-		if (mHostType == HOSTTYPE_SAMBA) {
-			mSambaDir = FileAccess.authSmbFile(path, user, pass);
-		}
-		else if (mHostType == HOSTTYPE_LOCAL) {
-			mLocalDir = new File(path);
-		}
-//		else if (mHostType == HOSTTYPE_WEBDAV) {
-//			mWebDAVDir = new WDFile(path, user, pass);
-//		}
-		else {
-			throw new IOException("Illegal hosttype.");
-		}
-		return;
-	}
 
-	public void dirListFiles() throws IOException {
+	public void dirListFiles(String path, String user, String pass) throws IOException {
 		mDirIndex = 0;
 		mDirOrgPos = 0;
 		try {
-			if (mHostType == HOSTTYPE_SAMBA) {
-				mSambaFiles = mSambaDir.listFiles();
-			}
-			else if (mHostType == HOSTTYPE_LOCAL) {
-				mLocalFiles = mLocalDir.listFiles();
-			}
-//			else if (mHostType == HOSTTYPE_WEBDAV) {
-//				mWebDAVFiles = mWebDAVDir.listFiles();
-//			}
-			else {
-				throw new IOException("Illegal hosttype.");
-			}
+			mFiles = FileAccess.listFiles(path, user, pass);
 		}
 		catch (Exception e) {
 			throw new IOException(e.getMessage());
@@ -2524,43 +2500,19 @@ public class ImageManager extends InputStream implements Runnable {
 			String name = "";
 			boolean flag = false;
 			long size = 0;
-			if (mHostType == HOSTTYPE_SAMBA) {
-				// 範囲チェック
-				if (mDirIndex < 0 || mSambaFiles == null || mSambaFiles.length <= mDirIndex) {
-					break;
-				}
 
-				name = mSambaFiles[mDirIndex].getName();
-				int len = name.length();
-				if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
-					flag = true;
-				}
-				else {
-					flag = false;
-				}
-				size = mSambaFiles[mDirIndex].length();
+			if (mDirIndex < 0 || mFiles == null || mFiles.size() <= mDirIndex) {
+				break;
 			}
-			else if (mHostType == HOSTTYPE_LOCAL) {
-				// 範囲チェック
-				if (mDirIndex < 0 || mLocalFiles == null || mLocalFiles.length <= mDirIndex) {
-					break;
-				}
-				name = mLocalFiles[mDirIndex].getName();
-				flag = mLocalFiles[mDirIndex].isDirectory();
-				size = mLocalFiles[mDirIndex].length();
-			}
-			else if (mHostType == HOSTTYPE_WEBDAV) {
-				// 範囲チェック
-//				if (mDirIndex < 0 || mWebDAVFiles == null || mWebDAVFiles.length <= mDirIndex) {
-//					break;
-//				}
-//				name = mWebDAVFiles[mDirIndex].getName();
-//				flag = mWebDAVFiles[mDirIndex].isDirectory();
-//				size = mWebDAVFiles[mDirIndex].length();
+			name = mFiles.get(mDirIndex).getName();
+			int len = name.length();
+			if (name != null && len >= 1 && name.substring(len - 1).equals("/")) {
+				flag = true;
 			}
 			else {
-				throw new IOException("Illegal hosttype.");
+				flag = false;
 			}
+			size = mFiles.get(mDirIndex).getSize();
 
 			mDirIndex++;
 			if (!flag) {
@@ -2607,28 +2559,30 @@ public class ImageManager extends InputStream implements Runnable {
 
 	public void dirSetPage(String imagefile) throws IOException {
 		if (mHostType == HOSTTYPE_SAMBA) {
-			try {
-				//SmbFileInputStreamは妙に遅いっぽいので、通常のファイルでもSmbRandomAccessFileを使う
-				SmbFile sf = FileAccess.authSmbFile(imagefile, mUser, mPass);
-				if (!sf.exists()) {
-					throw new IOException("File not found.");
-				}
-				mSambaRnd = new SmbRandomAccessFile(sf, "r");
-
-//				mDirStream = new BufferedInputStream(FileAccess.authSmbFileInputStream(imagefile, mUser, mPass), BIS_BUFFSIZE);
-			}
-			catch (IOException e) {
-				throw new IOException(e.getMessage());
-			}
+//			mSambaRnd = FileAccess.jcifsAccessFile(path, mUser, mPass);
+			mWorkStream = new WorkStream(imagefile, "", mUser, mPass, false);
 		}
 		else if (mHostType == HOSTTYPE_LOCAL) {
-			try {
-				mDirStream = new BufferedInputStream(new FileInputStream(imagefile), BIS_BUFFSIZE);
-			}
-			catch (IOException e) {
-				throw new IOException(e.getMessage());
-			}
+//			mLocalRnd = new RandomAccessFile(path, "r");
+			mWorkStream = new WorkStream("", imagefile, mUser, mPass, false);
 		}
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			try {
+//				//SmbFileInputStreamは妙に遅いっぽいので、通常のファイルでもSmbRandomAccessFileを使う
+//				mSambaRnd = FileAccess.jcifsAccessFile(imagefile, mUser, mPass);
+//			}
+//			catch (IOException e) {
+//				throw new IOException(e.getMessage());
+//			}
+//		}
+//		else if (mHostType == HOSTTYPE_LOCAL) {
+//			try {
+//				mDirStream = new BufferedInputStream(new FileInputStream(imagefile), BIS_BUFFSIZE);
+//			}
+//			catch (IOException e) {
+//				throw new IOException(e.getMessage());
+//			}
+//		}
 //		else if (mHostType == HOSTTYPE_WEBDAV) {
 //			mDirStream = new BufferedInputStream(new WebDAVInputStream(imagefile, mUser, mPass), BIS_BUFFSIZE);
 //		}
@@ -2639,16 +2593,21 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void dirEndPage() throws IOException {
-		if (mHostType == HOSTTYPE_SAMBA) {
-			if (mSambaRnd != null) {
-//				mSambaRnd.close();
-				mSambaRnd = null;
-			}
-		}else {
-			if (mDirStream != null) {
-				mDirStream.close();
-			}
+		if (mWorkStream != null) {
+			mWorkStream.close();
+			mWorkStream = null;
 		}
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			if (mSambaRnd != null) {
+//// 閲覧終了時に固まるのでコメントアウト
+////				mSambaRnd.close();
+//				mSambaRnd = null;
+//			}
+//		}else {
+//			if (mDirStream != null) {
+//				mDirStream.close();
+//			}
+//		}
 	}
 
 	public int dirRead(byte buf[], int off, int len) throws IOException {
@@ -2656,12 +2615,14 @@ public class ImageManager extends InputStream implements Runnable {
 			throw new IOException("User Canceled.");
 		}
 
-		if (mHostType == HOSTTYPE_SAMBA) {
-			return cmpRead(buf, off, len);
-		}
-
 		int ret = 0;
-		ret = mDirStream.read(buf, off, len);
+		ret = mWorkStream.read(buf, off, len);
+//		if (mHostType == HOSTTYPE_SAMBA) {
+//			return cmpRead(buf, off, len);
+//		}
+//
+//		int ret = 0;
+//		ret = mDirStream.read(buf, off, len);
 //		Log.d("dirRead", " ret:" + ret);
 
 		if (mCheWriteFlag) {
@@ -2672,16 +2633,20 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	public void dirClose() throws IOException {
-		if (mDirStream != null) {
-			mDirStream.close();
-			mDirStream = null;
+		if (mWorkStream != null) {
+			mWorkStream.close();
+			mWorkStream = null;
 		}
-		if (mSambaDir != null) {
-			mSambaDir = null;
-		}
-		if (mLocalDir != null) {
-			mLocalDir = null;
-		}
+//		if (mDirStream != null) {
+//			mDirStream.close();
+//			mDirStream = null;
+//		}
+//		if (mSambaDir != null) {
+//			mSambaDir = null;
+//		}
+//		if (mLocalDir != null) {
+//			mLocalDir = null;
+//		}
 //		if (mWebDAVDir != null) {
 //			mWebDAVDir = null;
 //		}
