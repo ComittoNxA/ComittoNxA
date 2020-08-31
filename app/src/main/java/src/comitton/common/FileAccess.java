@@ -369,7 +369,7 @@ public class FileAccess {
 				new HashSet<>(Arrays.asList(FileAttributes.FILE_ATTRIBUTE_NORMAL)),
 				new HashSet<>(Arrays.asList(SMB2ShareAccess.FILE_SHARE_READ)),
 				SMB2CreateDisposition.FILE_OPEN,
-				new HashSet<>(Arrays.asList(SMB2CreateOptions.FILE_DIRECTORY_FILE)));
+				null);
 
 		Log.d("FileAccess", "smbjAccessFile remoteSmbjFile=" + smbjFileRead.toString() + ", size=" + smbjFileRead.getFileInformation(FileStandardInformation.class).getEndOfFile());
 
@@ -682,8 +682,8 @@ public class FileAccess {
 		String name = "";
 		long size = 0;
 		long date = 0;
-		short type;
-		short exttype;
+		short type = 0;
+		short exttype = 0;
 
 		for (int i = 0; i < length; i++) {
 			if (isLocal) {
@@ -733,7 +733,7 @@ public class FileAccess {
 					} else {
 						flag = false;
 					}
-					size = smbjFiles.get(i).getAllocationSize();
+					size = smbjFiles.get(i).getEndOfFile();
 					date = smbjFiles.get(i).getChangeTime().toEpochMillis();
 				}
 			}
@@ -782,7 +782,8 @@ public class FileAccess {
 					exttype = FileData.EXTTYPE_TXT;
 				}
 				else {
-					continue;
+				type = FileData.FILETYPE_NONE;
+				exttype = FileData.EXTTYPE_NONE;
 				}
 			}
 
@@ -858,6 +859,7 @@ public class FileAccess {
 			}
 			else {
 				orgfile.renameTo(dstfile);
+				return dstfile.exists();
 			}
 		}
 		else if (SMBLIB == SMBLIB_JCIFS) {
@@ -891,6 +893,7 @@ public class FileAccess {
 			// ファイル名変更
 			try {
 				orgfile.renameTo(dstfile);
+				return dstfile.exists();
 			} catch (SmbException e) {
 				throw new FileAccessException(e);
 			}
@@ -925,23 +928,30 @@ public class FileAccess {
 				entryPath = entryPath.substring(idx + 1);
 			}
 
-			// ファイル名変更
-			DiskShare smbjShare;
-			smbjShare = FileAccess.smbjShare(uri + path, user, pass);
+			try {
+				// ファイル名変更
+				DiskShare smbjShare;
+				smbjShare = FileAccess.smbjShare(uri + path, user, pass);
 
-			DiskEntry orgfile;
-			orgfile = smbjShare.openFile(entryPath + fromfile,
-					EnumSet.of(AccessMask.DELETE, AccessMask.GENERIC_WRITE),
-					EnumWithValue.EnumUtils.toEnumSet(
-							smbjShare.getFileInformation(entryPath + fromfile).getBasicInformation().getFileAttributes(),
-							FileAttributes.class), // copy original file attributes
-					SMB2ShareAccess.ALL,
-					SMB2CreateDisposition.FILE_OPEN,
-					null);
-			orgfile.rename(entryPath + tofile);
+				Log.d("FileAccess", "renameTo FromFile=" + entryPath + fromfile + ", ToFile=" + entryPath + tofile);
+				DiskEntry orgfile = smbjShare.open(entryPath + fromfile,
+						EnumSet.of(AccessMask.DELETE, AccessMask.GENERIC_WRITE),
+						null,
+						SMB2ShareAccess.ALL,
+						SMB2CreateDisposition.FILE_OPEN,
+						null);
+
+				orgfile.rename((entryPath + tofile).replaceAll("/", "\\\\"));
+				orgfile.closeNoWait();
+				return exists(uri + path + tofile, user, pass);
+			}
+			catch (Exception e) {
+				Log.d("FileAccess", "renameTo " + e.getMessage());
+				throw new FileAccessException(e.getMessage());
+			}
 
 		}
-		return true;
+		return false;
 	}
 
 	// ファイル削除
@@ -972,7 +982,7 @@ public class FileAccess {
 			else {
 				orgfile.delete();
 			}
-
+			return orgfile.exists();
 		}
 		else if (SMBLIB == SMBLIB_JCIFS) {
 			// jcifsの場合
@@ -984,7 +994,7 @@ public class FileAccess {
 			}
 			try {
 				orgfile.delete();
-				result = orgfile.exists();
+				return orgfile.exists();
 			} catch (SmbException e) {
 				throw new FileAccessException(e);
 			}
@@ -1010,8 +1020,13 @@ public class FileAccess {
 
 			DiskShare smbjShare;
 			smbjShare = FileAccess.smbjShare(url, user, pass);
-			smbjShare.rm(path);
-			result = exists(url, user, pass);
+			if (smbjShare.fileExists(path)) {
+				smbjShare.rm(path);
+			}
+			if (smbjShare.folderExists(path)) {
+				smbjShare.rmdir(path, true);
+			}
+			return exists(url, user, pass);
 		}
 		return false;
 	}

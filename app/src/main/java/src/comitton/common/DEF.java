@@ -437,7 +437,7 @@ public class DEF {
 	public static final int MAX_FONTMAIN = 44; // 50ドット
 	public static final int MAX_FONTSUB = 44; // 50ドット
 	public static final int MAX_FONTTILE = 44; // 50ドット
-	public static final int MAX_MEMSIZE = 98; // 1000MByte
+	public static final int MAX_MEMSIZE = 198; // 2000MByte
 	public static final int MAX_MEMNEXT = 100; // 200ページ
 	public static final int MAX_MEMPREV = 100; // 200ページ
 	public static final int MAX_NOISESCRL = 39; // 200ドット
@@ -1797,4 +1797,10 @@ public class DEF {
 		return intval;
 	}
 
+	public static void StackTrace(String tag, String msg) {
+		StackTraceElement[] ste = new Throwable().getStackTrace();
+		for (int i = 0; i < ste.length; i++) {
+			Log.d("", "" + ste[i]);
+		}
+	}
 }

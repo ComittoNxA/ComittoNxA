@@ -13,6 +13,7 @@ public class FileData {
 	public static final short FILETYPE_ARC = 2;
 	public static final short FILETYPE_IMG = 3;
 	public static final short FILETYPE_TXT = 4;
+	public static final short FILETYPE_NONE = 5;
 
 	public static final short EXTTYPE_NONE = 0;
 	public static final short EXTTYPE_ZIP = 1;

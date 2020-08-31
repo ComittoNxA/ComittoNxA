@@ -205,6 +205,9 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					fileList.get(i).setState(state);
 				}
 
+				if (fileList.get(i).getType() == FileData.FILETYPE_NONE){
+					fileList.remove(i);
+				}
 				if (fileList.get(i).getType() != FileData.FILETYPE_DIR && fileList.get(i).getType() != FileData.FILETYPE_PARENT) {
 					// 通常のファイル
 					int len = name.length();

@@ -39,6 +39,7 @@ import src.comitton.view.GuideView;
 import src.comitton.view.image.MyImageView;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -53,6 +54,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -759,7 +761,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		public void run() {
 			// ファイルリストの読み込み
 			mImageMgr = new ImageManager(mPath, mFileName, mUser, mPass, mFileSort, handler, mCharset, mHidden, ImageManager.OPENMODE_VIEW, mMaxThread);
+			Log.d("ImageActivity", "run \n" + getMemoryString());
 			mImageMgr.LoadImageList(mMemSize, mMemNext, mMemPrev);
+			Log.d("ImageActivity", "run \n" + getMemoryString());
 			setMgrConfig(true);
 			// mImageMgr.setConfig(mScaleMode, mCenter, mFitDual, mDispMode,
 			// mNoExpand, mAlgoMode, mRotate, mWAdjust, mImgScale, mPageWay,
@@ -4173,4 +4177,45 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 					, mImageMgr.mFileList[mCurrentPage].name, -1, null);
 		}
 	}
+
+	private String getMemoryString() {
+		int memoryClass = ((ActivityManager) getSystemService(ACTIVITY_SERVICE)).getMemoryClass();
+		int largeMemoryClass = 0;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			largeMemoryClass = ((ActivityManager) getSystemService(ACTIVITY_SERVICE)).getLargeMemoryClass();
+		}
+
+		// メモリ情報を取得
+		ActivityManager activityManager = (ActivityManager)getSystemService(ACTIVITY_SERVICE);
+		ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+		activityManager.getMemoryInfo(memoryInfo);
+
+		int avaliMem = (int) (memoryInfo.availMem / 1024 / 1024);
+		int threshold = (int) (memoryInfo.threshold / 1024 / 1024);
+		boolean lowMemory = memoryInfo.lowMemory;
+
+		int nativeAllocate = (int) (Debug.getNativeHeapAllocatedSize() / 1024 / 1024);
+		int dalvikTotal = (int) (Runtime.getRuntime().totalMemory() / 1024 / 1024);
+		int dalvikFree = (int) (Runtime.getRuntime().freeMemory() / 1024 / 1024);
+
+		int javaAllocate = dalvikTotal - dalvikFree;
+		int totalAllocate = nativeAllocate + javaAllocate;
+
+		int ratio = (int)((double) totalAllocate / memoryClass * 100);
+		int largeRatio = (int)((double) totalAllocate / largeMemoryClass * 100);
+
+		return "使用可能メモリ = " + String.valueOf(memoryClass) + " MB\n"
+				+ "使用可能メモリ(large) = " + largeMemoryClass + " MB\n"
+				+ "native割当済み = " + nativeAllocate + " MB\n"
+				+ "java割当済み = " + javaAllocate + " MB\n"
+				+ "total割当済み = " + totalAllocate + " MB\n"
+				+ "使用率 = " + ratio + "%\n"
+				+ "使用率(large) = " + largeRatio + "%\n"
+				+ "(dalvik最大メモリ = " + dalvikTotal + " MB)\n"
+				+ "(dalvik空きメモリ = " + dalvikFree + " MB)\n"
+				+ "availMem = " + avaliMem + " MB\n"
+				+ "threshold = " + threshold + " MB\n"
+				+ "lowMemory = " + lowMemory;
+	}
+
 }

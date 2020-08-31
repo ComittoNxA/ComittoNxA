@@ -3300,6 +3300,7 @@ public class ImageManager extends InputStream implements Runnable {
 
 //		long sttime = SystemClock.uptimeMillis();
 		if (total < orglen) {
+			Log.e("ImageManager", "LoadBitmapFile total=" + total + ", orglen=" + orglen);
 			mFileList[page].error = true;
 			throw new IOException("File is broken.");
 		}
