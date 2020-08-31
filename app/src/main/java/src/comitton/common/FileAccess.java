@@ -223,9 +223,9 @@ public class FileAccess {
 	// smbj認証
 	public static Session smbjSession(String host, String user, String pass) {
 		// 前回と同じならそれを返す
-		if (lastSessionHost.equals(host) && lastSessionUser.equals(user) && lastSessionPass.equals(pass)) {
-			return lastSmbjesSsion;
-		}
+//		if (lastSessionHost.equals(host) && lastSessionUser.equals(user) && lastSessionPass.equals(pass)) {
+//			return lastSmbjesSsion;
+//		}
 
 		Connection connection = null;
 		AuthenticationContext auth = null;
@@ -294,9 +294,9 @@ public class FileAccess {
 		}
 
 		// 前回と同じならそれを返す
-		if (lastSessionHost.equals(host) && lastSessionShare.equals(share) && lastSessionUser.equals(user) && lastSessionPass.equals(pass)) {
-			return lastSmbjShare;
-		}
+//		if (lastSessionHost.equals(host) && lastSessionShare.equals(share) && lastSessionUser.equals(user) && lastSessionPass.equals(pass)) {
+//			return lastSmbjShare;
+//		}
 		Log.d("FileAccess", "smbjShare user=" + user + ", pass=" + pass + ", host=" + host + ", share=" + share + ", path=" + path);
 
 		session = smbjSession(host, user, pass);
