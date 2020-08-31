@@ -163,7 +163,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					fileList.add(fileData);
 				}
 				// 初期フォルダより上のフォルダの場合
-				if (mStaticRootDir.startsWith(mPath) && !mStaticRootDir.equals(mPath)) {
+				if (mStaticRootDir.startsWith(mUri + mPath) && !mStaticRootDir.equals(mUri + mPath)) {
 					int pos = mStaticRootDir.indexOf("/", mPath.length());
 					String dir = mStaticRootDir.substring(mPath.length(), pos + 1);
 
