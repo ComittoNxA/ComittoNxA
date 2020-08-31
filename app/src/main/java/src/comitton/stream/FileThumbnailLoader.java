@@ -421,9 +421,13 @@ public class FileThumbnailLoader extends ThumbnailLoader implements Runnable {
 				Log.d("FileThumbnailLoader", "index=" + index + " loadBitmap3 Filename=" + filename + ", type=pdf");
 				type = FILETYPE_PDF;
 			}
-//			else {
-//				return false;
-//			}
+			else if (ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif")/* || ext.equals(".bmp")*/) {
+				type = FILETYPE_IMG;
+			}
+			else {
+				// 対象外のファイル
+				return false;
+			}
 			try {
 				if (type != FILETYPE_IMG) {
 					Log.d("FileThumbnailLoader", "index=" + index + " loadBitmap3 圧縮ファイルを開きます。");

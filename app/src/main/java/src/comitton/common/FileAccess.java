@@ -74,7 +74,7 @@ public class FileAccess {
 	public static final int SMBLIB_SMBJ = 1;
 
 	private static int SMBLIB = SMBLIB_SMBJ;
-	private static Session lastSmbjesSsion = null;
+	private static Session lastSmbjSession = null;
 	private static DiskShare lastSmbjShare = null;
 	private static String lastSessionHost = "";
 	private static String lastSessionShare = "";
@@ -142,7 +142,7 @@ public class FileAccess {
 //		return jcifsFile(url, user, pass);
 //	}
 
-	// ユーザ認証付きSambaアクセス
+	// jcifs認証
 	public static SmbFile jcifsFile(String url, String user, String pass) throws MalformedURLException {
 		SmbFile sfile = null;
 		NtlmPasswordAuthenticator smbAuth;
@@ -154,7 +154,8 @@ public class FileAccess {
 		int idx;
 
 ////		// SMBの基本設定
-////		// SMB3はデバッグビルドでしか動作しないため、SMB2を使用する
+////		// SMB3はデバッグビルドでしか動作しない.
+//          // 最適化が悪いと思われる(そのうち検証)
 //		Properties prop = new Properties();
 //		prop.setProperty("jcifs.smb.client.minVersion", "SMB1");
 //		prop.setProperty("jcifs.smb.client.maxVersion", "SMB210"); // SMB1, SMB202, SMB210, SMB300, SMB302, SMB311
@@ -224,7 +225,9 @@ public class FileAccess {
 	public static Session smbjSession(String host, String user, String pass) {
 		// 前回と同じならそれを返す
 		if (lastSessionHost.equals(host) && lastSessionUser.equals(user) && lastSessionPass.equals(pass)) {
-			return lastSmbjesSsion;
+			if (lastSmbjSession.getConnection().isConnected()) {
+				return lastSmbjSession;
+			}
 		}
 
 		Connection connection = null;
@@ -264,7 +267,7 @@ public class FileAccess {
 		}
 
 		session = connection.authenticate(auth);
-		lastSmbjesSsion = session;
+		lastSmbjSession = session;
 		lastSessionHost = host;
 		lastSessionUser = user;
 		lastSessionPass = pass;

@@ -274,13 +274,16 @@ public class FileListArea extends ListArea implements Handler.Callback {
 				mLinePaint.setStrokeWidth(3);
 
 				if (mThumbFlag) {
-					if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR) {
+					if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR || type == FileData.FILETYPE_TXT) {
 						// ビットマップ表示
 						canvas.drawRect(x - 1, y - 1, x + mIconWidth, y + mIconHeight, mLinePaint);
 //						canvas.drawRect(x - 1, y - 1, x + mIconWidth, y + mIconHeight, paint);
 
 						Bitmap bmMark = null;
-						if (type != FileData.FILETYPE_IMG) {
+						if (type == FileData.FILETYPE_DIR) {
+							bmMark = mMark[FILEMARK_DIR];
+						}
+						else {
 							if (exttype == FileData.EXTTYPE_ZIP) {
 								bmMark = mMark[FILEMARK_ZIP];
 							}
@@ -289,9 +292,6 @@ public class FileListArea extends ListArea implements Handler.Callback {
 							}
 							else if (exttype == FileData.EXTTYPE_PDF) {
 								bmMark = mMark[FILEMARK_PDF];
-							}
-							else {
-								bmMark = mMark[FILEMARK_DIR];
 							}
 						}
 
@@ -316,6 +316,8 @@ public class FileListArea extends ListArea implements Handler.Callback {
 						}
 						else {
 							// サムネイルありかつ画像なし
+							int loadingSize = Math.min(mIconWidth, mIconHeight) / 6;
+							mBitmapPaint.setTextSize(loadingSize);
 							String str = retBitmap == 0 ? "Loading..." : "No Image";
 							int text_x = x + mIconWidth / 2;
 							int text_y = y + (mIconHeight + mLoadingSize) / 2 - mLoadingSize / 4;
@@ -326,7 +328,7 @@ public class FileListArea extends ListArea implements Handler.Callback {
 							mBitmapPaint.setColor(Color.DKGRAY);
 							canvas.drawText(str, text_x + 1, text_y + 1, mBitmapPaint);
 
-							mBitmapPaint.setColor(Color.WHITE);
+							mBitmapPaint.setColor(color);
 							canvas.drawText(str, text_x, text_y, mBitmapPaint);
 
 							if (bmMark != null) {
@@ -562,12 +564,15 @@ public class FileListArea extends ListArea implements Handler.Callback {
                 int iconWidth = mIconWidth * iconHeight / mIconHeight;
 				int retBitmap = CallImgLibrary.ThumbnailCheck(mThumbnailId, index);
 
-				if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR) {
+				if (type == FileData.FILETYPE_ARC || type == FileData.FILETYPE_IMG || type == FileData.FILETYPE_DIR || type == FileData.FILETYPE_TXT) {
 					// ビットマップ表示
                     canvas.drawRect(x - 1, y - 1, x + iconWidth, y + iconHeight, mLinePaint);
 
 					Bitmap bmMark = null;
-					if (type != FileData.FILETYPE_IMG) {
+					if (type == FileData.FILETYPE_DIR) {
+						bmMark = mMark[FILEMARK_DIR];
+					}
+					else {
 						if (exttype == FileData.EXTTYPE_ZIP) {
 							bmMark = mMark[FILEMARK_ZIP];
 						}
@@ -576,9 +581,6 @@ public class FileListArea extends ListArea implements Handler.Callback {
 						}
 						else if (exttype == FileData.EXTTYPE_PDF) {
 							bmMark = mMark[FILEMARK_PDF];
-						}
-						else {
-							bmMark = mMark[FILEMARK_DIR];
 						}
 					}
 
