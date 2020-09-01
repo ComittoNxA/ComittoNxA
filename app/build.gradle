@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 def applicationName = "ComittoNxA"
 def versionMajor = 1
 def versionMinor = 65
-def versionPatch = 13
+def versionPatch = 14
 def revision = "A"
 
 android {
@@ -41,6 +41,7 @@ android {
             renderscriptDebuggable false
             signingConfig signingConfigs.debug
             minifyEnabled true
+            shrinkResources true
         }
         debug {
         debuggable true
@@ -82,6 +83,8 @@ dependencies {
     //implementation 'com.github.bumptech.glide:glide:3.6.1'
 
     // SMB2接続用ライブラリ
+//    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'
+
     // (MD4未実装対策のためbouncycastleをspongycastleに変更)
     // (jcifs.util.MD4を旧jcifsから移植、jcifs.util.Cryptに反映)
     api files('libs/jcifs-ng-2.1.5-SNAPSHOT.jar')

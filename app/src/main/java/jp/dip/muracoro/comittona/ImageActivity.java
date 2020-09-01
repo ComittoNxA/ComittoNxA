@@ -53,6 +53,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -4204,7 +4205,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		int ratio = (int)((double) totalAllocate / memoryClass * 100);
 		int largeRatio = (int)((double) totalAllocate / largeMemoryClass * 100);
 
-		return "使用可能メモリ = " + String.valueOf(memoryClass) + " MB\n"
+		return Build.BRAND + " " + Build.MODEL + " Android " + Build.VERSION.RELEASE + "\n"
+				+ "使用可能メモリ = " + String.valueOf(memoryClass) + " MB\n"
 				+ "使用可能メモリ(large) = " + largeMemoryClass + " MB\n"
 				+ "native割当済み = " + nativeAllocate + " MB\n"
 				+ "java割当済み = " + javaAllocate + " MB\n"

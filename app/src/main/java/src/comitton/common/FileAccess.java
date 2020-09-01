@@ -45,9 +45,11 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import jcifs.CIFSContext;
+import jcifs.CIFSException;
 import jcifs.context.SingletonContext;
 import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbException;
@@ -153,13 +155,13 @@ public class FileAccess {
 		String path = "";
 		int idx;
 
-////		// SMBの基本設定
-////		// SMB3はデバッグビルドでしか動作しない.
-//          // 最適化が悪いと思われる(そのうち検証)
-//		Properties prop = new Properties();
-//		prop.setProperty("jcifs.smb.client.minVersion", "SMB1");
-//		prop.setProperty("jcifs.smb.client.maxVersion", "SMB210"); // SMB1, SMB202, SMB210, SMB300, SMB302, SMB311
-//		prop.setProperty("jcifs.traceResources", "true");
+//		// SMBの基本設定
+//		// SMB3はデバッグビルドでしか動作しない.
+          // 最適化が悪いと思われる(そのうち検証)
+		Properties prop = new Properties();
+		prop.setProperty("jcifs.smb.client.minVersion", "SMB1");
+		prop.setProperty("jcifs.smb.client.maxVersion", "SMB311"); // SMB1, SMB202, SMB210, SMB300, SMB302, SMB311
+		prop.setProperty("jcifs.traceResources", "true");
 //		prop.setProperty("jcifs.smb.lmCompatibility", "3");
 //		prop.setProperty("jcifs.smb.client.useExtendedSecuruty", "true");
 //		prop.setProperty("jcifs.smb.useRawNTLM", "true");
@@ -170,14 +172,14 @@ public class FileAccess {
 //		prop.setProperty("jcifs.smb.client.signingEnforced", "true");
 //		prop.setProperty("jcifs.smb.client.disableSpnegoIntegrity", "true");
 //
-//		try {
-//			// BaseContextではコネクションが足りなくなるため、SingletonContextを使用する
-////			Configuration config = new PropertyConfiguration(prop);
-////			context = new BaseContext(config);
-//			SingletonContext.init(prop);
-//		} catch (CIFSException e) {
-//			Log.d("FileAccess", "jcifsFile " + e.getMessage());
-//		}
+		try {
+			// BaseContextではコネクションが足りなくなるため、SingletonContextを使用する
+//			Configuration config = new PropertyConfiguration(prop);
+//			context = new BaseContext(config);
+			SingletonContext.init(prop);
+		} catch (CIFSException e) {
+			Log.d("FileAccess", "jcifsFile " + e.getMessage());
+		}
 
 
 		host = url.substring(6);
