@@ -1215,7 +1215,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 						else {
 							// ディレクトリの場合は中身を順番に消す
 							Log.d("FileSelectActivity", "onCreateDialog ディレクトリを削除します。");
-							RemoveDialog dlg = new RemoveDialog(mActivity, mURI, mPath, user, pass, mFileData.getName(), new RemoveListener() {
+							RemoveDialog dlg = new RemoveDialog(mActivity, mActivity, mURI, mPath, user, pass, mFileData.getName(), new RemoveListener() {
 								@Override
 								public void onClose() {
 								// 終了でリスト更新
@@ -3374,7 +3374,7 @@ public class FileSelectActivity extends Activity implements OnTouchListener, Lis
 		return false;
 	}
 
-	private void loadThumbnail() {
+	public void loadThumbnail() {
 		if (mThumbnail == false) {
 			return;
 		}

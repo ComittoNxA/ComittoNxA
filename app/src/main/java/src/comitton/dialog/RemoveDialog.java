@@ -3,6 +3,7 @@ package src.comitton.dialog;
 import java.util.ArrayList;
 import java.util.EventListener;
 
+import jp.dip.muracoro.comittona.FileSelectActivity;
 import src.comitton.common.FileAccess;
 
 import jp.dip.muracoro.comittona.R;
@@ -32,6 +33,8 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 
 	private RemoveListener mListener = null;
 
+	private FileSelectActivity mActivity; 
+	
 	private String mFullPath;
 	private String mUser;
 	private String mPass;
@@ -45,8 +48,9 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 	private Button mBtnCancel;
 	private boolean mIsLocal;
 
-	public RemoveDialog(Context context, String uri, String path, String user, String pass, String item, RemoveListener removeListener) {
+	public RemoveDialog(Context context, FileSelectActivity activity, String uri, String path, String user, String pass, String item, RemoveListener removeListener) {
 		super(context);
+		mActivity = activity;
 		Window dlgWindow = getWindow();
 		Log.d("RemoveDialog", "RemoveDialog uri=" + uri + ", path=" + path + ", user=" + user + ", pass=" + pass + ", item=" + item);
 
@@ -172,39 +176,40 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 
 	public boolean smbRemoveFile(String path, String item) throws Exception {
 		String nextpath = path + item;
-		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
-		if (isDirectory) {
-			// 再帰呼び出し
-			ArrayList<FileData> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
-
-			int filenum = sfiles.size();
-			if (sfiles != null && filenum > 0) {
-				// ファイルあり
-				// ディレクトリ内のファイル
-				for (int i = 0; i < filenum; i++) {
-					String name = sfiles.get(i).getName();
-					if (name.equals("..")) {
-						continue;
-					}
-					localRemoveFile(nextpath, name);
-					if (mBreak) {
-						// 中断
-						break;
-					}
-				}
-			}
-			FileAccess.delete(mFullPath + nextpath, mUser , mPass);
-		}
-		else {
-			// 削除ファイル表示
-			sendMessage(MSG_MESSAGE, path + item, 0, 0);
-
-			// ファイル削除
-			boolean exists = FileAccess.exists(mFullPath + nextpath, mUser , mPass);
-			if (exists) {
-				FileAccess.delete(mFullPath + nextpath, mUser , mPass);
-			}
-		}
+		FileAccess.delete(mFullPath + nextpath, mUser , mPass);
+//		boolean isDirectory = FileAccess.isDirectory(mFullPath + nextpath, mUser , mPass);
+//		if (isDirectory) {
+//			// 再帰呼び出し
+//			ArrayList<FileData> sfiles = FileAccess.listFiles(mFullPath + nextpath, mUser, mPass);
+//
+//			int filenum = sfiles.size();
+//			if (sfiles != null && filenum > 0) {
+//				// ファイルあり
+//				// ディレクトリ内のファイル
+//				for (int i = 0; i < filenum; i++) {
+//					String name = sfiles.get(i).getName();
+//					if (name.equals("..")) {
+//						continue;
+//					}
+//					smbRemoveFile(nextpath, name);
+//					if (mBreak) {
+//						// 中断
+//						break;
+//					}
+//				}
+//			}
+//			FileAccess.delete(mFullPath + nextpath, mUser , mPass);
+//		}
+//		else {
+//			// 削除ファイル表示
+//			sendMessage(MSG_MESSAGE, path + item, 0, 0);
+//
+//			// ファイル削除
+//			boolean exists = FileAccess.exists(mFullPath + nextpath, mUser , mPass);
+//			if (exists) {
+//				FileAccess.delete(mFullPath + nextpath, mUser , mPass);
+//			}
+//		}
 		return true;
 	}
 
@@ -243,6 +248,7 @@ public class RemoveDialog extends Dialog implements Runnable, Handler.Callback, 
 		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		mBreak = true;
 		mListener.onClose();
+		mActivity.loadThumbnail();
 	}
 
 	public interface RemoveListener extends EventListener {
