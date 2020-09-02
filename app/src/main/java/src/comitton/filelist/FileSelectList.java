@@ -207,12 +207,14 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 
 				if (fileList.get(i).getType() == FileData.FILETYPE_NONE){
 					fileList.remove(i);
+					continue;
 				}
 				if (fileList.get(i).getType() != FileData.FILETYPE_DIR && fileList.get(i).getType() != FileData.FILETYPE_PARENT) {
 					// 通常のファイル
 					int len = name.length();
 					if (len < 5) {
 						fileList.remove(i);
+						continue;
 					}
 					if (hidden == true && DEF.checkHiddenFile(name)) {
 						fileList.remove(i);
@@ -237,6 +239,7 @@ public class FileSelectList implements Runnable, Callback, DialogInterface.OnDis
 					//マーカー設定andディレクトリに適用する場合のディレクトリは削除
 					if (marker != null && (mApplyDir == true && fileList.get(i).getType() == FileData.FILETYPE_DIR) ) {
 						fileList.remove(i);
+						continue;
 					}
 				}
 
