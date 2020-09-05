@@ -57,3 +57,4 @@
 #-keep class org.spongycastle.jcajce.provider.digest.** {*;}
 #-keep class org.spongycastle.jcajce.provider.keystore.** {*;}
 -keep class org.spongycastle.jcajce.provider.symmetric.** {*;}
+#-keep class org.bouncycastle.jcajce.provider.symmetric.** {*;}
