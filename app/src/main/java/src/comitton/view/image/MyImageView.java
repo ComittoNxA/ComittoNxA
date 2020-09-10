@@ -193,6 +193,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			// リストの描画が必要な時にtrue復帰
 			try {
 				Thread.sleep(3600000);
+//				update(false);
 			} catch (InterruptedException e) {
 				// 描画発生による割り込み
 				if (mIsRunning == false) {

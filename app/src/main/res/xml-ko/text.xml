@@ -106,6 +106,12 @@
             android:key="PrevRev"
             android:summary="이전 페이지로 돌아 가기 때 가로 표시 위치를 초기 표시 위치의 반대합니다"
             android:title="이전 페이지 위치를 좌우 반전＊" />
+        <src.comitton.config.TimeAndBatteryPreference
+            android:dialogTitle="시간과 충전 표시"
+            android:key="TimeAndBattery"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="시간과 충전 표시＊" />
     </PreferenceCategory>
     <PreferenceCategory android:title="작업 관련 설정(＊이미지와 공통 설정)" >
         <CheckBoxPreference

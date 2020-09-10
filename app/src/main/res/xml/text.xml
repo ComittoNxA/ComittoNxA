@@ -106,6 +106,12 @@
             android:key="PrevRev"
             android:summary="To return to the previous page is opposed to the horizontal display position"
             android:title="PrevPage to Reverse Position(*)" />
+        <src.comitton.config.TimeAndBatteryPreference
+            android:dialogTitle="Time and Battery"
+            android:key="TimeAndBattery"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="Time and Buttery(*)" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Operation Settings" >
         <CheckBoxPreference

@@ -193,6 +193,7 @@
     <string name="cdChkResume">마지막으로 열린 파일로 기록</string>
     <string name="idSaveConfig">설정을 저장하려면</string>
     <string name="pnChkDisp">페이지 번호를 표시한다.</string>
+    <string name="timeChkDisp">시간과 충전보기.</string>
     <string name="pnTxtFormat">표시 형식 :</string>
     <string name="pnTxtPos">표시 위치 :</string>
     <string name="pnTxtSize">크기 :</string>
@@ -369,6 +370,12 @@
     <string name="txgrad08">왼쪽 → 오른쪽</string>
     <string name="pnumformat00">page / total</string>
     <string name="pnumformat01">page1-2 / total</string>
+    <string name="timeformat00">24:00</string>
+    <string name="timeformat01">24:00 [100%]</string>
+    <string name="timeformat02">24:00 [100%] [AC]</string>
+    <string name="timeformat03">12:00</string>
+    <string name="timeformat04">12:00 [100%]</string>
+    <string name="timeformat05">12:00 [100%] [AC]</string>
     <string name="pnumnodisp">숨기기</string>
     <string name="pnumpos00">왼쪽</string>
     <string name="pnumpos01">중앙에</string>

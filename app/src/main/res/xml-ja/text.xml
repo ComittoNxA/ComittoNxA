@@ -106,6 +106,12 @@
             android:key="PrevRev"
             android:summary="前ページに戻る時、横方向の表示位置を初期表示位置の反対にします"
             android:title="前ページ位置を左右反転＊" />
+        <src.comitton.config.TimeAndBatteryPreference
+            android:dialogTitle="時刻と充電表示"
+            android:key="TimeAndBattery"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="時刻と充電表示＊" />
     </PreferenceCategory>
     <PreferenceCategory android:title="操作関連の設定(＊はイメージと共通)" >
         <CheckBoxPreference

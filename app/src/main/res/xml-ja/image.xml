@@ -136,6 +136,12 @@
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="ページ番号表示" />
+        <src.comitton.config.TimeAndBatteryPreference
+            android:dialogTitle="時刻と充電表示"
+            android:key="TimeAndBattery"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="時刻と充電表示＊" />
     </PreferenceCategory>
     <PreferenceCategory android:title="操作関連の設定（＊はテキストと共通の設定）" >
         <CheckBoxPreference

@@ -193,6 +193,7 @@
     <string name="cdChkResume">最後に開いたファイルとして記録</string>
     <string name="idSaveConfig">設定を初期値として保存する</string>
     <string name="pnChkDisp">ページ番号を表示する。</string>
+    <string name="timeChkDisp">時刻と充電を表示する。</string>
     <string name="pnTxtFormat">表示書式 :</string>
     <string name="pnTxtPos">表示位置 :</string>
     <string name="pnTxtSize">サイズ :</string>
@@ -369,6 +370,12 @@
     <string name="txgrad08"> 左 → 右</string>
     <string name="pnumformat00">page / total</string>
     <string name="pnumformat01">page1-2 / total</string>
+    <string name="timeformat00">24:00</string>
+    <string name="timeformat01">24:00 [100%]</string>
+    <string name="timeformat02">24:00 [100%] [AC]</string>
+    <string name="timeformat03">12:00</string>
+    <string name="timeformat04">12:00 [100%]</string>
+    <string name="timeformat05">12:00 [100%] [AC]</string>
     <string name="pnumnodisp">非表示</string>
     <string name="pnumpos00">左上</string>
     <string name="pnumpos01">中央上</string>

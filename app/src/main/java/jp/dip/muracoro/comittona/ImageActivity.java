@@ -368,6 +368,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private int mPnumPos;
 	private int mPnumSize;
 
+	private boolean mTimeDisp;
+	private int mTimeFormat;
+	private int mTimePos;
+	private int mTimeSize;
+
 	// サムネイルページ選択用
 	private long mThumID;
 
@@ -548,6 +553,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		loadTopMenuState();
 		// 上部メニューの文字列情報をガイドに設定
 		mGuideView.setTopCommandStr(mCommandStr);
+		// 時刻＆バッテリー表示の情報をガイドに設定
+		mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
 
 		setViewConfig();
 
@@ -1172,10 +1179,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 							pagenum = (mCurrentPage + 1) + " / " + mImageMgr.length();
 						}
 						else {
-							pagenum = (mCurrentPage + 1) + "-" + (mCurrentPage + 2) + " / " + mImageMgr.length();
+							pagenum = (mCurrentPage + 1) + " - " + (mCurrentPage + 2) + " / " + mImageMgr.length();
 						}
 					}
-					mGuideView.setPageNumber(pagenum, mPnumPos, mPnumSize);
+					mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize);
+					mGuideView.setPageNumberString(pagenum);
 
 					// 現在ページを保存
 					if (mSavePage == true) {
@@ -3536,7 +3544,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mGuideView.setColor(mTopColor1, mTopColor2, mMgnColor);
 			mGuideView.setGuideSize(mClickArea, mTapPattern, mTapRate, mChgPage, mOldMenu);
 			// mGuideView.setRotateMode(mPseLand);
-			mGuideView.setPageNumber(null, mPnumPos, mPnumSize);
+			mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize);
+			mGuideView.setPageNumberString(null);
 
 			setMgrConfig(true);
 
@@ -3704,6 +3713,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mPnumFormat = SetImageActivity.getPnumFormat(sharedPreferences); // ページ表示書式
 			mPnumPos = SetImageActivity.getPnumPos(sharedPreferences); // ページ表示位置
 			mPnumSize = DEF.calcPnumSizePix(SetImageActivity.getPnumSize(sharedPreferences), mSDensity); // ページ表示サイズ
+
+			mTimeDisp = SetImageActivity.getTimeDisp(sharedPreferences); // 時刻と充電表示有無
+			mTimeFormat = SetImageActivity.getTimeFormat(sharedPreferences); // 時刻と充電表示書式
+			mTimePos = SetImageActivity.getTimePos(sharedPreferences); // 時刻と充電表示位置
+			mTimeSize = DEF.calcPnumSizePix(SetImageActivity.getTimeSize(sharedPreferences), mSDensity); // 時刻と充電表示サイズ
 
 			mConfirmBack = SetImageText.getConfirmBack(sharedPreferences); // 戻るキーで確認メッセージ
 			// mResumeOpen = false;

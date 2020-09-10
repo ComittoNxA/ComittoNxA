@@ -33,6 +33,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 
 	private OperationPreference mTapPattern;
 	private PageNumberPreference mPageNumber;
+	private TimeAndBatteryPreference mTimeAndBattery;
 
 	public static final int FileSortName[] =
 		{ R.string.fsort00		// ソートなし
@@ -117,6 +118,13 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		, R.string.pnumpos03	// 左下
 		, R.string.pnumpos04	// 中央下
 		, R.string.pnumpos05 };	// 右下
+	public static final int TimeFormatName[] =
+		{ R.string.timeformat00		// 24:00
+		, R.string.timeformat01		// 24:00 [100%]
+		, R.string.timeformat02		// 24:00 [100%] [AC]
+		, R.string.timeformat03		// 24:00
+		, R.string.timeformat04		// 24:00 [100%]
+		, R.string.timeformat05 };	// 24:00 [100%] [AC]
 
 	Resources mResources;
 
@@ -142,6 +150,8 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 
 		mTapPattern = (OperationPreference)getPreferenceScreen().findPreference(DEF.KEY_TAPPATTERN);
 		mPageNumber = (PageNumberPreference)getPreferenceScreen().findPreference(DEF.KEY_PAGENUMBER);
+
+		mTimeAndBattery = (TimeAndBatteryPreference) getPreferenceScreen().findPreference(DEF.KEY_TIMEANDBATTERY);
 
 		mViewPt    = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_VIEWPT);
 		mVolKey    = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_VOLKEY);
@@ -195,6 +205,8 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 
 		mTapPattern.setSummary(SetImageText.getTapPatternSummary(mResources, sharedPreferences));	// 操作パターン
 		mPageNumber.setSummary(getPageNumberSummary(sharedPreferences));	// ページ表示
+
+		mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));	// 時刻と充電表示
 
 		mViewPt.setSummary(SetImageText.getViewPtSummary(mResources, sharedPreferences));		// イメージ画面の回転制御
 		mVolKey.setSummary(SetImageText.getVolKeySummary(mResources, sharedPreferences));		// Volキー動作
@@ -262,6 +274,10 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		else if(key.equals(DEF.KEY_PNUMDISP) || key.equals(DEF.KEY_PNUMFORMAT) || key.equals(DEF.KEY_PNUMPOS) || key.equals(DEF.KEY_PNUMSIZE)){
 			//
 			mPageNumber.setSummary(getPageNumberSummary(sharedPreferences));
+		}
+		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE)){
+			//
+			mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));
 		}
 		else if(key.equals(DEF.KEY_VIEWPT)){
 			//
@@ -412,6 +428,32 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		return flag;
 	}
 
+	public static int getTimeFormat(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, 1);
+		if( val < 0 || val >= TimeFormatName.length){
+			val = 1;
+		}
+		return val;
+	}
+
+	public static int getTimePos(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, 5);
+		if( val < 0 || val >= PnumPosName.length){
+			val = 5;
+		}
+		return val;
+	}
+
+	public static int getTimeSize(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, 10);
+		return val;
+	}
+
+	public static boolean getTimeDisp(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_TIMEDISP, false);
+		return flag;
+	}
 	public static boolean getSharpen(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_SHARPEN, false);
@@ -575,6 +617,25 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 			summ = res.getString(PnumFormatName[format])
 					+ ", " + res.getString(PnumPosName[pos])
 						+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
+		}
+		else {
+			summ = res.getString(R.string.pnumnodisp);
+		}
+		return summ;
+	}
+
+	private String getTimeSummary(SharedPreferences sharedPreferences){
+		boolean disp = getTimeDisp(sharedPreferences);
+		int format = getTimeFormat(sharedPreferences);
+		int pos = getTimePos(sharedPreferences);
+		int size = getTimeSize(sharedPreferences);
+		Resources res = getResources();
+
+		String summ;
+		if (disp) {
+			summ = res.getString(TimeFormatName[format])
+					+ ", " + res.getString(PnumPosName[pos])
+					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
 		}
 		else {
 			summ = res.getString(R.string.pnumnodisp);

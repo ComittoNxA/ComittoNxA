@@ -193,6 +193,7 @@
     <string name="cdChkResume">Record as the last opened file.</string>
     <string name="idSaveConfig">Save the settings</string>
     <string name="pnChkDisp">Display the page number.</string>
+    <string name="timeChkDisp">Display the time and battery.</string>
     <string name="pnTxtFormat">Format :</string>
     <string name="pnTxtPos">Position :</string>
     <string name="pnTxtSize">Font Size :</string>
@@ -369,6 +370,12 @@
     <string name="txgrad08">Left -> Right</string>
     <string name="pnumformat00">page / total</string>
     <string name="pnumformat01">page1-2 / total</string>
+    <string name="timeformat00">24:00</string>
+    <string name="timeformat01">24:00 [100%]</string>
+    <string name="timeformat02">24:00 [100%] [AC]</string>
+    <string name="timeformat03">12:00</string>
+    <string name="timeformat04">12:00 [100%]</string>
+    <string name="timeformat05">12:00 [100%] [AC]</string>
     <string name="pnumnodisp">No Display</string>
     <string name="pnumpos00">Top Right</string>
     <string name="pnumpos01">Top Center</string>

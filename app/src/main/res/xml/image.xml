@@ -136,6 +136,12 @@
             android:negativeButtonText="@null"
             android:summary="dummy"
             android:title="Page Number" />
+        <src.comitton.config.TimeAndBatteryPreference
+            android:dialogTitle="Time and Battery"
+            android:key="TimeAndBattery"
+            android:negativeButtonText="@null"
+            android:summary="dummy"
+            android:title="Time and Buttery(*)" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Operation Settings" >
         <CheckBoxPreference

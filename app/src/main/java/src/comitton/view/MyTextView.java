@@ -42,7 +42,7 @@ import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class MyTextView extends SurfaceView implements Handler.Callback, SurfaceHolder.Callback, UpdateListener {
+public class MyTextView extends SurfaceView implements Handler.Callback, SurfaceHolder.Callback, UpdateListener, Runnable {
 	private final int PAGEBASE_LEFT = 0;
 	private final int PAGEBASE_RIGHT = 1;
 	private final int PAGEBASE_CENTER = 2;
@@ -123,6 +123,8 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 	private int mDrawPage;
 	private DrawThread mDrawThread;
 	private boolean mMessageBreak;
+	private Thread mUpdateThread;
+	private boolean mIsRunning;
 
 	private Point mScrollPos[];
 	private Point mScrollPoint;
@@ -247,13 +249,20 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 	 */
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+		mIsRunning = true;
+
+		// 描画スレッド起動
+		mUpdateThread = new Thread(this);
+		mUpdateThread.setPriority(Thread.MAX_PRIORITY);
+		mUpdateThread.start();
 		update();
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
 		// Surface の属性が変更された際にコールされる
-		update();
+		updateNotify();
+//		update();
 	}
 
 	@Override
@@ -261,6 +270,21 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		// Surface が破棄された際にコールされる
 		// mMode = MODE_STOP;
 		// 解放
+		breakThread();
+	}
+
+	public void breakThread() {
+		mIsRunning = false;
+		mUpdateThread.interrupt();
+	}
+
+	public void updateNotify() {
+		if (mUpdateThread != null) {
+			mUpdateThread.interrupt();
+		}
+		else {
+			update();
+		}
 	}
 
 	@Override
@@ -273,11 +297,13 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		Canvas canvas = null;
 		SurfaceHolder surfaceHolder = getHolder();
 		try {
+			Log.d("MyTextView", "update 1");
 			canvas = surfaceHolder.lockCanvas(); // ロックして、書き込み用のcanvasを受け取る
 			if (canvas == null)
 				return; // canvasが受け取れてなかったら抜ける
 
 			synchronized (surfaceHolder) {
+				Log.d("MyTextView", "update 2");
 				drawScreen(canvas);
 			}
 		} finally {
@@ -451,32 +477,32 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			}
 		}
 
-			// オーバースクロール
-			if (mOverScrollX != 0) {
-				// グラデーション幅算出
-				int grad_cx = Math.min(cx, cy) / 20;
-				int cen_x1, cen_x2;
-				GradientDrawable grad;
-				int colors[] = {0, 
-						0x06000000 | (mGuiColor & 0x00FFFFFF),
-						0x10000000 | (mGuiColor & 0x00FFFFFF),
-						0x30000000 | (mGuiColor & 0x00FFFFFF),
-						0x80000000 | (mGuiColor & 0x00FFFFFF)};
-				if (mOverScrollX < 0) {
-					cen_x1 = cx + grad_cx * mOverScrollX / mOverScrollMax;
-					cen_x2 = cx;
-					grad = new GradientDrawable(Orientation.LEFT_RIGHT, colors);  
-					grad.setBounds(cen_x1, 0, cen_x2, cy);
-					grad.draw(canvas);  
-				}
-				else if (mOverScrollX > 0) {
-					cen_x1 = 0;
-					cen_x2 = grad_cx * mOverScrollX / mOverScrollMax;
-					grad = new GradientDrawable(Orientation.RIGHT_LEFT, colors);  
-					grad.setBounds(cen_x1, 0, cen_x2, cy);
-					grad.draw(canvas);
-				}
+		// オーバースクロール
+		if (mOverScrollX != 0) {
+			// グラデーション幅算出
+			int grad_cx = Math.min(cx, cy) / 20;
+			int cen_x1, cen_x2;
+			GradientDrawable grad;
+			int colors[] = {0, 
+					0x06000000 | (mGuiColor & 0x00FFFFFF),
+					0x10000000 | (mGuiColor & 0x00FFFFFF),
+					0x30000000 | (mGuiColor & 0x00FFFFFF),
+					0x80000000 | (mGuiColor & 0x00FFFFFF)};
+			if (mOverScrollX < 0) {
+				cen_x1 = cx + grad_cx * mOverScrollX / mOverScrollMax;
+				cen_x2 = cx;
+				grad = new GradientDrawable(Orientation.LEFT_RIGHT, colors);  
+				grad.setBounds(cen_x1, 0, cen_x2, cy);
+				grad.draw(canvas);  
 			}
+			else if (mOverScrollX > 0) {
+				cen_x1 = 0;
+				cen_x2 = grad_cx * mOverScrollX / mOverScrollMax;
+				grad = new GradientDrawable(Orientation.RIGHT_LEFT, colors);  
+				grad.setBounds(cen_x1, 0, cen_x2, cy);
+				grad.draw(canvas);
+			}
+		}
 
 //		if (mPseLand == true) {
 //			canvas.restore();
@@ -2658,6 +2684,27 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			this.mHandler.sendMessageAtTime(msg, NextTime);
 		}
 		return false;
+	}
+
+	@Override
+	public void run() {
+		// リスト描画処理監視
+		while (true) {
+			// リストの描画が必要な時にtrue復帰
+			try {
+				Thread.sleep(1000);
+				update();
+			} catch (InterruptedException e) {
+				// 描画発生による割り込み
+				if (mIsRunning == false) {
+					break;
+				}
+				else {
+					update();
+				}
+			}
+			;
+		}
 	}
 
 	public class DrawThread implements Runnable {

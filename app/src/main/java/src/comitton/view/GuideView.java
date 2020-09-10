@@ -20,6 +20,7 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.BatteryManager;
 import android.view.View;
 
 public class GuideView {
@@ -34,12 +35,12 @@ public class GuideView {
 	private static final int NOISESTATE_TOO = 2;
 	private static final int NOISESTATE_YET = 4;
 
-	private static final int PAGEPOS_TL = 0; // ページ番号表示位置
-	private static final int PAGEPOS_TC = 1;
-	private static final int PAGEPOS_TR = 2;
-	private static final int PAGEPOS_BL = 3;
-	private static final int PAGEPOS_BC = 4;
-	private static final int PAGEPOS_BR = 5;
+	public static final int PAGEPOS_TL = 0; // ページ番号表示位置
+	public static final int PAGEPOS_TC = 1;
+	public static final int PAGEPOS_TR = 2;
+	public static final int PAGEPOS_BL = 3;
+	public static final int PAGEPOS_BC = 4;
+	public static final int PAGEPOS_BR = 5;
 
 	public static final int GUIDE_NONE = -2;
 	public static final int GUIDE_NOSEL = -1;
@@ -116,9 +117,16 @@ public class GuideView {
 	private String mPageText;
 	private int mPageColor;
 
+	private boolean mPageDisplay = false;
 	private String mPageStr;
+	private int mPageFormatInt;
 	private int mPagePos;
 	private int mPageSize;
+	private boolean mTimeDisplay = false;
+	private int mTimeFormatInt;
+	private String mTimeStr;
+	private int mTimePos;
+	private int mTimeSize;
 
 	private boolean mDualView;	// 並べて表示
 	private boolean mNextFile;	// 次/前ファイル移動表示
@@ -144,10 +152,12 @@ public class GuideView {
 	private Paint mLoadPaint;
 	private Paint mPagePaint;
 	private Paint mNumPaint;
+	private Paint mTimePaint;
 	private int mLoadingCount = -1;
 	private int mLoadColor[];
 
 	SimpleDateFormat mDateFormat;
+	SimpleDateFormat mTimeFormat;
 
 	// コンストラクタ
 	public GuideView(Context context) {
@@ -183,7 +193,10 @@ public class GuideView {
 		mPagePaint.setColor(Color.WHITE);
 
 		mNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mNumPaint.setTypeface(Typeface.MONOSPACE);
+//		mNumPaint.setTypeface(Typeface.MONOSPACE);
+		mTimePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//		mTimePaint.setTypeface(Typeface.MONOSPACE);
+
 
 		mDrawPaint = new Paint();
 		mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -202,6 +215,7 @@ public class GuideView {
 		mCommand = null;
 
 		mDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		mTimeFormat = new SimpleDateFormat("HH:mm");
 	}
 
 	public void draw(Canvas canvas, int cx, int cy) {
@@ -236,7 +250,7 @@ public class GuideView {
 		Resources res = mContext.getResources();
 
 		// ページ番号表示
-		if (mPageStr != null) {
+		if (mPageDisplay && mPageStr != null) {
 			int psize = (cx + cy) / 80;
 			int psx, psy;
 			switch (mPagePos) {
@@ -284,6 +298,58 @@ public class GuideView {
 			mNumPaint.setStyle(Paint.Style.FILL);
 			mNumPaint.setColor(Color.WHITE);
 			canvas.drawText(mPageStr, psx, psy + ascent, mNumPaint);
+		}
+
+		// 時刻＆バッテリー表示
+		setTimeString();
+		if (mTimeDisplay) {
+			int psize = (cx + cy) / 80;
+			int psx, psy;
+			switch (mTimePos) {
+				case PAGEPOS_TL:
+				case PAGEPOS_BL:
+					psx = psize / 2;
+					mTimePaint.setTextAlign(Paint.Align.LEFT);
+					break;
+				case PAGEPOS_TC:
+				case PAGEPOS_BC:
+					psx = cx / 2;
+					mTimePaint.setTextAlign(Paint.Align.CENTER);
+					break;
+				case PAGEPOS_TR:
+				case PAGEPOS_BR:
+				default:
+					psx = cx - psize / 2;
+					mTimePaint.setTextAlign(Paint.Align.RIGHT);
+					break;
+			}
+
+			switch (mTimePos) {
+				case PAGEPOS_TL:
+				case PAGEPOS_TC:
+				case PAGEPOS_TR:
+					psy = psize / 2;
+					break;
+				case PAGEPOS_BL:
+				case PAGEPOS_BC:
+				case PAGEPOS_BR:
+				default:
+					psy = cy - mTimeSize - psize / 2;
+					break;
+			}
+
+			FontMetrics fm = mTimePaint.getFontMetrics();
+			int ascent = (int) (-fm.ascent);
+
+			mTimePaint.setStrokeWidth(mTextShadow);
+			mTimePaint.setStyle(Paint.Style.STROKE);
+			mTimePaint.setColor(0x88000000);
+			canvas.drawText(mTimeStr, psx, psy + ascent, mTimePaint);
+
+			mTimePaint.setStrokeWidth(0.0f);
+			mTimePaint.setStyle(Paint.Style.FILL);
+			mTimePaint.setColor(Color.WHITE);
+			canvas.drawText(mTimeStr, psx, psy + ascent, mTimePaint);
 		}
 
 		// 描画
@@ -1296,12 +1362,68 @@ public class GuideView {
 	}
 
 	// ページ番号表示
-	public void setPageNumber(String str, int pos, int size) {
+	public void setPageNumberFormat(boolean display, int format, int pos, int size) {
+		mPageDisplay = display;
+		mPageFormatInt = format;
+		mPagePos = pos;
+		mPageSize = size;
+		mNumPaint.setTextSize(mPageSize);
+		invalidate();
+	}
+
+	// ページ番号表示
+	public void setPageNumberString(String str) {
 		mPageStr = str;
-		if (mPageStr != null) {
-			mPagePos = pos;
-			mPageSize = size;
-			mNumPaint.setTextSize(mPageSize);
+		invalidate();
+	}
+
+	// 時刻＆バッテリー表示
+	public void setTimeFormat(boolean display, int format, int pos, int size) {
+		mTimeDisplay = display;
+		mTimeFormatInt = format;
+		if (format < 3) {
+			mTimeFormat = new SimpleDateFormat("HH:mm");
+		}
+		else {
+			mTimeFormat = new SimpleDateFormat("hh:mm");
+		}
+		mTimePos = pos;
+		mTimeSize = size;
+		mTimePaint.setTextSize(mTimeSize);
+	}
+	// 時刻＆バッテリー表示
+	public void setTimeString() {
+		// バッテリー残量(%)
+		Intent battery = mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+		int level = battery.getIntExtra("level", 0);
+		int scale = battery.getIntExtra("scale", 100);
+		mBattery = level * 100 / scale;
+
+		// Are we charging / charged?
+		int status = battery.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+		boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+				status == BatteryManager.BATTERY_STATUS_FULL;
+
+		// How are we charging?
+		int chargePlug = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+		boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
+		boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
+		
+		// 時刻
+		mTimeStr = mTimeFormat.format(new Date());
+		
+		if (mTimeFormatInt % 3 > 0) {
+			// バッテリー
+			mTimeStr += " [" + mBattery + "%]";
+		}
+
+		if (mTimeFormatInt % 3 > 1) {
+			if (usbCharge) {
+				mTimeStr += " [USB]";
+			}
+			if (acCharge) {
+				mTimeStr += " [AC]";
+			}
 		}
 		invalidate();
 	}

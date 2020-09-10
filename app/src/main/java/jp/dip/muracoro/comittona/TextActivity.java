@@ -307,6 +307,11 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 
 	private String mSearchText;
 
+	private boolean mTimeDisp;
+	private int mTimeFormat;
+	private int mTimePos;
+	private int mTimeSize;
+
 	/**
 	 * 画面が作成された時に発生します。
 	 *
@@ -315,6 +320,7 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+
 		// 回転
 		mInitFlg = 0;
 		mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -371,6 +377,10 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		layout.addView(mTextView);
 //		layout.addView(mGuideView);
 		setContentView(layout);
+
+		if (mGuideView != null) {
+			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+		}
 
 		Resources res = getResources();
 		mParsingMsg = res.getString(R.string.parsing);
@@ -2459,6 +2469,15 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		mSrchColor = SetImageTextColorActivity.getHitColor(sharedPreferences);
 
 		mBkLight = SetTextActivity.getBkLight(sharedPreferences);
+
+		mTimeDisp = SetImageActivity.getTimeDisp(sharedPreferences); // 時刻と充電表示有無
+		mTimeFormat = SetImageActivity.getTimeFormat(sharedPreferences); // 時刻と充電表示書式
+		mTimePos = SetImageActivity.getTimePos(sharedPreferences); // 時刻と充電表示位置
+		mTimeSize = DEF.calcPnumSizePix(SetImageActivity.getTimeSize(sharedPreferences), mDensity); // 時刻と充電表示サイズ
+
+		if (mGuideView != null) {
+			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+		}
 
 		DEF.setRotation(this, mViewRota);
 		if (mViewRota == DEF.ROTATE_PSELAND) {

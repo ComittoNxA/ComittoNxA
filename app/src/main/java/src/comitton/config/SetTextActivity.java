@@ -44,6 +44,7 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 	private ListPreference mPageSel;
 
 	private OperationPreference mTapPattern;
+	private TimeAndBatteryPreference mTimeAndBattery;
 
 	public static final int ScaleName[] =
 		{ R.string.selsize00	// 元のサイズで表示
@@ -75,6 +76,20 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		{ R.string.ascmode00	// 縦表示
 		, R.string.ascmode01	// 横表示
 		, R.string.ascmode02 };	// 2桁は縦
+	public static final int TimePosName[] =
+			{ R.string.pnumpos00	// 左上
+					, R.string.pnumpos01	// 中央上
+					, R.string.pnumpos02	// 右上
+					, R.string.pnumpos03	// 左下
+					, R.string.pnumpos04	// 中央下
+					, R.string.pnumpos05 };	// 右下
+	public static final int TimeFormatName[] =
+			{ R.string.timeformat00		// 24:00
+					, R.string.timeformat01		// 24:00 [100%]
+					, R.string.timeformat02		// 24:00 [100%] [AC]
+					, R.string.timeformat03		// 24:00
+					, R.string.timeformat04		// 24:00 [100%]
+					, R.string.timeformat05 };	// 24:00 [100%] [AC]
 
 	Resources mResources;
 
@@ -110,6 +125,9 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 
 		mLastPage = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_LASTPAGE);
 		mPageSel = (ListPreference)getPreferenceScreen().findPreference(DEF.KEY_TX_PAGESELECT);
+
+		mTimeAndBattery = (TimeAndBatteryPreference) getPreferenceScreen().findPreference(DEF.KEY_TIMEANDBATTERY);
+
 
 		mResources = getResources();
 
@@ -216,6 +234,8 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		mVolKey.setSummary(SetImageText.getVolKeySummary(mResources, sharedPreferences));		// Volキー動作
 		mLastPage.setSummary(SetImageText.getLastPageSummary(mResources, sharedPreferences));	// 確認メッセージ
 		mPageSel.setSummary(SetImageText.getTxPageSelectSummary(mResources, sharedPreferences));		// ページ選択方法
+		mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));	// 時刻と充電表示
+
 	}
 
 	@Override
@@ -310,6 +330,10 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		else if(key.equals(DEF.KEY_TX_PAGESELECT)){
 			//
 			mPageSel.setSummary(SetImageText.getTxPageSelectSummary(mResources, sharedPreferences));
+		}
+		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE)){
+			//
+			mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));
 		}
 	}
 
@@ -433,6 +457,34 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		int num;
 		num = DEF.getInt(sharedPreferences, DEF.KEY_TX_SCRLRNGH, DEF.DEFAULT_TX_SCRLRNGH);
 		return num;
+	}
+
+
+	public static int getTimeFormat(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, 1);
+		if( val < 0 || val >= TimeFormatName.length){
+			val = 1;
+		}
+		return val;
+	}
+
+	public static int getTimePos(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, 5);
+		if( val < 0 || val >= TimePosName.length){
+			val = 5;
+		}
+		return val;
+	}
+
+	public static int getTimeSize(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, 10);
+		return val;
+	}
+
+	public static boolean getTimeDisp(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_TIMEDISP, false);
+		return flag;
 	}
 
 	// 設定の読込(定義変更中)
@@ -561,5 +613,24 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		String summ2 = res.getString(R.string.srngSumm2);
 
 		return	DEF.getScrlRangeStr(val, summ1, summ2);
+	}
+
+	private String getTimeSummary(SharedPreferences sharedPreferences){
+		boolean disp = getTimeDisp(sharedPreferences);
+		int format = getTimeFormat(sharedPreferences);
+		int pos = getTimePos(sharedPreferences);
+		int size = getTimeSize(sharedPreferences);
+		Resources res = getResources();
+
+		String summ;
+		if (disp) {
+			summ = res.getString(TimeFormatName[format])
+					+ ", " + res.getString(TimePosName[pos])
+					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
+		}
+		else {
+			summ = res.getString(R.string.pnumnodisp);
+		}
+		return summ;
 	}
 }
