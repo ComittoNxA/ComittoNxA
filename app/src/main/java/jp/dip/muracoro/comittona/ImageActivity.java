@@ -3719,6 +3719,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mTimePos = SetImageActivity.getTimePos(sharedPreferences); // 時刻と充電表示位置
 			mTimeSize = DEF.calcPnumSizePix(SetImageActivity.getTimeSize(sharedPreferences), mSDensity); // 時刻と充電表示サイズ
 
+			if (mGuideView != null) {
+				mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+			}
 			mConfirmBack = SetImageText.getConfirmBack(sharedPreferences); // 戻るキーで確認メッセージ
 			// mResumeOpen = false;
 
