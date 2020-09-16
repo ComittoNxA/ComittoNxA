@@ -101,7 +101,7 @@ void ScaleMemColumnFree(void);
 int ScaleMemInit(void);
 int ScaleMemAlloc(int, int);
 
-int DrawScaleBitmap(int, int, int, int, int, int, int, int, int, int, void *, int, int, int, int, IMAGEDATA *);
+int DrawScaleBitmap(int, int, int, int, int, int, int, int, int, int, void *, int, int, int, int, IMAGEDATA *, int, int, int, int);
 int DrawBitmap(int, int half, int x, int y, void *, int, int, int, IMAGEDATA *);
 // int DrawBitmapReg90(int, int half, int x, int y, void *, int, int, int, IMAGEDATA *);
 

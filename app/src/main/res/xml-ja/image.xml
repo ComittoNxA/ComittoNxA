@@ -225,6 +225,11 @@
             android:key="ChgFlick"
             android:summary="チェックにより表紙方向へのフリックが前ページの移動になります"
             android:title="フリック操作の入替え＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ScrollNext"
+            android:summary="スクロール操作で前後のページへ移動を可能とする"
+            android:title="スクロールで前後のページへ移動" />
         <ListPreference
             android:defaultValue="2"
             android:dialogTitle="ページ選択方法"

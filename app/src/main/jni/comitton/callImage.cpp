@@ -616,7 +616,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageDraw (JNIEnv
 			, page, half, x, y
 			, (int)gImageData[page].SclFlag[half]
 			, (int)gImageData[page].OrgWidth, (int)gImageData[page].OrgHeight
-			, (int)gImageData[page].SclWidth, (int)gImageData[page].SclHeight);
+			, (int)gImageData[page].SclWidth[half], (int)gImageData[page].SclHeight[half]);
 #endif
 
 	AndroidBitmapInfo	info;
@@ -653,7 +653,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageDraw (JNIEnv
  * Method:    ImageScaleDraw
  * Signature: (IIILandroid/graphics/Bitmap;)V
  */
-JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScaleDraw (JNIEnv *env, jclass obj, jint page, jint rotate, jint s_x, jint s_y, jint s_cx, jint s_cy, jint d_x, jint d_y, jint d_cx, jint d_cy, jint psel, jobject bitmap)
+JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScaleDraw (JNIEnv *env, jclass obj, jint page, jint rotate, jint s_x, jint s_y, jint s_cx, jint s_cy, jint d_x, jint d_y, jint d_cx, jint d_cy, jint psel, jobject bitmap, jint cut_left, jint cut_right, jint cut_top, jint cut_bottom)
 {
 	if (page < 0 || gTotalPages <= page) {
 		LOGE("ImageDraw : Illegal Page.(%d)", page);
@@ -690,7 +690,7 @@ JNIEXPORT jint JNICALL Java_src_comitton_stream_CallImgLibrary_ImageScaleDraw (J
 	}
 
 //	memset(canvas, 0, info.width * info.height * sizeof(uint16_t));
-	ret = DrawScaleBitmap(page, rotate, s_x, s_y, s_cx, s_cy, d_x, d_y, d_cx, d_cy, canvas, info.width, info.height, info.stride, psel, &gImageData[page]);
+	ret = DrawScaleBitmap(page, rotate, s_x, s_y, s_cx, s_cy, d_x, d_y, d_cx, d_cy, canvas, info.width, info.height, info.stride, psel, &gImageData[page], cut_left, cut_right, cut_top, cut_bottom);
 
 	AndroidBitmap_unlockPixels(env, bitmap);
 	return ret;

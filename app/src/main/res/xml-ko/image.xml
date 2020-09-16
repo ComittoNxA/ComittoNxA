@@ -225,6 +225,11 @@
             android:key="ChgFlick"
             android:summary="검사는 표지 방향으로 플릭이 이전 페이지 이동합니다"
             android:title="플릭 조작를 바꿀＊" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ScrollNext"
+            android:summary="스크롤하여 이전 또는 다음 페이지로 이동할 수 있습니다."
+            android:title="다음 페이지로 스크롤" />
         <ListPreference
             android:defaultValue="2"
             android:dialogTitle="페이지 선택 방법"

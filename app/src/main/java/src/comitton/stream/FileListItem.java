@@ -15,6 +15,8 @@ public class FileListItem {
 	public int o_height;	// 実画像高さ
 	public int width;		// 画像幅
 	public int height;		// 画像高さ
+	public int fwidth[] = new int[3];		// スケール幅
+	public int fheight[] = new int[3];		// スケール高さ
 	public int swidth[] = new int[3];		// スケール幅
 	public int sheight[] = new int[3];		// スケール高さ
 	public boolean error;

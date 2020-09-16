@@ -22,6 +22,7 @@ public class TimeAndBatteryPreference extends DialogPreference implements SeekBa
 	private Spinner mSpinPos;
 	private TextView mTextSize;
 	private SeekBar mSeekSize;
+	private Spinner mSpinColor;
 
 	private String mDots;
 
@@ -46,11 +47,13 @@ public class TimeAndBatteryPreference extends DialogPreference implements SeekBa
 		mSeekSize = (SeekBar)root.findViewById(R.id.seek_size);
 		mSeekSize.setMax(DEF.MAX_PNUMSIZE);
 		mSeekSize.setOnSeekBarChangeListener(this);
+		mSpinColor = (Spinner)root.findViewById(R.id.spin_color);
 
 		mChkDisp.setChecked(getDispValue());
 		mSpinFormat.setSelection(getFormatValue());
 		mSpinPos.setSelection(getPosValue());
 		int size = getSizeValue();
+		mSpinColor.setSelection(getColorValue());
 //		mTextSize.setText(DEF.getPnumSizeStr(size), );
 		mSeekSize.setProgress(size);
 		return root;
@@ -68,16 +71,18 @@ public class TimeAndBatteryPreference extends DialogPreference implements SeekBa
 			int format = mSpinFormat.getSelectedItemPosition();
 			int pos = mSpinPos.getSelectedItemPosition();
 			int size = mSeekSize.getProgress();
-			setValue(disp, format, pos, size);
+			int color = mSpinColor.getSelectedItemPosition();
+			setValue(disp, format, pos, size, color);
 		}
 	}
 
-	private void setValue(boolean disp, int format, int pos, int size) {
+	private void setValue(boolean disp, int format, int pos, int size, int color) {
 		Editor ed = mSP.edit();
 		ed.putBoolean(DEF.KEY_TIMEDISP, disp);
 		ed.putInt(DEF.KEY_TIMEFORMAT, format);
 		ed.putInt(DEF.KEY_TIMEPOS, pos);
 		ed.putInt(DEF.KEY_TIMESIZE, size);
+		ed.putInt(DEF.KEY_TIMECOLOR, color);
 		ed.commit();
 	}
 
@@ -101,6 +106,11 @@ public class TimeAndBatteryPreference extends DialogPreference implements SeekBa
 
 	private int getSizeValue() {
 		int val = mSP.getInt(DEF.KEY_TIMESIZE, DEF.DEFAULT_TIMESIZE);
+		return val;
+	}
+
+	private int getColorValue() {
+		int val = mSP.getInt(DEF.KEY_TIMECOLOR, DEF.DEFAULT_TIMECOLOR);
 		return val;
 	}
 

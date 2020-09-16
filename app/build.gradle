@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 def applicationName = "ComittoNxA"
 def versionMajor = 1
 def versionMinor = 65
-def versionPatch = 16
+def versionPatch = 17
 def revision = "A"
 
 android {
@@ -11,12 +11,12 @@ android {
     defaultConfig {
         applicationId "jp.dip.muracoro.comittona"
         minSdkVersion 9
-        targetSdkVersion 9 
+        targetSdkVersion 9  // 30にしたらページ選択のサムネイルが動かなかった
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}${revision}${versionPatch}"
-        multiDexEnabled true    // 65535を超えるメソッド数をサポート
+        multiDexEnabled true    // メソッド数が65535を超えてもビルド可能にする
         ndk {
-            abiFilters "armeabi-v7a", "x86"
+            abiFilters "armeabi-v7a", "x86"    // ARM 32bit と x86 32bit でC++をメイクする
         }
     }
     applicationVariants.all { variant ->
@@ -67,9 +67,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.android.support:multidex:1.0.3'    // 65535を超えるメソッド数をサポート
+    implementation 'com.android.support:multidex:1.0.3'    // メソッド数が65535を超えてもビルド可能にする
 
     // SDカード書き込み用 Android サポートライブラリ
+    // 古いバージョンを採用することで、minSdkVersionを最小に抑える
     implementation 'com.android.support:support-compat:24.2.1'
     implementation 'com.android.support:appcompat-v7:24.2.1'
     // SVGファイル(アイコン表示用)
@@ -83,17 +84,16 @@ dependencies {
     //implementation 'com.github.bumptech.glide:glide:3.6.1'
 
     // SMB2接続用ライブラリ
-//    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'
-
+    //implementation 'eu.agno3.jcifs:jcifs-ng:2.1.5'    // AndroidにMD4がないので動かない
     // (MD4未実装対策のためbouncycastleをspongycastleに変更)
     // (jcifs.util.MD4を旧jcifsから移植、jcifs.util.Cryptに反映)
     api files('libs/jcifs-ng-2.1.5-SNAPSHOT.jar')
-    // MD4を含むライブラリ
+    // bouncycastleのかわりにspongycastleを使う
     implementation 'com.madgag.spongycastle:core:1.54.0.0'
     implementation 'com.madgag.spongycastle:prov:1.54.0.0'
     implementation 'com.madgag.spongycastle:pkix:1.54.0.0'
     implementation 'com.madgag.spongycastle:pg:1.54.0.0'
-    // jcifs-ng内部で呼び出しているライブラリ
+    // jcifs-ng内部で呼び出しているライブラリなので追加しておく
     implementation 'org.slf4j:slf4j-api:1.7.30'
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
     implementation 'javax.servlet:javax.servlet-api:3.1.0'

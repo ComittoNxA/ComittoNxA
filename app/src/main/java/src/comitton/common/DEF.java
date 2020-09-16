@@ -332,6 +332,7 @@ public class DEF {
 	public static final String KEY_MAXTHREAD = "MaxThread";
 	public static final String KEY_THUMBNAILTAP = "ThumbnailTap";
 	public static final String KEY_LOUPESIZE = "LoupeSize";
+	public static final String KEY_SCRLNEXT = "ScrollNext";
 
 	public static final String KEY_SHOWTOOLBAR = "ShowToolbar";
 	public static final String KEY_SHOWSELECTOR = "ShowSelector";
@@ -346,11 +347,13 @@ public class DEF {
 	public static final String KEY_PNUMFORMAT = "PnumFormat";
 	public static final String KEY_PNUMPOS = "PnumPos";
 	public static final String KEY_PNUMSIZE = "PnumSizeSp";
+	public static final String KEY_PNUMCOLOR = "PnumColor";
 
 	public static final String KEY_TIMEDISP = "TimeDisp";
 	public static final String KEY_TIMEFORMAT = "TimeFormat";
 	public static final String KEY_TIMEPOS = "TimePos";
 	public static final String KEY_TIMESIZE = "TimeSizeSp";
+	public static final String KEY_TIMECOLOR = "TimeColor";
 
 	public static final String KEY_LASTPAGE = "LastPage";
 	public static final String KEY_SAVEPAGE = "SavePage";
@@ -420,11 +423,13 @@ public class DEF {
 	public static final int DEFAULT_PNUMFORMAT = 0; // page / total
 	public static final int DEFAULT_PNUMPOS = 4; // 中央下
 	public static final int DEFAULT_PNUMSIZE = 10; // 16px (8 + 6)
+	public static final int DEFAULT_PNUMCOLOR = 0; // 0 = 白, 1 = 黒
 
 	public static final boolean DEFAULT_TIMEDISP = false; // 時刻と充電表示しない
-	public static final int DEFAULT_TIMEFORMAT = 0; // page / total
-	public static final int DEFAULT_TIMEPOS = 4; // 中央下
+	public static final int DEFAULT_TIMEFORMAT = 0; // 24:00
+	public static final int DEFAULT_TIMEPOS = 5; // 中央下
 	public static final int DEFAULT_TIMESIZE = 10; // 16px (8 + 6)
+	public static final int DEFAULT_TIMECOLOR = 0; // 0 = 白, 1 = 黒
 
 	public static final int DEFAULT_TOOLBARSEEK = 14; // 38 (8+24)
 	public static final int DEFAULT_THUMBSIZEW = 23; // 270 (23 * 10 + 40)

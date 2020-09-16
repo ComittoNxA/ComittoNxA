@@ -77,19 +77,22 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		, R.string.ascmode01	// 横表示
 		, R.string.ascmode02 };	// 2桁は縦
 	public static final int TimePosName[] =
-			{ R.string.pnumpos00	// 左上
-					, R.string.pnumpos01	// 中央上
-					, R.string.pnumpos02	// 右上
-					, R.string.pnumpos03	// 左下
-					, R.string.pnumpos04	// 中央下
-					, R.string.pnumpos05 };	// 右下
+		{ R.string.pnumpos00	// 左上
+		, R.string.pnumpos01	// 中央上
+		, R.string.pnumpos02	// 右上
+		, R.string.pnumpos03	// 左下
+		, R.string.pnumpos04	// 中央下
+		, R.string.pnumpos05 };	// 右下
+	public static final int PnumColorName[] =
+		{ R.string.pnumcolor00		// 白
+		, R.string.pnumcolor01 };		// 黒
 	public static final int TimeFormatName[] =
-			{ R.string.timeformat00		// 24:00
-					, R.string.timeformat01		// 24:00 [100%]
-					, R.string.timeformat02		// 24:00 [100%] [AC]
-					, R.string.timeformat03		// 24:00
-					, R.string.timeformat04		// 24:00 [100%]
-					, R.string.timeformat05 };	// 24:00 [100%] [AC]
+		{ R.string.timeformat00		// 24:00
+		, R.string.timeformat01		// 24:00 [100%]
+		, R.string.timeformat02		// 24:00 [100%] [AC]
+		, R.string.timeformat03		// 24:00
+		, R.string.timeformat04		// 24:00 [100%]
+		, R.string.timeformat05 };	// 24:00 [100%] [AC]
 
 	Resources mResources;
 
@@ -331,7 +334,7 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 			//
 			mPageSel.setSummary(SetImageText.getTxPageSelectSummary(mResources, sharedPreferences));
 		}
-		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE)){
+		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE) || key.equals(DEF.KEY_TIMECOLOR)){
 			//
 			mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));
 		}
@@ -461,7 +464,7 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 
 
 	public static int getTimeFormat(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, 1);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, DEF.DEFAULT_TIMEFORMAT);
 		if( val < 0 || val >= TimeFormatName.length){
 			val = 1;
 		}
@@ -469,7 +472,7 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 	}
 
 	public static int getTimePos(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, 5);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, DEF.DEFAULT_TIMEPOS);
 		if( val < 0 || val >= TimePosName.length){
 			val = 5;
 		}
@@ -477,7 +480,7 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 	}
 
 	public static int getTimeSize(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, 10);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, DEF.DEFAULT_TIMESIZE);
 		return val;
 	}
 
@@ -485,6 +488,14 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_TIMEDISP, false);
 		return flag;
+	}
+
+	public static int getTimeColor(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMECOLOR, DEF.DEFAULT_TIMECOLOR);
+		if( val < 0 || val >= PnumColorName.length){
+			val = 1;
+		}
+		return val;
 	}
 
 	// 設定の読込(定義変更中)
@@ -620,13 +631,15 @@ public class SetTextActivity extends PreferenceActivity implements OnSharedPrefe
 		int format = getTimeFormat(sharedPreferences);
 		int pos = getTimePos(sharedPreferences);
 		int size = getTimeSize(sharedPreferences);
+		int color = getTimeColor(sharedPreferences);
 		Resources res = getResources();
 
 		String summ;
 		if (disp) {
 			summ = res.getString(TimeFormatName[format])
 					+ ", " + res.getString(TimePosName[pos])
-					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
+					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1))
+					+ ", " + res.getString(PnumColorName[color]);
 		}
 		else {
 			summ = res.getString(R.string.pnumnodisp);

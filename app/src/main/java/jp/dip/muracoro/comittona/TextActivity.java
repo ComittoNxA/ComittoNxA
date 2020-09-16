@@ -311,6 +311,7 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 	private int mTimeFormat;
 	private int mTimePos;
 	private int mTimeSize;
+	private int mTimeColor;
 
 	/**
 	 * 画面が作成された時に発生します。
@@ -379,7 +380,7 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		setContentView(layout);
 
 		if (mGuideView != null) {
-			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize, mTimeColor);
 		}
 
 		Resources res = getResources();
@@ -2474,9 +2475,10 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		mTimeFormat = SetImageActivity.getTimeFormat(sharedPreferences); // 時刻と充電表示書式
 		mTimePos = SetImageActivity.getTimePos(sharedPreferences); // 時刻と充電表示位置
 		mTimeSize = DEF.calcPnumSizePix(SetImageActivity.getTimeSize(sharedPreferences), mDensity); // 時刻と充電表示サイズ
+		mTimeColor = SetImageActivity.getTimeColor(sharedPreferences); // 時刻と充電表示色
 
 		if (mGuideView != null) {
-			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+			mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize, mTimeColor);
 		}
 
 		DEF.setRotation(this, mViewRota);

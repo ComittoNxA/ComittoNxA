@@ -391,7 +391,8 @@ int SetLinesPtr(int Page, int Half, int Index, int OrgWidth, int OrgHeight)
 			buffpos = 0;
 		}
 //		LOGD("SetLinesPtr: lineindex=%d, buffindex=%d, buffpos=%d", lineindex + HOKAN_DOTS/2, buffindex, buffpos);
-		gLinesPtr[lineindex + HOKAN_DOTS/2] = pMngptr[buffindex].Buff + buffpos + HOKAN_DOTS/2;
+//		gLinesPtr[lineindex + HOKAN_DOTS/2] = pMngptr[buffindex].Buff + buffpos + HOKAN_DOTS/2;
+		gLinesPtr[lineindex + HOKAN_DOTS/2] = pMngptr[buffindex].Buff + buffpos;
 		buffpos += linesize;
 	}
 

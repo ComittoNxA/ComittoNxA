@@ -287,6 +287,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private boolean mSavePage;
 	private boolean mFlickEdge;
 	private boolean mIsConfSave;
+	private boolean mScrlNext; // スクロールで前後のページへ移動
 
 	private String mCharset;
 
@@ -367,11 +368,13 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private int mPnumFormat;
 	private int mPnumPos;
 	private int mPnumSize;
+	private int mPnumColor;
 
 	private boolean mTimeDisp;
 	private int mTimeFormat;
 	private int mTimePos;
 	private int mTimeSize;
+	private int mTimeColor;
 
 	// サムネイルページ選択用
 	private long mThumID;
@@ -554,7 +557,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		// 上部メニューの文字列情報をガイドに設定
 		mGuideView.setTopCommandStr(mCommandStr);
 		// 時刻＆バッテリー表示の情報をガイドに設定
-		mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+		mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize, mTimeColor);
 
 		setViewConfig();
 
@@ -777,6 +780,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			// mNoExpand, mAlgoMode, mRotate, mWAdjust, mImgScale, mPageWay,
 			// mMgnCut);
 			mImageMgr.setViewSize(mViewWidth, mViewHeight);
+			mImageView.setImageManager(mImageMgr);
 
 			// 終了通知
 			Message message = new Message();
@@ -1182,7 +1186,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 							pagenum = (mCurrentPage + 1) + " - " + (mCurrentPage + 2) + " / " + mImageMgr.length();
 						}
 					}
-					mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize);
+					mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize, mPnumColor);
 					mGuideView.setPageNumberString(pagenum);
 
 					// 現在ページを保存
@@ -1760,7 +1764,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private void setViewConfig() {
 		if (mImageView != null) {
 			mImageView.setConfig(this, mMgnColor, mCenColor, mTopColor1, mViewPoint, mMargin, mCenter, mShadow, mZoomType, mPageWay, mScrlWay, mScrlRngW, mScrlRngH, mPrevRev, mNoExpand, mFitDual,
-					mCMargin, mCShadow, mPseLand, mEffect);
+					mCMargin, mCShadow, mPseLand, mEffect, mScrlNext);
 			mImageView.setLoupeConfig( mLoupeSize );	// ルーペサイズの設定
 		}
 		if (mGuideView != null) {
@@ -1979,7 +1983,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		if (mLoadingNext) {
 			// ローディング中のタッチは次の移動イベントでONにする
 			if (action == MotionEvent.ACTION_MOVE) {
-				action = MotionEvent.ACTION_DOWN;
+				if (mScrlNext == false) {
+					action = MotionEvent.ACTION_DOWN;
+				}
 			}
 			mLoadingNext = false;
 		}
@@ -2158,7 +2164,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 
 						if (this.mTouchFirst == false && mVerticalSwipe == false) {
 //						if (this.mTouchFirst == false) {
-							// スクロールモード
+							// ■■■ スクロール中なら
 							long now = SystemClock.uptimeMillis();
 							mImageView.scrollMoveAmount(x - mTouchPoint[0].x, y - mTouchPoint[0].y, mScroll, true);
 
@@ -2242,6 +2248,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 									startVibrate();
 									mCurrentPage = mSelectPage;
 									mPageBack = false;
+									if (mScrlNext) {
+										mImageView.scrollReset();
+									}
 									setBitmapImage();
 								}
 							}
@@ -2289,6 +2298,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 								// ページ変更時に振動
 								mCurrentPage = mSelectPage;
 								mPageBack = false;
+								if (mScrlNext) {
+									mImageView.scrollReset();
+								}
 								setBitmapImage();
 							}
 						}
@@ -2326,6 +2338,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 										// ページ変更時に振動
 										mCurrentPage = mSelectPage;
 										mPageBack = false;
+										if (mScrlNext) {
+											mImageView.scrollReset();
+										}
 										setBitmapImage();
 									}
 
@@ -2435,65 +2450,74 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 					mLongTouchMode = false;
 				}
 				else if (mOperation == TOUCH_OPERATION) {
+					// ■■■ タップ終了なら
 					if (this.mTouchFirst) {
 						this.mTouchFirst = false;
 						mPageBack = false;
-
 						boolean next = checkTapDirectionNext(x, y, cx, cy);
 						if (mTapScrl) {
 							// タップでスクロール
 							int move = next ? 1 : -1;
 							// 読込中の表示
 							startScroll(move);
-						}
-						else {
+						} else {
 							// タップでスクロールしない
 							// 普通のタッチでページ遷移
 							if (next) {
 								// 次ページへ
+								if (mScrlNext) {
+									mImageView.scrollReset();
+								}
 								nextPage();
-							}
-							else {
+							} else {
 								// 前ページへ
+								if (mScrlNext) {
+									mImageView.scrollReset();
+								}
 								prevPage();
 							}
 						}
 					}
-					// 操作モード
-					int flickPage = mImageView.checkFlick();
-
-					if (mFlickPage && flickPage != 0) {
-						// フリックでページ遷移
-						if (mFlickEdge && mTouchDrawLeft != (int) mImageView.getDrawLeft()) {
-							// 端からフリックしないときはページめくりしない
-							;
-						}
-						else if ((flickPage > 0 && mPageWay == DEF.PAGEWAY_RIGHT) || (flickPage < 0 && mPageWay != DEF.PAGEWAY_RIGHT) ? !mChgFlick : mChgFlick) {
-							// 次ページへ
-							nextPage();
-						}
-						else {
-							// 前ページへ
-							prevPage();
-						}
-					}
-					else if (mMomentMode < DEF.MAX_MOMENTMODE) {
-						long now = SystemClock.uptimeMillis();
-
-						int i;
-						for (i = 1; i < mTouchPointNum && i < MAX_TOUCHPOINT; i++) {
-							if (now - mTouchPointTime[i] > TERM_MOMENT) {
-								// 過去0.2秒の範囲
-								break;
+					else {
+						// ■■■ スクロール終了なら
+						int flickPage = mImageView.checkFlick();
+						if (mFlickPage && flickPage != 0) {
+							// 「スクロールで前後のページへ移動する」が無効なら
+							// フリックでページ遷移
+							if (mFlickEdge && mTouchDrawLeft != (int) mImageView.getDrawLeft()) {
+								// 端からフリックしないときはページめくりしない
+								;
+							} else if ((flickPage > 0 && mPageWay == DEF.PAGEWAY_RIGHT) || (flickPage < 0 && mPageWay != DEF.PAGEWAY_RIGHT) ? !mChgFlick : mChgFlick) {
+								// 次ページへ
+								if (mScrlNext) {
+									mImageView.scrollReset();
+								}
+								nextPage();
+							} else {
+								// 前ページへ
+								if (mScrlNext) {
+									mImageView.scrollReset();
+								}
+								prevPage();
 							}
-						}
-						if (i >= 3) {
-							float sx = mTouchPoint[2].x - mTouchPoint[i - 1].x;
-							float sy = mTouchPoint[2].y - mTouchPoint[i - 1].y;
-							long term = mTouchPointTime[2] - mTouchPointTime[i - 1];
-							// Log.d("moment_up", "i=" + i + ", sx=" + sx +
-							// ", sy=" + sy + ", term=" + term);
-							mImageView.momentiumStart(x, y, mScroll, sx, sy, (int) term, mMomentMode);
+						} else if (mMomentMode < DEF.MAX_MOMENTMODE) {
+							long now = SystemClock.uptimeMillis();
+
+							int i;
+							for (i = 1; i < mTouchPointNum && i < MAX_TOUCHPOINT; i++) {
+								if (now - mTouchPointTime[i] > TERM_MOMENT) {
+									// 過去0.2秒の範囲
+									break;
+								}
+							}
+							if (i >= 3) {
+								float sx = mTouchPoint[2].x - mTouchPoint[i - 1].x;
+								float sy = mTouchPoint[2].y - mTouchPoint[i - 1].y;
+								long term = mTouchPointTime[2] - mTouchPointTime[i - 1];
+								// Log.d("moment_up", "i=" + i + ", sx=" + sx +
+								// ", sy=" + sy + ", term=" + term);
+								mImageView.momentiumStart(x, y, mScroll, sx, sy, (int) term, mMomentMode);
+							}
 						}
 					}
 				}
@@ -3505,6 +3529,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 				// ページ変更時に振動
 				startVibrate();
 				mPageBack = false;
+				if (mScrlNext) {
+					mImageView.scrollReset();
+				}
 				setBitmapImage();
 				mPageSelecting = true;
 			}
@@ -3544,7 +3571,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mGuideView.setColor(mTopColor1, mTopColor2, mMgnColor);
 			mGuideView.setGuideSize(mClickArea, mTapPattern, mTapRate, mChgPage, mOldMenu);
 			// mGuideView.setRotateMode(mPseLand);
-			mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize);
+			mGuideView.setPageNumberFormat(mPnumDisp, mPnumFormat, mPnumPos, mPnumSize, mPnumColor);
 			mGuideView.setPageNumberString(null);
 
 			setMgrConfig(true);
@@ -3713,14 +3740,17 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mPnumFormat = SetImageActivity.getPnumFormat(sharedPreferences); // ページ表示書式
 			mPnumPos = SetImageActivity.getPnumPos(sharedPreferences); // ページ表示位置
 			mPnumSize = DEF.calcPnumSizePix(SetImageActivity.getPnumSize(sharedPreferences), mSDensity); // ページ表示サイズ
+			mPnumColor = SetImageActivity.getPnumColor(sharedPreferences); // ページ表示色
 
 			mTimeDisp = SetImageActivity.getTimeDisp(sharedPreferences); // 時刻と充電表示有無
 			mTimeFormat = SetImageActivity.getTimeFormat(sharedPreferences); // 時刻と充電表示書式
 			mTimePos = SetImageActivity.getTimePos(sharedPreferences); // 時刻と充電表示位置
 			mTimeSize = DEF.calcPnumSizePix(SetImageActivity.getTimeSize(sharedPreferences), mSDensity); // 時刻と充電表示サイズ
+			mTimeColor = SetImageActivity.getTimeColor(sharedPreferences); // 時刻と充電表示色
 
 			if (mGuideView != null) {
-				mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize);
+				// 時刻＆バッテリー表示の情報をガイドに設定
+				mGuideView.setTimeFormat(mTimeDisp, mTimeFormat, mTimePos, mTimeSize, mTimeColor);
 			}
 			mConfirmBack = SetImageText.getConfirmBack(sharedPreferences); // 戻るキーで確認メッセージ
 			// mResumeOpen = false;
@@ -3732,6 +3762,8 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 			mMemNext = DEF.calcMemPage(SetCacheActivity.getMemNext(sharedPreferences));
 			mMemPrev = DEF.calcMemPage(SetCacheActivity.getMemPrev(sharedPreferences));
 
+			mScrlNext = SetImageActivity.getScrlNext(sharedPreferences); // スクロールで次のページへ移動
+			
 			mRotateBtn = DEF.RotateBtnList[SetCommonActivity.getRotateBtn(sharedPreferences)];
 
 			// アクセス状態表示
@@ -3774,7 +3806,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		return;
 	}
 
-	private void nextPage() {
+	public void nextPage() {
 		// 次ページへ
 		if ((mCurrentPage >= mImageMgr.length() - 1 && (!mCurrentPageHalf || (mCurrentPageHalf && mHalfPos == HALFPOS_2ND))) || (mCurrentPage >= mImageMgr.length() - 2 && mCurrentPageDual)) {
 			// 分割表示中は最終ページの2ページ目なら次ページに遷移しない
@@ -3820,7 +3852,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		setBitmapImage();
 	}
 
-	private void prevPage() {
+	public void prevPage() {
 		// 前ページへ
 		if (mCurrentPage <= 0 && (!mCurrentPageHalf || (mCurrentPageHalf && mHalfPos != HALFPOS_2ND))) {
 			// 先頭ページかつ分割表示中かつ2ページ目でないなら前ページはない
@@ -3917,6 +3949,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		if (!mListLoading && !mImageLoading && !mScrolling) {
 			if (!mImageView.setViewPosScroll(move)) {
 				// スクロールする余地がなければ次ページ
+				if (mScrlNext) {
+					mImageView.scrollReset();
+				}
 				changePage(move);
 			}
 			else {

@@ -14,6 +14,10 @@ public class ImageData {
 		FitWidth = 0;
 		FitHeight = 0;
 		HalfMode = HALF_NONE;
+		CutLeft = 0;
+		CutRight = 0;
+		CutTop = 0;
+		CutBottom = 0;
 	}
 
     public int Page;
@@ -24,4 +28,8 @@ public class ImageData {
     public int FitWidth;
     public int FitHeight;
     public int HalfMode;
+	public int CutLeft;
+	public int CutRight;
+	public int CutTop;
+	public int CutBottom;
 }

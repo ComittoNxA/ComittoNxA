@@ -197,6 +197,7 @@
     <string name="pnTxtFormat">표시 형식 :</string>
     <string name="pnTxtPos">표시 위치 :</string>
     <string name="pnTxtSize">크기 :</string>
+    <string name="pnTxtColor">색상 :</string>
     <string name="rsTitle">이어에서보기</string>
     <string name="rsMsg">이전 표시하고 파일을여시겠습니까?</string>
     <string name="rsBtnYes">예</string>
@@ -349,6 +350,7 @@
     <string name="effect00">무지정</string>
     <string name="effect01">플립</string>
     <string name="effect02">페이드 인</string>
+    <string name="effect03">스크롤</string>
     <string name="quality00">속도를 우선하는</string>
     <string name="quality01">화질을 우선하는</string>
     <string name="noisedec00">천천히</string>
@@ -383,6 +385,8 @@
     <string name="pnumpos03">왼쪽</string>
     <string name="pnumpos04">하단 중앙</string>
     <string name="pnumpos05">오른쪽 아래</string>
+    <string name="pnumcolor00">화이트</string>
+    <string name="pnumcolor01">검정</string>
     <string name="lastpage00">화면 닫기</string>
     <string name="lastpage01">확인 대화 상자 표시</string>
     <string name="lastpage02">다음 파일을 표시</string>

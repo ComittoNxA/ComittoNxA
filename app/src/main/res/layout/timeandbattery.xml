@@ -94,5 +94,29 @@
 			android:layout_height="wrap_content"
 			android:paddingLeft="20sp"
 			android:paddingRight="20sp" />
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_vertical"
+			android:gravity="left|center"
+			android:padding="4dip"
+			android:orientation="horizontal" >
+
+			<TextView
+				android:layout_width="80sp"
+				android:layout_height="wrap_content"
+				android:gravity="left|center"
+				android:textColor="#FFFFFFFF"
+				android:text="@string/pnTxtColor" />
+
+			<Spinner
+				android:id="@+id/spin_color"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:entries="@array/pncolor_name_list"
+				android:entryValues="@array/pncolor_value_list" />
+		</LinearLayout>
+
 	</LinearLayout>
 </ScrollView>

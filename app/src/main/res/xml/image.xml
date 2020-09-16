@@ -225,6 +225,11 @@
             android:key="ChgFlick"
             android:summary="When checked, the flick in the direction of the front cover will move to the previous page."
             android:title="Swap the flick operation(*)" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="ScrollNext"
+            android:summary="Allows you to move to the previous or next page by scrolling"
+            android:title="Scroll to the next page" />
         <ListPreference
             android:defaultValue="2"
             android:dialogTitle="Page select operation"

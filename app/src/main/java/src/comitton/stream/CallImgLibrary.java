@@ -26,7 +26,7 @@ public class CallImgLibrary {
 	public static native int GetMarginSize(int Page, int Half, int Index, int SclWidth, int SclHeight, int Margin, int size[]);
 	public static native int ImageScale(int page, int half, int width, int height, int left, int right, int top, int bottom, int algorithm, int rotate, int margin, int bright, int gamma, int param, int size[]);
 	public static native int ImageDraw(int page, int half, int x, int y, Bitmap bitmap);
-	public static native int ImageScaleDraw(int page, int rotate, int sx, int sy, int scx, int scy, int dx, int dy, int dcx, int dcy, int psel, Bitmap bm);
+	public static native int ImageScaleDraw(int page, int rotate, int sx, int sy, int scx, int scy, int dx, int dy, int dcx, int dcy, int psel, Bitmap bm, int cutLeft, int cutRight, int cutTop, int cutBottom);
 	public static native int ImageCancel(int flag);
 
 	public static native int ThumbnailInitialize(long id, int pagesize, int pagenum, int imageNum);

@@ -4,6 +4,7 @@ import src.comitton.common.DEF;
 import src.comitton.listener.DrawNoticeListener;
 import src.comitton.stream.CallImgLibrary;
 import src.comitton.stream.ImageData;
+import src.comitton.stream.ImageManager;
 import src.comitton.view.GuideView;
 import src.comitton.view.GuideView.UpdateListener;
 import jp.dip.muracoro.comittona.ImageActivity;
@@ -26,6 +27,8 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.io.IOException;
 
 public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, UpdateListener, DrawNoticeListener, Callback, Runnable {
 	// 描画領域の種別
@@ -65,6 +68,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	private boolean mIsMargin = false;	// 中央のすき間あり
 	private boolean mIsShadow = false;
 	private boolean mPseLand  = false;
+	private boolean mScrlNext  = false;
 
 	private int mDispWidth  = 0;
 	private int mDispHeight = 0;
@@ -85,6 +89,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	private int mMgnTop; 	// 上
 	private int mMgnBottom;	// 下
 
+	private ImageManager mImageManager;
 	private ImageData mImage[] = new ImageData[2];
 	private Bitmap mBackBitmap;
 	private Bitmap mCanvasBitmap;
@@ -110,12 +115,15 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	// イメージ更新処理
 	private boolean mIsPageBack = false;
 
-	public float mDrawLeft    = 0;
-	public float mDrawTop     = 0;
-	public int mDrawWidth[]   = {0, 0};
-	public int mDrawHeight[]  = {0, 0};
-	public int mDrawWidthSum  = 0;
-	public int mDrawHeightMax = 0;
+	private float mDrawLeft    = 0;
+	private float mDrawTop     = 0;
+	private int mDrawWidth[]   = {0, 0};
+	private int mDrawHeight[]  = {0, 0};
+	private int mDrawWidthSum  = 0;
+	private int mDrawHeightMax = 0;
+	private int mCurrentPage = 0;
+	private boolean mPageLock = false;
+
 
 	// ルーペ表示
 	private int mZoomMode = ZOOM_NONE;
@@ -285,6 +293,10 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			return;
 		}
 
+		if (mImage[0] == null) {
+			return;
+		}
+
 		synchronized (this) {
 			drawLeft = (int)mDrawLeft;
 			drawTop = (int)mDrawTop;
@@ -344,13 +356,21 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			Paint paint = mDrawPaint;
 
 			if (effectRate != 0.0f) {
-				if (effect == 1) {
-					canvas.save();
-					if (pseLand == false) {
-						canvas.translate(cx * effectRate * -1, 0);
+				if (mScrlNext == false || mOverScrollX == 0) {
+					if (effect == 1) {	// ページめくりフリップ
+						canvas.save();
+						if (pseLand == false) {
+							canvas.translate(cx * effectRate * -1, 0);
+						} else {
+							canvas.translate(0, cy * effectRate * -1);
+						}
 					}
-					else {
-						canvas.translate(0, cy * effectRate * -1);
+					if (effect == 3) {	// ページめくりスクロール
+						if (pseLand == false) {
+							drawLeft += cx * effectRate * -1;
+						} else {
+							drawTop += cy * effectRate * -1;
+						}
 					}
 				}
 			}
@@ -365,39 +385,275 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			}
 			else {
 				// ピンチイン/アウトしていない
-    			Canvas bmpCanvas = new Canvas(mCanvasBitmap);
+				// ■■■ 通常時の画面描画
+				int dl;
+				int dt;
+				int ret;
+
+				// 前後のページを淡く表示するためのグラデーション色
+				int colors[] = {
+						0x88000000 | (mMgnColor & 0x00FFFFFF),
+						0xCC000000 | (mMgnColor & 0x00FFFFFF),
+						0xEE000000 | (mMgnColor & 0x00FFFFFF),
+						0xFF000000 | (mMgnColor & 0x00FFFFFF)};
+
+				Canvas bmpCanvas = new Canvas(mCanvasBitmap);
     			bmpCanvas.drawColor(mMgnColor);
 
-    			// 描画
-    			int ret;
-    			if (mImage[1] != null) {
-    				int dl;
-    				int dt;
+				// 「スクロールで前後のページへ移動」の設定が有効のとき
+				if (mScrlNext) {
+
+					if (mPageLock == false) {	// ページロック中じゃなければ
+						// 現在のページ幅合計の半分以上移動したら前後のページに移動する
+						if (mOverScrollX > mDrawWidthSum) {
+							mPageLock = true;
+							if (mPageWay == DEF.PAGEWAY_RIGHT) {
+								mParentAct.nextPage();
+							} else {
+								mParentAct.prevPage();
+							}
+						}
+						if (mOverScrollX < -(mDrawWidthSum)) {
+							mPageLock = true;
+							if (mPageWay == DEF.PAGEWAY_RIGHT) {
+								mParentAct.prevPage();
+							} else {
+								mParentAct.nextPage();
+							}
+						}
+					}
+
+					// ページ番号が変わったときにスクロールが超過したままなら超過分を再計算する
+					if (mImage[0] != null && mImage[0].Page != mCurrentPage) {
+						if (mOverScrollX > 0) {
+							mOverScrollX = mOverScrollX - Math.min(drawWidthSum, cx);
+						} else if (mOverScrollX < 0) {
+							mOverScrollX = mOverScrollX + Math.min(drawWidthSum, cx);
+						}
+						mCurrentPage = mImage[0].Page;
+						mPageLock = false;
+					}
+
+					// スクロール量が超過している分だけ描画する位置をずらす
+					if (pseLand == false) {
+						drawLeft += mOverScrollX;
+					} else {
+						drawTop = mOverScrollX;
+					}
+
+				}
+
+
+				int prev2Page = -1;
+				int prevPage = -1;
+				int nextPage = -1;
+				int next2Page = -1;
+
+				ImageData prev2Image = null;
+				ImageData prevImage = null;
+				ImageData next2Image = null;
+				ImageData nextImage = null;
+
+				GradientDrawable prevGrad = null;
+				GradientDrawable nextGrad = null;
+
+				// 前のページと次のページのページ番号を求める
+				if (mImage[0] != null && mImage[1] == null ) {
+					prevPage = mImage[0].Page - 1;
+					nextPage = mImage[0].Page + 1;
+				}
+				if (mImage[0] == null && mImage[1] != null ) {
+					prevPage = mImage[1].Page - 1;
+					nextPage = mImage[1].Page + 1;
+				}
+				if (mImage[0] != null && mImage[1] != null ) {
+					prevPage = Math.min(mImage[0].Page, mImage[1].Page) - 1;
+					nextPage = Math.max(mImage[0].Page, mImage[1].Page) + 1;
+				}
+				prev2Page = prevPage - 1;
+				next2Page = nextPage + 1;
+
+				// 前のページを表示用Bitmapに書き込む
+				if (prevPage > 0  && prevPage < mImageManager.length()) {
+					prevImage = mImageManager.getImageData(prevPage);
+
+					if (prevImage != null) {
+						if (mPageWay == DEF.PAGEWAY_RIGHT) {
+							// 右開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft + drawWidthSum;
+								dt = (int) drawTop + ((mDrawHeightMax - prevImage.SclHeight) / 2);
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - prevImage.SclHeight + ((mDrawHeightMax - prevImage.SclHeight) / 2);
+								dt = (int) drawLeft + drawWidthSum;
+							}
+						} else {
+							// 左開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft - prevImage.SclWidth;
+								dt = (int) drawTop;
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - prevImage.SclHeight;
+								dt = (int) drawLeft - prevImage.SclWidth;
+							}
+						}
+//						Log.d("MyImageView", "draw prevImage page=" + prevPage + ", dl=" + dl + ", dt=" + dt);
+						ret = CallImgLibrary.ImageDraw(prevImage.Page, prevImage.HalfMode, dl, dt, mCanvasBitmap);
+						if (ret < 0) {
+							// 描画エラー
+							;
+						}
+					}
+				}
+
+				// ２つ前のページを表示用Bitmapに書き込む
+				if (prev2Page > 0  && prev2Page < mImageManager.length()) {
+					prev2Image = mImageManager.getImageData(prev2Page);
+
+					if (prevImage != null && prev2Image != null) {
+						if (mPageWay == DEF.PAGEWAY_RIGHT) {
+							// 右開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft + drawWidthSum + prevImage.SclWidth;
+								dt = (int) drawTop + ((mDrawHeightMax - prev2Image.SclHeight) / 2);
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - prev2Image.SclHeight + ((mDrawHeightMax - prev2Image.SclHeight) / 2);
+								dt = (int) drawLeft + drawWidthSum + prevImage.SclWidth;
+							}
+						} else {
+							// 左開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft - prevImage.SclWidth - prev2Image.SclWidth;
+								dt = (int) drawTop;
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - prev2Image.SclHeight;
+								dt = (int) drawLeft - prevImage.SclWidth - prev2Image.SclWidth;
+							}
+						}
+//						Log.d("MyImageView", "draw prevImage page=" + prevPage + ", dl=" + dl + ", dt=" + dt);
+						ret = CallImgLibrary.ImageDraw(prev2Image.Page, prev2Image.HalfMode, dl, dt, mCanvasBitmap);
+						if (ret < 0) {
+							// 描画エラー
+							;
+						}
+					}
+				}
+
+				// 次のページを表示用Bitmapに書き込む
+				if (nextPage > 0  && nextPage < mImageManager.length()) {
+					nextImage = mImageManager.getImageData(nextPage);
+
+					if (nextImage != null) {
+						if (mPageWay == DEF.PAGEWAY_RIGHT) {
+							// 右開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft - nextImage.SclWidth;
+								dt = (int) drawTop + ((mDrawHeightMax - nextImage.SclHeight) / 2);
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - nextImage.SclHeight;
+								dt = (int) drawLeft - nextImage.SclWidth + ((mDrawHeightMax - nextImage.SclHeight) / 2);
+							}
+						} else {
+							// 左開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft + drawWidthSum;
+								dt = (int) drawTop;
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - nextImage.SclHeight;
+								dt = (int) drawLeft + drawWidthSum;
+							}
+						}
+//						Log.d("MyImageView", "draw nextImage page=" + nextPage + ", dl=" + dl + ", dt=" + dt);
+						ret = CallImgLibrary.ImageDraw(nextImage.Page, nextImage.HalfMode, dl, dt, mCanvasBitmap);
+						if (ret < 0) {
+							// 描画エラー
+							;
+						}
+					}
+				}
+
+				// 2つ次のページを表示用Bitmapに書き込む
+				if (next2Page > 0  && next2Page < mImageManager.length()) {
+					next2Image = mImageManager.getImageData(next2Page);
+
+					if (nextImage != null && next2Image != null) {
+						if (mPageWay == DEF.PAGEWAY_RIGHT) {
+							// 右開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft - nextImage.SclWidth - next2Image.SclWidth;
+								dt = (int) drawTop + ((mDrawHeightMax - next2Image.SclHeight) / 2);
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - next2Image.SclHeight + ((mDrawHeightMax - next2Image.SclHeight) / 2);
+								dt = (int) drawLeft - nextImage.SclWidth - next2Image.SclWidth;
+							}
+						} else {
+							// 左開き
+							if (pseLand == false) {
+								// 横持ち
+								dl = (int) drawLeft + drawWidthSum + nextImage.SclWidth;
+								dt = (int) drawTop;
+							} else {
+								// 縦持ち
+								dl = cy - (int) drawTop - next2Image.SclHeight;
+								dt = (int) drawLeft + drawWidthSum + nextImage.SclWidth;
+							}
+						}
+//						Log.d("MyImageView", "draw nextImage page=" + nextPage + ", dl=" + dl + ", dt=" + dt);
+						ret = CallImgLibrary.ImageDraw(next2Image.Page, next2Image.HalfMode, dl, dt, mCanvasBitmap);
+						if (ret < 0) {
+							// 描画エラー
+							;
+						}
+					}
+				}
+
+				// 左ページを表示用Bitmapに書き込む
+				if (mImage[1] != null) {
     				if (pseLand == false) {
+						// 横持ち
     					dl = (int)drawLeft;
     					dt = (int)drawTop;
     				}
     				else {
+						// 縦持ち
     					dl = cy - (int)drawTop - (int)drawHeight1;
     					dt = (int)drawLeft;
     				}
+//					Log.d("MyImageView", "draw mImage[1] page=" + mImage[1].Page + ", dl=" + dl + ", dt=" + dt);
     				ret = CallImgLibrary.ImageDraw(mImage[1].Page, mImage[1].HalfMode, dl, dt, mCanvasBitmap);
     				if (ret < 0) {
     					// 描画エラー
     					;
     				}
     			}
+
+				// 右ページを表示用Bitmapに書き込む
     			if (mImage[0] != null) {
-    				int dl;
-    				int dt;
     				if (pseLand == false) {
+						// 横持ち
     					dl = (int)drawLeft + drawWidthSum - drawWidth0;
     					dt = (int)drawTop;
     				}
     				else {
+						// 縦持ち
     					dl = cy - (int)drawTop - (int)drawHeight0;
     					dt = (int)drawLeft + drawWidthSum - drawWidth0;
     				}
+//					Log.d("MyImageView", "draw mImage[0] page=" + mImage[0].Page + ", dl=" + dl + ", dt=" + dt);
     				ret = CallImgLibrary.ImageDraw(mImage[0].Page, mImage[0].HalfMode, dl, dt, mCanvasBitmap);
     				if (ret < 0) {
     					// 描画エラー
@@ -405,36 +661,88 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
     				}
     			}
 
+				// // 「スクロールで前後のページへ移動」の設定が無効か、スクロール量超過していないなら前後のページにグラデーションを重ねる
+				if (mScrlNext == false || mOverScrollX == 0) {
+					if (pseLand == false) {
+						// 横持ち
+						dl = (int) drawLeft;
+						dt = (int) drawTop;
+
+						prevGrad = new GradientDrawable(Orientation.RIGHT_LEFT, colors);
+						mDrawRect.set(0, 0, dl, cy);
+						prevGrad.setBounds(mDrawRect);
+					} else {
+						// 縦持ち
+						dl = cy - (int) drawTop - (int) drawHeight1;
+						dt = (int) drawLeft;
+
+						prevGrad = new GradientDrawable(Orientation.BOTTOM_TOP, colors);
+						mDrawRect.set(0, 0, dt, cy);
+						prevGrad.setBounds(mDrawRect);
+					}
+
+					if (pseLand == false) {
+						// 横持ち
+						dl = (int) drawLeft + drawWidthSum - drawWidth0;
+						dt = (int) drawTop;
+
+						nextGrad = new GradientDrawable(Orientation.LEFT_RIGHT, colors);
+						mDrawRect.set((int) drawLeft + drawWidthSum, 0, cx, cy);
+						nextGrad.setBounds(mDrawRect);
+					} else {
+						// 縦持ち
+						dl = cy - (int) drawTop - (int) drawHeight0;
+						dt = (int) drawLeft + drawWidthSum - drawWidth0;
+
+						nextGrad = new GradientDrawable(Orientation.TOP_BOTTOM, colors);
+						mDrawRect.set(0, (int) drawLeft + drawWidthSum, cx, cy);
+						nextGrad.setBounds(mDrawRect);
+					}
+				}
+
     			if (effectRate == 0.0f) {
-    				canvas.drawBitmap(mCanvasBitmap, 0, 0, null);
+					// 作成した画像を表示
+					canvas.drawBitmap(mCanvasBitmap, 0, 0, null);
+
+					// // スクロールで前後のページへ移動無効か、スクロール超過していないなら前後のページを淡く表示する
+					if (mScrlNext == false || mOverScrollX == 0) {
+						if (prevGrad != null) {
+							prevGrad.draw(canvas);
+						}
+						if (nextGrad != null) {
+							nextGrad.draw(canvas);
+						}
+					}
     			}
     			else {
-    				// エフェクト中
-    				Rect rc = mDrawRect;
-    				if (pseLand == false) {
-        				rc.set(0, 0, cx, cy);
-        				if (effectRate > 0) {
-        					rc.right -= mMgnRight - 1;
-        				}
-        				else {
-        					rc.left += mMgnLeft + 1;
-        				}
-    				}
-    				else {
-        				rc.set(0, 0, cy, cx);
-        				if (effectRate > 0) {
-        					rc.bottom -= mMgnRight - 1;
-        				}
-        				else {
-        					rc.top += mMgnLeft + 1;
-        				}
-    				}
-    				Paint bmpPaint = null;
-    				if (effect == 2) {
-    					bmpPaint = mAlphaPaint;
-    					bmpPaint.setAlpha((int)(255 * (1.0f - effectRate) * (effectRate > 0 ? 1 : -1)));
-    				}
-    				canvas.drawBitmap(mCanvasBitmap, rc, rc, bmpPaint);
+//    				// エフェクト中
+//    				Rect rc = mDrawRect;
+//    				if (pseLand == false) {
+//        				rc.set(0, 0, cx, cy);
+//        				if (effectRate > 0) {
+//        					rc.right -= mMgnRight - 1;
+//        				}
+//        				else {
+//        					rc.left += mMgnLeft + 1;
+//        				}
+//    				}
+//    				else {
+//        				rc.set(0, 0, cy, cx);
+//        				if (effectRate > 0) {
+//        					rc.bottom -= mMgnRight - 1;
+//        				}
+//        				else {
+//        					rc.top += mMgnLeft + 1;
+//        				}
+//    				}
+					if (mScrlNext == false || mOverScrollX == 0) {
+						Paint bmpPaint = null;
+						if (effect == 2) {	// ページめくりフェードイン
+							bmpPaint = mAlphaPaint;
+							bmpPaint.setAlpha((int) (255 * (1.0f - effectRate) * (effectRate > 0 ? 1 : -1)));
+						}
+						canvas.drawBitmap(mCanvasBitmap, 0, 0, bmpPaint);
+					}
     			}
 			}
 
@@ -489,7 +797,8 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
     			}
 
     			// オーバースクロール
-    			if (mOverScrollX != 0) {
+				//「スクロールで前後のページへ移動」の設定が無効のときスクロール量が超過していれば、引っ張りエフェクトを表示
+				if (mScrlNext == false && mOverScrollX != 0) {
     				// グラデーション幅算出
     				int grad_cx = Math.min(cx, cy) / 20;
     				int cen_x1, cen_x2;
@@ -541,15 +850,17 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			}
 
 			if (effectRate != 0.0f) {
-				if (effect == 1) {
-					canvas.restore();
+				if (mScrlNext == false || mOverScrollX == 0) {
+					if (effect == 1) {
+						canvas.restore();
+					}
 				}
 			}
 		}
 	}
 
 	// 余白色を設定
-	public void setConfig(ImageActivity parent, int mclr, int cclr, int gclr, int vp, int mgn, int cen, int sdw, int zom, int way, int sway, int srngw, int srngh, boolean pr, boolean ne, boolean fit, boolean cmgn, boolean csdw, boolean psel, int effect){
+	public void setConfig(ImageActivity parent, int mclr, int cclr, int gclr, int vp, int mgn, int cen, int sdw, int zom, int way, int sway, int srngw, int srngh, boolean pr, boolean ne, boolean fit, boolean cmgn, boolean csdw, boolean psel, int effect, boolean scrlNext){
 		mParentAct = parent;
 		mMgnColor  = mclr;
 		mCenColor  = cclr;
@@ -580,6 +891,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			}
 		}
 		mEffect = effect;
+		mScrlNext = scrlNext;
 	}
 
 	public void setLoupeConfig( int size ) {
@@ -598,6 +910,11 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		mGuideView = view;
 		view.setParentView(this);
 		view.setUpdateListear(this);
+	}
+
+	// ガイド表示用クラス
+	public void setImageManager(ImageManager imgMgr) {
+		mImageManager = imgMgr;
 	}
 
 	public void createBackground(boolean flag) {
@@ -862,12 +1179,16 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 	public int checkFlick() {
 		int overX = mOverScrollX;
-		mOverScrollX = 0;
+		// 「スクロールで前後のページへ移動」の設定が無効なら、指をあげたらスクロール超過をリセットする
+		if (mScrlNext == false) {
+			mOverScrollX = 0;
+		}
 		if (checkFlick(overX, mOverScrollMax)) {
 			// 100% 以上引っ張っているとき
 			// mLastAttenuate = null;
 			return overX;
 		}
+//		}
 		return 0;
 	}
 
@@ -876,6 +1197,17 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			return false;
 		}
 		return (Math.abs(x) * 100 / max >= 90);
+	}
+
+	public void scrollReset() {
+		mOverScrollX = 0;
+		mDrawLeft = 0 + mMgnLeft;
+		mDrawTop = 0 + mMgnTop;
+		mMomentiumMsg = null;
+	}
+
+	public boolean getPageLock() {
+		return mPageLock;
 	}
 
 	/**
@@ -888,7 +1220,10 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	public void scrollStart(float x, float y, int flickWidth, int scroll) {
 //		mScrollBaseX = x;
 //		mScrollBaseY = y;
-		mOverScrollX = 0;
+		// スクロールで前後のページへ移動が有効なら、スクロール超過をリセットしない
+		if (mScrlNext == false) {
+			mOverScrollX = 0;
+		}
 		mOverScrollMax = flickWidth * scroll;
 		mMomentiumMsg = null;
 	}
@@ -932,7 +1267,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	 * @param	x	X軸の移動量
 	 * @param	y	Y軸の移動量
 	 * @param	scroll	スクロール倍率
-	 * @param	flag	スクロール倍率
+	 * @param	flag	オーバースクロールを計算する
 	 */
 	public void scrollMoveAmount(float x, float y, int scroll, boolean flag) {
 //		float bx = mScrollBaseX;
@@ -988,17 +1323,21 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		}
 
 		if (flag) {
-			// 減衰キャンセル
+			// スクロール超過量を設定
 			mOverScrollX = (int)(moveX - (mDrawLeft - orgLeft));
-			if (Math.abs(mOverScrollX) > mOverScrollMax) {
-				mOverScrollX = mOverScrollMax * (mOverScrollX > 0 ? 1 : -1);
-			}
+
+			if (mScrlNext == false) {
+				// スクロールで前後のページへ移動が無効ならスクロール量を減衰キャンセルさせる
+				if (Math.abs(mOverScrollX) > mOverScrollMax) {
+					mOverScrollX = mOverScrollMax * (mOverScrollX > 0 ? 1 : -1);
+				}
 //			Log.d("overscroll", "overScroll=" + mOverScrollX + ", moveX=" + moveX + ", move=" + (int)(mDrawLeft - orgLeft));
-			if (mOverScrollX != 0) {
-				// 減衰開始
-				attenuate();
-				// 描画
-				fUpdate = true;
+				if (mOverScrollX != 0) {
+					// 減衰開始
+					attenuate();
+					// 描画
+					fUpdate = true;
+				}
 			}
 		}
 
@@ -1312,7 +1651,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		return mDrawLeft;
 	}
 
-	// ズーム用のビットマップを作成
+	// ルーペ用のビットマップを作成
 	public void drawZoomArea(Canvas canvas, Rect rcDraw, int tch_x, int tch_y){
 		// 拡大対象位置
 		double src_cx;	// 元画像でのサイズ
@@ -1422,14 +1761,27 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		float pos_x[] = new float[2];
 		float pos_y[] = new float[2];
 
-		pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn)) / scale_x / fitScale1;
+		if (mScrlNext) {
+			// 「スクロールで前後のページへ移動」の設定が有効ならスクロール分を補正する
+			pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - mOverScrollX) / scale_x / fitScale1;
+		}
+		else {
+			pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn)) / scale_x / fitScale1;
+		}
 		pos_y[0] = (tch_y - mDrawTop) / scale_y / fitScale1;
 
+		
 		RectF rcSrc[] = new RectF[2];
 		rcSrc[0] = new RectF(pos_x[0] - src1_cx + offsetX, pos_y[0] - src1_cy, pos_x[0] + src1_cx + offsetX, pos_y[0] + src1_cy);
 
 		if (mDrawWidth[1] > 0) {
-			pos_x[1] = (int)((tch_x - mDrawLeft) / scale_x / fitScale2);
+			if (mScrlNext) {
+				// 「スクロールで前後のページへ移動」の設定が有効ならスクロール分を補正する
+				pos_x[1] = (int)((tch_x - (mDrawLeft) - mOverScrollX) / scale_x / fitScale2);
+			}
+			else {
+				pos_x[1] = (int)((tch_x - mDrawLeft) / scale_x / fitScale2);
+			}
 			pos_y[1] = (int)((tch_y - mDrawTop) / scale_y / fitScale2);
 
 			rcSrc[1] = new RectF(pos_x[1] - src2_cx, pos_y[1] - src2_cy, pos_x[1] + src2_cx, pos_y[1] + src2_cy);
@@ -1453,8 +1805,234 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				CallImgLibrary.ImageScaleDraw(mImage[i].Page, mRotate
 						, Math.round(rcSrc[i].left), Math.round(rcSrc[i].top), Math.round(rcSrc[i].right - rcSrc[i].left), Math.round(rcSrc[i].bottom - rcSrc[i].top)
 						, 0, 0, rcDraw.right - rcDraw.left, rcDraw.bottom - rcDraw.top
-						, 0, mCanvasBitmap);
+						, 0, mCanvasBitmap
+						, mImage[i].CutLeft, mImage[i].CutRight, mImage[i].CutTop, mImage[i].CutBottom);
 
+			}
+		}
+
+
+		// 「スクロールで前後のページへ移動」の設定が有効のとき
+		if (mScrlNext) {
+
+			int prev2Page = -1;
+			int prevPage = -1;
+			int nextPage = -1;
+			int next2Page = -1;
+
+			ImageData prev2Image = null;
+			ImageData prevImage = null;
+			ImageData next2Image = null;
+			ImageData nextImage = null;
+
+			GradientDrawable prevGrad = null;
+			GradientDrawable nextGrad = null;
+
+			// 前のページと次のページのページ番号を求める
+			if (mImage[0] != null && mImage[1] == null) {
+				prevPage = mImage[0].Page - 1;
+				nextPage = mImage[0].Page + 1;
+			}
+			if (mImage[0] == null && mImage[1] != null) {
+				prevPage = mImage[1].Page - 1;
+				nextPage = mImage[1].Page + 1;
+			}
+			if (mImage[0] != null && mImage[1] != null) {
+				prevPage = Math.min(mImage[0].Page, mImage[1].Page) - 1;
+				nextPage = Math.max(mImage[0].Page, mImage[1].Page) + 1;
+			}
+			prev2Page = prevPage - 1;
+			next2Page = nextPage + 1;
+
+			int origWidth = 0;
+			int origHeight = 0;
+
+			// 前のページを表示用Bitmapに書き込む
+			if (prevPage > 0 && prevPage < mImageManager.length()) {
+				prevImage = mImageManager.getImageData(prevPage);
+
+				if (prevImage != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = prevImage.Width;
+						origHeight = prevImage.Height;
+					} else {
+						origWidth = prevImage.Height;
+						origHeight = prevImage.Width;
+					}
+					if (prevImage.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) prevImage.SclWidth / (float) origWidth;
+					scale_y = (float) prevImage.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					if (DEF.ZOOMTYPE_ORIG10 <= mZoomType && mZoomType <= DEF.ZOOMTYPE_ORIG20) {
+						src_cx = (rcDraw.right - rcDraw.left) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+						src_cy = (rcDraw.bottom - rcDraw.top) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+					}
+					else {
+						src_cx = ((rcDraw.right - rcDraw.left) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origWidth / prevImage.SclWidth;
+						src_cy = ((rcDraw.bottom - rcDraw.top) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origHeight / prevImage.SclHeight;
+					}
+					
+					// 表示開始位置
+					float tmpPos_x = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - prevImage.SclWidth - mOverScrollX) / scale_x;
+					float tmpPos_y = (tch_y - (mDrawTop)) / scale_y;
+
+					RectF rectSrc = new RectF((int)tmpPos_x - (int)src_cx + offsetX, (int)tmpPos_y - (int)src_cy, (int)tmpPos_x + (int)src_cx + offsetX, (int)tmpPos_y + (int)src_cy);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(prevImage.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, 0, 0, rcDraw.right - rcDraw.left, rcDraw.bottom - rcDraw.top
+								, 0, mCanvasBitmap
+								, prevImage.CutLeft, prevImage.CutRight, prevImage.CutTop, prevImage.CutBottom);
+					}
+				}
+			}
+
+			// 前の前のページを表示用Bitmapに書き込む
+			if (prev2Page > 0 && prev2Page < mImageManager.length()) {
+				prev2Image = mImageManager.getImageData(prev2Page);
+
+				if (prevImage != null && prev2Image != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = prev2Image.Width;
+						origHeight = prev2Image.Height;
+					} else {
+						origWidth = prev2Image.Height;
+						origHeight = prev2Image.Width;
+					}
+					if (prev2Image.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) prev2Image.SclWidth / (float) origWidth;
+					scale_y = (float) prev2Image.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					if (DEF.ZOOMTYPE_ORIG10 <= mZoomType && mZoomType <= DEF.ZOOMTYPE_ORIG20) {
+						src_cx = (rcDraw.right - rcDraw.left) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+						src_cy = (rcDraw.bottom - rcDraw.top) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+					}
+					else {
+						src_cx = ((rcDraw.right - rcDraw.left) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origWidth / prev2Image.SclWidth;
+						src_cy = ((rcDraw.bottom - rcDraw.top) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origHeight / prev2Image.SclHeight;
+					}
+
+					// 表示開始位置
+					float tmpPos_x = (int) ((tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - prevImage.SclWidth - prev2Image.SclWidth - mOverScrollX) / scale_x);
+					float tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - (float)src_cx, tmpPos_y - (float)src_cy, tmpPos_x + (float)src_cx, tmpPos_y + (float)src_cy);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(prev2Image.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, 0, 0, rcDraw.right - rcDraw.left, rcDraw.bottom - rcDraw.top
+								, 0, mCanvasBitmap
+								, prev2Image.CutLeft, prev2Image.CutRight, prev2Image.CutTop, prev2Image.CutBottom);
+					}
+				}
+			}
+
+			// 次のページを表示用Bitmapに書き込む
+			if (nextPage > 0 && nextPage < mImageManager.length()) {
+				nextImage = mImageManager.getImageData(nextPage);
+
+				if (nextImage != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = nextImage.Width;
+						origHeight = nextImage.Height;
+					} else {
+						origWidth = nextImage.Height;
+						origHeight = nextImage.Width;
+					}
+					if (nextImage.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) nextImage.SclWidth / (float) origWidth;
+					scale_y = (float) nextImage.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					if (DEF.ZOOMTYPE_ORIG10 <= mZoomType && mZoomType <= DEF.ZOOMTYPE_ORIG20) {
+						src_cx = (rcDraw.right - rcDraw.left) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+						src_cy = (rcDraw.bottom - rcDraw.top) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+					}
+					else {
+						src_cx = ((rcDraw.right - rcDraw.left) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origWidth / nextImage.SclWidth;
+						src_cy = ((rcDraw.bottom - rcDraw.top) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origHeight / nextImage.SclHeight;
+					}
+
+					// 表示開始位置
+					float tmpPos_x = (int) ((tch_x - (mDrawLeft) + nextImage.SclWidth - mOverScrollX) / scale_x);
+					float tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - (float)src_cx + offsetX, tmpPos_y - (float)src_cy, tmpPos_x + (float)src_cx + offsetX, tmpPos_y + (float)src_cy);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(nextImage.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, 0, 0, rcDraw.right - rcDraw.left, rcDraw.bottom - rcDraw.top
+								, 0, mCanvasBitmap
+								, nextImage.CutLeft, nextImage.CutRight, nextImage.CutTop, nextImage.CutBottom);
+					}
+				}
+			}
+
+			// 次の次のページを表示用Bitmapに書き込む
+			if (next2Page > 0 && next2Page < mImageManager.length()) {
+				next2Image = mImageManager.getImageData(next2Page);
+
+				if (nextImage != null && next2Image != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = next2Image.Width;
+						origHeight = next2Image.Height;
+					} else {
+						origWidth = next2Image.Height;
+						origHeight = next2Image.Width;
+					}
+					if (next2Image.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) next2Image.SclWidth / (float) origWidth;
+					scale_y = (float) next2Image.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					if (DEF.ZOOMTYPE_ORIG10 <= mZoomType && mZoomType <= DEF.ZOOMTYPE_ORIG20) {
+						src_cx = (rcDraw.right - rcDraw.left) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+						src_cy = (rcDraw.bottom - rcDraw.top) / (1 + ((mZoomType - DEF.ZOOMTYPE_ORIG10) * 1.0)) / 2;
+					}
+					else {
+						src_cx = ((rcDraw.right - rcDraw.left) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origWidth / next2Image.SclWidth;
+						src_cy = ((rcDraw.bottom - rcDraw.top) / (1.5 + ((mZoomType - DEF.ZOOMTYPE_DISP15) * 0.5)) / 2) * origHeight / next2Image.SclHeight;
+					}
+
+					// 表示開始位置
+					float tmpPos_x = (int) ((tch_x - (mDrawLeft) + nextImage.SclWidth + next2Image.SclWidth - mOverScrollX) / scale_x);
+					float tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - (float)src_cx + offsetX, tmpPos_y - (float)src_cy, tmpPos_x + (float)src_cx + offsetX, tmpPos_y + (float)src_cy);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(next2Image.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, 0, 0, rcDraw.right - rcDraw.left, rcDraw.bottom - rcDraw.top
+								, 0, mCanvasBitmap
+								, next2Image.CutLeft, next2Image.CutRight, next2Image.CutTop, next2Image.CutBottom);
+					}
+				}
 			}
 		}
 
@@ -1565,8 +2143,15 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		float pos_x[] = new float[2];
 		float pos_y[] = new float[2];
 
-		pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn)) / scale_x / fitScale1;
+		if (mScrlNext) {
+			// 「スクロールで前後のページへ移動」の設定が有効ならスクロール分を補正する
+			pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - mOverScrollX) / scale_x / fitScale1;
+		}
+		else {
+			pos_x[0] = (tch_x - (mDrawLeft + mDrawWidth[1] + cmgn)) / scale_x / fitScale1;
+		}
 		pos_y[0] = (tch_y - (mDrawTop)) / scale_y / fitScale1;
+
 
 		RectF rcSrc[] = new RectF[2];
 		rcSrc[0] = new RectF(pos_x[0] - src1_cx + offsetX, pos_y[0] - src1_cy, pos_x[0] + src1_cx + offsetX, pos_y[0] + src1_cy);
@@ -1577,9 +2162,15 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		}
 
 		if (mDrawWidth[1] > 0) {
-			pos_x[1] = (int)((tch_x - (mDrawLeft)) / scale_x / fitScale2);
+			if (mScrlNext) {
+				// 「スクロールで前後のページへ移動」の設定が有効ならスクロール分を補正する
+				pos_x[1] = (int)((tch_x - (mDrawLeft) - mOverScrollX) / scale_x / fitScale2);
+			}
+			else {
+				pos_x[1] = (int)((tch_x - (mDrawLeft)) / scale_x / fitScale2);
+			}
 			pos_y[1] = (int)((tch_y - (mDrawTop)) / scale_y / fitScale2);
-
+			
 			rcSrc[1] = new RectF(pos_x[1] - src2_cx, pos_y[1] - src2_cy, pos_x[1] + src2_cx, pos_y[1] + src2_cy);
 			if (cmgn != 0) {
 				int cmtn_s = (int)(cmgn / scale_x / fitScale2);
@@ -1671,10 +2262,255 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				CallImgLibrary.ImageScaleDraw(mImage[i].Page, mRotate
 						, Math.round(rcSrc[i].left), Math.round(rcSrc[i].top), Math.round(rcSrc[i].right - rcSrc[i].left), Math.round(rcSrc[i].bottom - rcSrc[i].top)
 						, rcDraw.left, rcDraw.top, rcDraw.right, rcDraw.bottom
-						, pseLand ? 1 : 0, mCanvasBitmap);
+						, pseLand ? 1 : 0, mCanvasBitmap
+						, mImage[i].CutLeft, mImage[i].CutRight, mImage[i].CutTop, mImage[i].CutBottom);
 
 			}
 		}
+
+
+		// 「スクロールで前後のページへ移動」の設定が有効のとき
+		if (mScrlNext) {
+
+			int prev2Page = -1;
+			int prevPage = -1;
+			int nextPage = -1;
+			int next2Page = -1;
+
+			ImageData prev2Image = null;
+			ImageData prevImage = null;
+			ImageData next2Image = null;
+			ImageData nextImage = null;
+
+			GradientDrawable prevGrad = null;
+			GradientDrawable nextGrad = null;
+
+			// 前のページと次のページのページ番号を求める
+			if (mImage[0] != null && mImage[1] == null) {
+				prevPage = mImage[0].Page - 1;
+				nextPage = mImage[0].Page + 1;
+			}
+			if (mImage[0] == null && mImage[1] != null) {
+				prevPage = mImage[1].Page - 1;
+				nextPage = mImage[1].Page + 1;
+			}
+			if (mImage[0] != null && mImage[1] != null) {
+				prevPage = Math.min(mImage[0].Page, mImage[1].Page) - 1;
+				nextPage = Math.max(mImage[0].Page, mImage[1].Page) + 1;
+			}
+			prev2Page = prevPage - 1;
+			next2Page = nextPage + 1;
+
+			int origWidth = 0;
+			int origHeight = 0;
+
+			// 前のページを表示用Bitmapに書き込む
+			if (prevPage > 0 && prevPage < mImageManager.length()) {
+				prevImage = mImageManager.getImageData(prevPage);
+
+				if (prevImage != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = prevImage.Width;
+						origHeight = prevImage.Height;
+					} else {
+						origWidth = prevImage.Height;
+						origHeight = prevImage.Width;
+					}
+					if (prevImage.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) prevImage.SclWidth / (float) origWidth;
+					scale_y = (float) prevImage.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					int src_cx = (int) (origWidth * view_cx / pinch_scale / prevImage.FitWidth / 2);
+					int src_cy = (int) (origHeight * view_cy / pinch_scale / prevImage.FitHeight / 2);
+
+					// 表示開始位置
+					int tmpPos_x = (int) ((tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - prevImage.SclWidth - mOverScrollX) / scale_x);
+					int tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - src_cx + offsetX, tmpPos_y - src_cy, tmpPos_x + src_cx + offsetX, tmpPos_y + src_cy);
+					if (cmgn != 0) {
+						int cmtn_s = (int) (cmgn / scale_x);
+						int cmtn_d = (int) (cmtn_s * prevImage.SclWidth / prevImage.FitWidth / pinch_scale);
+						rectSrc.offset((cmtn_s - cmtn_d) / 2 * -1, 0);
+					}
+
+					// 任意倍率は元画像の何倍なのか
+					float pscale_x = origWidth / prevImage.FitWidth / pinch_scale;
+					float pscale_y = origHeight / prevImage.FitHeight / pinch_scale;
+					rectSrc.offset(shiftx * pscale_x, shifty * pscale_y);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(prevImage.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, rcDraw.left, rcDraw.top, rcDraw.right, rcDraw.bottom
+								, pseLand ? 1 : 0, mCanvasBitmap
+								, prevImage.CutLeft, prevImage.CutRight, prevImage.CutTop, prevImage.CutBottom);
+					}
+				}
+			}
+
+			// 前の前のページを表示用Bitmapに書き込む
+			if (prev2Page > 0 && prev2Page < mImageManager.length()) {
+				prev2Image = mImageManager.getImageData(prev2Page);
+
+				if (prevImage != null && prev2Image != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = prev2Image.Width;
+						origHeight = prev2Image.Height;
+					} else {
+						origWidth = prev2Image.Height;
+						origHeight = prev2Image.Width;
+					}
+					if (prev2Image.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) prev2Image.SclWidth / (float) origWidth;
+					scale_y = (float) prev2Image.SclHeight / (float) origHeight;
+
+
+					// 元サイズ算出
+					int src_cx = (int) (origWidth * view_cx / pinch_scale / prev2Image.FitWidth / 2);
+					int src_cy = (int) (origHeight * view_cy / pinch_scale / prev2Image.FitHeight / 2);
+
+					// 表示開始位置
+					int tmpPos_x = (int) ((tch_x - (mDrawLeft + mDrawWidth[1] + cmgn) - prev2Image.SclWidth - prev2Image.SclWidth - mOverScrollX) / scale_x);
+					int tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - src_cx + offsetX, tmpPos_y - src_cy, tmpPos_x + src_cx + offsetX, tmpPos_y + src_cy);
+					if (cmgn != 0) {
+						int cmtn_s = (int) (cmgn / scale_x);
+						int cmtn_d = (int) (cmtn_s * prev2Image.SclWidth / prev2Image.FitWidth / pinch_scale);
+						rectSrc.offset((cmtn_s - cmtn_d) / 2 * -1, 0);
+					}
+
+					// 任意倍率は元画像の何倍なのか
+					float pscale_x = origWidth / prev2Image.FitWidth / pinch_scale;
+					float pscale_y = origHeight / prev2Image.FitHeight / pinch_scale;
+					rectSrc.offset(shiftx * pscale_x, shifty * pscale_y);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(prev2Image.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, rcDraw.left, rcDraw.top, rcDraw.right, rcDraw.bottom
+								, pseLand ? 1 : 0, mCanvasBitmap
+								, prev2Image.CutLeft, prev2Image.CutRight, prev2Image.CutTop, prev2Image.CutBottom);
+					}
+				}
+			}
+
+			// 次のページを表示用Bitmapに書き込む
+			if (nextPage > 0 && nextPage < mImageManager.length()) {
+				nextImage = mImageManager.getImageData(nextPage);
+
+				if (nextImage != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = nextImage.Width;
+						origHeight = nextImage.Height;
+					} else {
+						origWidth = nextImage.Height;
+						origHeight = nextImage.Width;
+					}
+					if (nextImage.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) nextImage.SclWidth / (float) origWidth;
+					scale_y = (float) nextImage.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					int src_cx = (int) (origWidth * view_cx / pinch_scale / nextImage.FitWidth / 2);
+					int src_cy = (int) (origHeight * view_cy / pinch_scale / nextImage.FitHeight / 2);
+
+					// 表示開始位置
+					int tmpPos_x = (int) ((tch_x - (mDrawLeft) + nextImage.SclWidth - mOverScrollX) / scale_x);
+					int tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - src_cx, tmpPos_y - src_cy, tmpPos_x + src_cx, tmpPos_y + src_cy);
+					if (cmgn != 0) {
+						int cmtn_s = (int) (cmgn / scale_x);
+						int cmtn_d = (int) (cmtn_s * nextImage.SclWidth / nextImage.FitWidth / pinch_scale);
+						rectSrc.offset((cmtn_s - cmtn_d) / 2 * -1, 0);
+					}
+
+					// 任意倍率は元画像の何倍なのか
+					float pscale_x = origWidth / nextImage.FitWidth / pinch_scale;
+					float pscale_y = origHeight / nextImage.FitHeight / pinch_scale;
+					rectSrc.offset(shiftx * pscale_x, shifty * pscale_y);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(nextImage.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, rcDraw.left, rcDraw.top, rcDraw.right, rcDraw.bottom
+								, pseLand ? 1 : 0, mCanvasBitmap
+								, nextImage.CutLeft, nextImage.CutRight, nextImage.CutTop, nextImage.CutBottom);
+					}
+				}
+			}
+
+
+			// 次の次のページを表示用Bitmapに書き込む
+			if (next2Page > 0 && next2Page < mImageManager.length()) {
+				next2Image = mImageManager.getImageData(next2Page);
+
+				if (next2Image != null && next2Image != null) {
+					// 回転対応
+					if (mRotate == 0 || mRotate == 2) {
+						origWidth = next2Image.Width;
+						origHeight = next2Image.Height;
+					} else {
+						origWidth = next2Image.Height;
+						origHeight = next2Image.Width;
+					}
+					if (next2Image.HalfMode != 0) {
+						origWidth = (origWidth + 1) / 2;
+					}
+
+					scale_x = (float) next2Image.SclWidth / (float) origWidth;
+					scale_y = (float) next2Image.SclHeight / (float) origHeight;
+
+					// 元サイズ算出
+					int src_cx = (int) (origWidth * view_cx / pinch_scale / next2Image.FitWidth / 2);
+					int src_cy = (int) (origHeight * view_cy / pinch_scale / next2Image.FitHeight / 2);
+
+					// 表示開始位置
+					int tmpPos_x = (int) ((tch_x - (mDrawLeft) + nextImage.SclWidth + next2Image.SclWidth - mOverScrollX) / scale_x);
+					int tmpPos_y = (int) ((tch_y - (mDrawTop)) / scale_y);
+
+					RectF rectSrc = new RectF(tmpPos_x - src_cx, tmpPos_y - src_cy, tmpPos_x + src_cx, tmpPos_y + src_cy);
+					if (cmgn != 0) {
+						int cmtn_s = (int) (cmgn / scale_x);
+						int cmtn_d = (int) (cmtn_s * next2Image.SclWidth / next2Image.FitWidth / pinch_scale);
+						rectSrc.offset((cmtn_s - cmtn_d) / 2 * -1, 0);
+					}
+
+					// 任意倍率は元画像の何倍なのか
+					float pscale_x = origWidth / next2Image.FitWidth / pinch_scale;
+					float pscale_y = origHeight / next2Image.FitHeight / pinch_scale;
+					rectSrc.offset(shiftx * pscale_x, shifty * pscale_y);
+
+					// 拡大描画処理
+					if (0 <= rectSrc.right && rectSrc.left < origWidth + offsetX && 0 <= rectSrc.bottom && rectSrc.top < origHeight) {
+						CallImgLibrary.ImageScaleDraw(next2Image.Page, mRotate
+								, Math.round(rectSrc.left), Math.round(rectSrc.top), Math.round(rectSrc.right - rectSrc.left), Math.round(rectSrc.bottom - rectSrc.top)
+								, rcDraw.left, rcDraw.top, rcDraw.right, rcDraw.bottom
+								, pseLand ? 1 : 0, mCanvasBitmap
+								, next2Image.CutLeft, next2Image.CutRight, next2Image.CutTop, next2Image.CutBottom);
+					}
+				}
+			}
+		}
+
 
 		canvas.drawBitmap(mCanvasBitmap, 0, 0, null);
 //		if (pseLand) {

@@ -197,6 +197,7 @@
     <string name="pnTxtFormat">Format :</string>
     <string name="pnTxtPos">Position :</string>
     <string name="pnTxtSize">Font Size :</string>
+    <string name="pnTxtColor">Font Color :</string>
     <string name="rsTitle">Resume</string>
     <string name="rsMsg">Want to open the file that was last displayed?</string>
     <string name="rsBtnYes">Yes</string>
@@ -349,6 +350,7 @@
     <string name="effect00">None</string>
     <string name="effect01">Flip</string>
     <string name="effect02">Fade In</string>
+    <string name="effect03">Scroll</string>
     <string name="quality00">fast, low quality</string>
     <string name="quality01">slow, high quality</string>
     <string name="noisedec00">Slow</string>
@@ -383,6 +385,8 @@
     <string name="pnumpos03">Bottom Right</string>
     <string name="pnumpos04">Bottom Center</string>
     <string name="pnumpos05">Bottom Left</string>
+    <string name="pnumcolor00">White</string>
+    <string name="pnumcolor01">Black</string>
     <string name="lastpage00">Close viewer</string>
     <string name="lastpage01">Display a confirmation</string>
     <string name="lastpage02">Move to next file</string>

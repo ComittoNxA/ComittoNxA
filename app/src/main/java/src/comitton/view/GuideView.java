@@ -122,11 +122,14 @@ public class GuideView {
 	private int mPageFormatInt;
 	private int mPagePos;
 	private int mPageSize;
+	private int mPnumColor = 0;
 	private boolean mTimeDisplay = false;
 	private int mTimeFormatInt;
 	private String mTimeStr;
 	private int mTimePos;
 	private int mTimeSize;
+	private int mTimeColor = 0;
+	private Intent mBatteryIntent;
 
 	private boolean mDualView;	// 並べて表示
 	private boolean mNextFile;	// 次/前ファイル移動表示
@@ -291,12 +294,22 @@ public class GuideView {
 
 			mNumPaint.setStrokeWidth(mTextShadow);
 			mNumPaint.setStyle(Paint.Style.STROKE);
-			mNumPaint.setColor(0x88000000);
+			if (mPnumColor == 0) {
+				mNumPaint.setColor(0x88000000);
+			}
+			else {
+				mNumPaint.setColor(0xCCFFFFFF);
+			}
 			canvas.drawText(mPageStr, psx, psy + ascent, mNumPaint);
 
 			mNumPaint.setStrokeWidth(0.0f);
 			mNumPaint.setStyle(Paint.Style.FILL);
-			mNumPaint.setColor(Color.WHITE);
+			if (mPnumColor == 0) {
+				mNumPaint.setColor(Color.WHITE);
+			}
+			else {
+				mNumPaint.setColor(Color.BLACK);
+			}
 			canvas.drawText(mPageStr, psx, psy + ascent, mNumPaint);
 		}
 
@@ -343,12 +356,22 @@ public class GuideView {
 
 			mTimePaint.setStrokeWidth(mTextShadow);
 			mTimePaint.setStyle(Paint.Style.STROKE);
-			mTimePaint.setColor(0x88000000);
+			if (mTimeColor == 0) {
+				mTimePaint.setColor(0x88000000);
+			}
+			else {
+				mTimePaint.setColor(0xCCFFFFFF);
+			}
 			canvas.drawText(mTimeStr, psx, psy + ascent, mTimePaint);
 
 			mTimePaint.setStrokeWidth(0.0f);
 			mTimePaint.setStyle(Paint.Style.FILL);
-			mTimePaint.setColor(Color.WHITE);
+			if (mTimeColor == 0) {
+				mTimePaint.setColor(Color.WHITE);
+			}
+			else {
+				mTimePaint.setColor(Color.BLACK);
+			}
 			canvas.drawText(mTimeStr, psx, psy + ascent, mTimePaint);
 		}
 
@@ -1362,11 +1385,13 @@ public class GuideView {
 	}
 
 	// ページ番号表示
-	public void setPageNumberFormat(boolean display, int format, int pos, int size) {
+	public void setPageNumberFormat(boolean display, int format, int pos, int size, int color) {
 		mPageDisplay = display;
 		mPageFormatInt = format;
 		mPagePos = pos;
 		mPageSize = size;
+		mPnumColor = color;
+
 		mNumPaint.setTextSize(mPageSize);
 		invalidate();
 	}
@@ -1378,36 +1403,49 @@ public class GuideView {
 	}
 
 	// 時刻＆バッテリー表示
-	public void setTimeFormat(boolean display, int format, int pos, int size) {
+	public void setTimeFormat(boolean display, int format, int pos, int size, int color) {
 		mTimeDisplay = display;
 		mTimeFormatInt = format;
+		mTimePos = pos;
+		mTimeSize = size;
+		mTimeColor = color;
+
 		if (format < 3) {
+			// 24時間表示
 			mTimeFormat = new SimpleDateFormat("HH:mm");
 		}
 		else {
+			// 12時間表示
 			mTimeFormat = new SimpleDateFormat("hh:mm");
 		}
-		mTimePos = pos;
-		mTimeSize = size;
 		mTimePaint.setTextSize(mTimeSize);
+
+		// バッテリー残量(%)
+		mBatteryIntent = mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 	}
+
 	// 時刻＆バッテリー表示
 	public void setTimeString() {
-		// バッテリー残量(%)
-		Intent battery = mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-		int level = battery.getIntExtra("level", 0);
-		int scale = battery.getIntExtra("scale", 100);
-		mBattery = level * 100 / scale;
+//		boolean isCharging = false;
+		boolean usbCharge = false;
+		boolean acCharge = false;
+		
+		if (mBatteryIntent != null) {
+			// バッテリー残量(%)
+			int level = mBatteryIntent.getIntExtra("level", 0);
+			int scale = mBatteryIntent.getIntExtra("scale", 100);
+			mBattery = level * 100 / scale;
 
-		// Are we charging / charged?
-		int status = battery.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-		boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-				status == BatteryManager.BATTERY_STATUS_FULL;
+//			// 充電中？ / 満充電？
+//			int status = mBatteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+//			isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+//					status == BatteryManager.BATTERY_STATUS_FULL;
 
-		// How are we charging?
-		int chargePlug = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-		boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
-		boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
+			// 充電方法 [ AC / USB ]
+			int chargePlug = mBatteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+			usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
+			acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
+		}
 		
 		// 時刻
 		mTimeStr = mTimeFormat.format(new Date());

@@ -197,6 +197,7 @@
     <string name="pnTxtFormat">表示書式 :</string>
     <string name="pnTxtPos">表示位置 :</string>
     <string name="pnTxtSize">サイズ :</string>
+    <string name="pnTxtColor">色 :</string>
     <string name="rsTitle">続きから表示</string>
     <string name="rsMsg">前回表示していたファイルを開きますか？</string>
     <string name="rsBtnYes">はい</string>
@@ -349,6 +350,7 @@
     <string name="effect00">なし</string>
     <string name="effect01">フリップ</string>
     <string name="effect02">フェードイン</string>
+    <string name="effect03">スクロール</string>
     <string name="quality00">速度を優先する</string>
     <string name="quality01">画質を優先する</string>
     <string name="noisedec00">ゆっくり</string>
@@ -383,6 +385,8 @@
     <string name="pnumpos03">左下</string>
     <string name="pnumpos04">中央下</string>
     <string name="pnumpos05">右下</string>
+    <string name="pnumcolor00">白</string>
+    <string name="pnumcolor01">黒</string>
     <string name="lastpage00">画面を閉じる</string>
     <string name="lastpage01">確認ダイアログの表示</string>
     <string name="lastpage02">次のファイルを表示</string>

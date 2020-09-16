@@ -1883,6 +1883,32 @@ public class ImageManager extends InputStream implements Runnable {
 	}
 
 	// ビットマップ読み込み開始
+	public ImageData getImageData(int page) {
+		// パラメタチェック
+		if (mFileList != null && page < 0 && mFileList.length <= page) {
+			return null;
+		}
+
+		ImageData id = null;
+		if (mMemCacheFlag[page].fSource == true) {
+			// メモリキャッシュあり
+			id = new ImageData();
+			id.Page = page;
+			id.Width = mFileList[page].width;
+			id.Height = mFileList[page].height;
+			for (int i = 0; i < 3; i++) {
+				if (mMemCacheFlag[page].fScale[i]) {
+					id.HalfMode = i;
+					id.SclWidth = mFileList[page].swidth[i];
+					id.SclHeight = mFileList[page].sheight[i];
+					id.FitWidth = mFileList[page].fwidth[i];
+					id.FitHeight = mFileList[page].fheight[i];
+				}
+			}
+		}
+		return id;
+	}
+
 	// ビットマップ読み込み開始
 	public ImageData loadBitmap(int page, boolean notice) throws IOException {
 		// パラメタチェック
@@ -2665,7 +2691,7 @@ public class ImageManager extends InputStream implements Runnable {
 	private MemCacheFlag mMemCacheFlag[];
 	private int mMemPriority[];
 
-	class MemCacheFlag {
+	private class MemCacheFlag {
 		public boolean fSource = false;
 		public boolean fScale[] = { false, false, false };
 	}
@@ -2731,7 +2757,7 @@ public class ImageManager extends InputStream implements Runnable {
 		return true;
 	}
 
-	public MemCacheFlag memGetCacheState(int page) {
+	private MemCacheFlag memGetCacheState(int page) {
 		return mMemCacheFlag[page];
 	}
 
@@ -2802,8 +2828,8 @@ public class ImageManager extends InputStream implements Runnable {
 			int freeCount = CallImgLibrary.ImageGetFreeSize();
 			if (freeCount >= useCount) {
 				// 領域が足りた
-				return true;
-			}
+			return true;
+		}
 
 			if (loop == 0) {
 				// 初回は範囲外を全て消す
@@ -3508,7 +3534,7 @@ public class ImageManager extends InputStream implements Runnable {
 
 //		Log.d("ImageScaling", "start : p1=" + page1 + ", p2=" + page2 + ", h1=" + half1 + ", h2=" + half2);
 
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", ■■■■■ ■■■■■ 開始 ■■■■■ ■■■■■ ");
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", ■■■■■ ■■■■■ 開始 ■■■■■ ■■■■■ ");
 
 		int src_x[] = { 0, 0 }; // 映像オリジナルサイズ
 		int src_y[] = { 0, 0 };
@@ -3532,7 +3558,7 @@ public class ImageManager extends InputStream implements Runnable {
 		// 画面サイズ
 		disp_x = mScrWidth;
 		disp_y = mScrHeight;
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面サイズ disp_x=" + disp_x + ", disp_y=" + disp_y);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面サイズ disp_x=" + disp_x + ", disp_y=" + disp_y);
 
 		// 画像1の情報
 		if (mScrRotate == ROTATE_NORMAL || mScrRotate == ROTATE_180DEG) {
@@ -3543,7 +3569,7 @@ public class ImageManager extends InputStream implements Runnable {
 			src_x[0] = mFileList[page1].height;
 			src_y[0] = mFileList[page1].width;
 		}
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 元画像:P1 src_x1=" + src_x[0] + ", src_y1=" + src_y[0]);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 元画像:P1 src_x1=" + src_x[0] + ", src_y1=" + src_y[0]);
 
 		if (mMarginCut != 0) {
 			// 余白カットありの場合
@@ -3555,7 +3581,7 @@ public class ImageManager extends InputStream implements Runnable {
 				bottom[0] = margin[3];
 			}
 		}
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", マージン:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", マージン:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
 
 		if (page2 != -1) {
 			// 画像2の情報
@@ -3566,7 +3592,7 @@ public class ImageManager extends InputStream implements Runnable {
 				src_x[1] = mFileList[page2].height;
 				src_y[1] = mFileList[page2].width;
 			}
-			Log.d("comitton", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 元画像:P2 src_x2=" + src_x[1] + ", src_y2=" + src_y[1]);
+			Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 元画像:P2 src_x2=" + src_x[1] + ", src_y2=" + src_y[1]);
 
 			if (mMarginCut != 0) {
 				// 余白カットありの場合
@@ -3579,7 +3605,7 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 			CallImgLibrary.GetMarginSize(page2, half2, 0, disp_x2, disp_y, mMarginCut, margin);
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", マージン:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+			Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half1 + ", マージン:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 		}
 
 		// カットしてサイズがマイナスになったらプラスに戻す
@@ -3606,7 +3632,6 @@ public class ImageManager extends InputStream implements Runnable {
 			// 余白カットありで縦横比を維持の場合
 
 			if (page2 != -1) {
-				// 画像2があれば
 				if (mScrFitDual) {
 					// 高さを揃える場合
 					// 上下のカット率を少ないほうに合わせる
@@ -3621,38 +3646,64 @@ public class ImageManager extends InputStream implements Runnable {
 						bottom[1] = bottom[0] * src_y[1] / src_y[0];
 					}
 
-					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
-					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+					Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 上下を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+					Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half1 + ", 上下を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 				}
-
+			}
 				
-				// 横幅を画面の縦横比より細くしない
-				if (left[0] + right[0] > 0) {
-					int x = (src_x[0] - left[0] - right[0]);
-					int y = (src_y[0] - top[0] - bottom[0]);
-					if (x * 1000 / disp_x < y * 1000 / disp_y) {
-						int margin_x = (int) ((float) src_x[0] - ((float) y * ((float) disp_x / (float) disp_y)));
+			// 横幅が画面の縦横比より細い場合、横のカットを戻す
+			int work_x = (disp_x > disp_y) ? disp_x / 2 : disp_x;
+			if (left[0] + right[0] > 0) {
+				int x = (src_x[0] - left[0] - right[0]);
+				int y = (src_y[0] - top[0] - bottom[0]);
+				if (x * 1000 / work_x < y * 1000 / disp_y) {
+					int margin_x = (int) ((float) src_x[0] - ((float) y * ((float) work_x / (float) disp_y)));
+					margin_x = Math.max(0, margin_x);
+					left[0] = margin_x * left[0] / (left[0] + right[0]);
+					right[0] = margin_x - left[0];
+				}
+			}
+			if (page2 != -1) {
+				if (left[1] + right[1] > 0) {
+					int x = (src_x[1] - left[1] - right[1]);
+					int y = (src_y[1] - top[1] - bottom[1]);
+					if (x * 1000 / work_x < y * 1000 / disp_y) {
+						int margin_x = (int) ((float) src_x[1] - ((float) y * ((float) work_x / (float) disp_y)));
 						margin_x = Math.max(0, margin_x);
-						left[0] = margin_x * left[0] / (left[0] + right[0]);
-						right[0] = margin_x - left[0];
+						left[1] = margin_x * left[1] / (left[1] + right[1]);
+						right[1] = margin_x - left[1];
 					}
 				}
-				if (page2 != -1) {
-					if (left[1] + right[1] > 0) {
-						int x = (src_x[1] - left[1] - right[1]);
-						int y = (src_y[1] - top[1] - bottom[1]);
-						if (x * 1000 / disp_x2 < y * 1000 / disp_y) {
-							int margin_x = (int) ((float) src_x[1] - ((float) y * ((float) disp_x2 / (float) disp_y)));
-							margin_x = Math.max(0, margin_x);
-							left[1] = margin_x * left[1] / (left[1] + right[1]);
-							right[1] = margin_x - left[1];
-						}
-					}
-				}
-				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
-				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+			}
 
-				
+			// 横幅が画面の縦横比より太い場合、縦のカットを戻す
+			if (top[0] + bottom[0] > 0) {
+				int x = (src_x[0] - left[0] - right[0]);
+				int y = (src_y[0] - top[0] - bottom[0]);
+				if (x * 1000 / work_x > y * 1000 / disp_y) {
+					int margin_y = (int) ((float) src_y[0] - ((float) x * ((float) disp_y / (float) work_x)));
+					margin_y = Math.max(0, margin_y);
+					top[0] = margin_y * top[0] / (top[0] + bottom[0]);
+					bottom[0] = margin_y - top[0];
+				}
+			}
+			if (page2 != -1) {
+				if (top[1] + bottom[1] > 0) {
+					int x = (src_x[1] - left[1] - right[1]);
+					int y = (src_y[1] - top[1] - bottom[1]);
+					if (x * 1000 / work_x > y * 1000 / disp_y) {
+						int margin_y = (int) ((float) src_y[1] - ((float) x * ((float) disp_y / (float) work_x)));
+						margin_y = Math.max(0, margin_y);
+						top[1] = margin_y * top[1] / (top[1] + bottom[1]);
+						bottom[1] = margin_y - top[1];
+					}
+				}
+			}
+
+			Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画面の比率に近づける:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+			Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half1 + ", 画面に比率に近づける:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
+
+			if (page2 != -1) {
 				// 左右の画像の縦横比を揃える
 				int x0 = src_x[0] - left[0] - right[0];
 				int x1 = src_x[1] - left[1] - right[1];
@@ -3669,7 +3720,7 @@ public class ImageManager extends InputStream implements Runnable {
 						left[1] = 0;
 						right[1] = 0;
 					}
-					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[1] + ", 左=" + left[1] + ", 右=" + right[1]);
+					Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[1] + ", 左=" + left[1] + ", 右=" + right[1]);
 				} else {
 					int width = x1 * y0 / y1;
 					if (src_x[0] > width) {
@@ -3681,13 +3732,11 @@ public class ImageManager extends InputStream implements Runnable {
 						left[0] = 0;
 						right[0] = 0;
 					}
-					Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[0] + ", 左=" + left[0] + ", 右=" + right[0]);
+					Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 width=" + width + ", src_x=" + src_x[0] + ", 左=" + left[0] + ", 右=" + right[0]);
 				}
 
-				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
-				Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
-
-				
+				Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右を揃える:P1 左=" + left[0] + ", 右=" + right[0] + ", 上=" + top[0] + ", 下=" + bottom[0]);
+				Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half1 + ", 左右を揃える:P2 左=" + left[1] + ", 右=" + right[1] + ", 上=" + top[1] + ", 下=" + bottom[1]);
 			}
 			
 			// 画像が横長なら左右のカットを同じにする
@@ -3704,7 +3753,21 @@ public class ImageManager extends InputStream implements Runnable {
 			src_y[1] = (src_y[1] - top[1] - bottom[1]);
 
 		}
-		
+
+		if (img1 != null) {
+			img1.CutLeft = left[0];
+			img1.CutRight = right[0];
+			img1.CutTop = top[0];
+			img1.CutBottom = bottom[0];
+		}
+		if (img2 != null) {
+			img2.CutLeft = left[1];
+			img2.CutRight = right[1];
+			img2.CutTop = top[1];
+			img2.CutBottom = bottom[1];
+		}
+
+
 		if(mMarginCut == 5) {
 			// 余白削除モードが縦横比無視の場合
 			// 元画像の縦横比を画面サイズにする
@@ -3735,7 +3798,7 @@ public class ImageManager extends InputStream implements Runnable {
 			// 半分にする
 			src_x[0] = (src_x[0] + 1) / 2;
 		}
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 横持ち調整:P1 src_x1=" + src_x[0] + ", src_y1=" + src_y[0]);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", アスペクト比調整:P1 src_x1=" + src_x[0] + ", src_y1=" + src_y[0]);
 		adj_x[0] = src_x[0];
 		adj_y[0] = src_y[0];
 
@@ -3760,7 +3823,7 @@ public class ImageManager extends InputStream implements Runnable {
 				// 半分にする
 				src_x[1] = (src_x[1] + 1) / 2;
 			}
-			Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 横持ち調整:P1 src_x2=" + src_x[1] + ", src_y2=" + src_y[1]);
+			Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", アスペクト比調整:P1 src_x2=" + src_x[1] + ", src_y2=" + src_y[1]);
 			adj_x[1] = src_x[1];
 			adj_y[1] = src_y[1];
 		}
@@ -3782,9 +3845,9 @@ public class ImageManager extends InputStream implements Runnable {
 		// 1～2映像を足したサイズ
 		int src_cx = adj_x[0] + adj_x[1];
 		int src_cy = adj_y[0] > adj_y[1] ? adj_y[0] : adj_y[1];
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右サイズ揃えP1 adj_x=" + adj_x[0] + ", adj_y=" + adj_y[0]);
-		Log.d("comitton", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 左右サイズ揃えP2 adj_x=" + adj_x[1] + ", adj_y=" + adj_y[1]);
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ",左右サイズ合計 src_cx=" + src_cx + ", src_cy=" + src_cy);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 左右サイズ揃えP1 adj_x=" + adj_x[0] + ", adj_y=" + adj_y[0]);
+		Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 左右サイズ揃えP2 adj_x=" + adj_x[1] + ", adj_y=" + adj_y[1]);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ",左右サイズ合計 src_cx=" + src_cx + ", src_cy=" + src_cy);
 
 		// サイズ0だと0除算なので終了
 		if (src_cx == 0 || src_cy == 0) {
@@ -3901,7 +3964,7 @@ public class ImageManager extends InputStream implements Runnable {
 			height[1] = view_y * adj_y[1] / src_cy;
 		}
 
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 表示方法を反映 view_x=" + view_x + ", view_y=" + view_y);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 表示方法を反映 view_x=" + view_x + ", view_y=" + view_y);
 		// 拡大しすぎの時は抑える
 		int limit = Math.max(mScrWidth, mScrHeight) * 3;
 		for (int i = 0 ; i < 2 ; i ++) {
@@ -3925,14 +3988,19 @@ public class ImageManager extends InputStream implements Runnable {
     		}
 		}
 
-		Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 指定サイズP1 width=" + width[0] + ", height=" + height[0]);
-		Log.d("comitton", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 指定サイズP2 width=" + width[1] + ", height=" + height[1]);
+		Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 指定サイズP1 width=" + width[0] + ", height=" + height[0]);
+		Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 指定サイズP2 width=" + width[1] + ", height=" + height[1]);
 
 		// 任意スケールの設定前に100%状態のサイズを保持
 		fitwidth[0] = width[0];
 		fitheight[0] = height[0];
 		fitwidth[1] = width[1];
 		fitheight[1] = height[1];
+
+		mFileList[page1].fwidth[half1] = fitwidth[0];
+		mFileList[page1].fheight[half1] = fitheight[0];
+		mFileList[page2].fwidth[half1] = fitwidth[1];
+		mFileList[page2].fheight[half1] = fitheight[1];
 
 		// 任意スケールは結果に対して設定
 		width[0] = width[0] * mScrScale / 100;
@@ -3944,7 +4012,9 @@ public class ImageManager extends InputStream implements Runnable {
 		}
 
 		if (page1 >= 0 && mMemCacheFlag[page1].fSource && width[0] > 0 && height[0] > 0) {
+			Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", ソース読み込み済み");
 			if (mFileList[page1].swidth[half1] == width[0] && mFileList[page1].sheight[half1] == height[0] && mMemCacheFlag[page1].fScale[half1]) {
+				Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画像作成済み");
 				if (img1 != null) {
 					img1.SclWidth = width[0];
 					img1.SclHeight = height[0];
@@ -3953,6 +4023,7 @@ public class ImageManager extends InputStream implements Runnable {
 				}
 			}
 			else {
+				Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 画像作成開始");
 				mFileList[page1].swidth[half1] = width[0];
 				mFileList[page1].sheight[half1] = height[0];
 				if (memWriteLock(page1, half1, true)) {
@@ -3961,7 +4032,7 @@ public class ImageManager extends InputStream implements Runnable {
 //					long sttime = SystemClock.uptimeMillis();
 					int param = CallImgLibrary.ImageScaleParam(mSharpen, mInvert, mGray, mColoring, mMoire, pseland);
 					if (CallImgLibrary.ImageScale(page1, half1, width[0], height[0], left[0], right[0], top[0], bottom[0], mScrAlgoMode, mScrRotate, mMarginCut, mBright, mGamma, param, size) >= 0) {
-						Log.d("comitton", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 完成サイズP1 size_w=" + size[0] + ", size_h=" + size[1]);
+						Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1 + ", 完成サイズP1 size_w=" + size[0] + ", size_h=" + size[1]);
 						mMemCacheFlag[page1].fScale[half1] = true;
 						if (img1 != null) {
 							img1.SclWidth = width[0];
@@ -3978,7 +4049,14 @@ public class ImageManager extends InputStream implements Runnable {
 					sendMessage(mHandler, MSG_CACHE, -1, 0, null);
 				}
 			}
+			if (img1 != null) {
+				Log.d("ImageManager", "ImageScaling Page=" + page1 + ", Half=" + half1
+						+ ", Width=" + img1.Width + ", Height=" + img1.Height
+						+ ", FitWidth=" + img1.FitWidth + ", FitHeight=" + img1.FitHeight
+						+ ", SclWidth=" + img1.SclWidth + ", SclHeight=" + img1.SclHeight);
+			}
 		}
+
 		if (page2 >= 0 && mMemCacheFlag[page2].fSource && width[1] > 0 && height[1] > 0) {
 			// 見開き時
 			if (mFileList[page2].swidth[half2] == width[1] && mFileList[page2].sheight[half2] == height[1] && mMemCacheFlag[page2].fScale[half2]) {
@@ -3998,7 +4076,7 @@ public class ImageManager extends InputStream implements Runnable {
 //					long sttime = SystemClock.uptimeMillis();
 					int param = CallImgLibrary.ImageScaleParam(mSharpen, mInvert, mGray, mColoring, mMoire, pseland);
 					if (CallImgLibrary.ImageScale(page2, half2, width[1], height[1], left[1], right[1], top[1], bottom[1], mScrAlgoMode, mScrRotate, mMarginCut, mBright, mGamma, param, size) >= 0) {
-						Log.d("comitton", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 完成サイズP2 size_w=" + size[0] + ", size_h=" + size[1]);
+						Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half2 + ", 完成サイズP2 size_w=" + size[0] + ", size_h=" + size[1]);
 						mMemCacheFlag[page2].fScale[half2] = true;
 						if (img2 != null) {
 							img2.SclWidth = width[1];
@@ -4015,8 +4093,15 @@ public class ImageManager extends InputStream implements Runnable {
 					sendMessage(mHandler, MSG_CACHE, -1, 0, null);
 				}
 			}
+			if (img2 != null) {
+				Log.d("ImageManager", "ImageScaling Page=" + page2 + ", Half=" + half2
+						+ ", Width=" + img2.Width + ", Height=" + img2.Height
+						+ ", FitWidth=" + img2.FitWidth + ", FitHeight=" + img2.FitHeight
+						+ ", SclWidth=" + img2.SclWidth + ", SclHeight=" + img2.SclHeight);
+			}
 		}
-//		Log.d("ImageScaling", "end : p1=" + page1 + ", p2=" + page2 + ", h1=" + half1 + ", h2=" + half2);
+
+		//		Log.d("ImageScaling", "end : p1=" + page1 + ", p2=" + page2 + ", h1=" + half1 + ", h2=" + half2);
 		return true;
 	}
 

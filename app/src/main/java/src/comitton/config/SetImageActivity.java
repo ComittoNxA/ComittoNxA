@@ -104,7 +104,8 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	public static final int EffectName[] =
 		{ R.string.effect00		// なし
 		, R.string.effect01		// フリップ
-		, R.string.effect02 };	// フェードイン
+		, R.string.effect02		// フェードイン
+		, R.string.effect03 };	// スクロール
 	public static final int QualityName[] =
 		{ R.string.quality00	// 速度優先
 		, R.string.quality01 };	// 画質優先
@@ -118,6 +119,9 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		, R.string.pnumpos03	// 左下
 		, R.string.pnumpos04	// 中央下
 		, R.string.pnumpos05 };	// 右下
+	public static final int PnumColorName[] =
+			{ R.string.pnumcolor00		// 白
+		, R.string.pnumcolor01 };		// 黒
 	public static final int TimeFormatName[] =
 		{ R.string.timeformat00		// 24:00
 		, R.string.timeformat01		// 24:00 [100%]
@@ -271,11 +275,11 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 			//
 			mTapPattern.setSummary(SetImageText.getTapPatternSummary(mResources, sharedPreferences));
 		}
-		else if(key.equals(DEF.KEY_PNUMDISP) || key.equals(DEF.KEY_PNUMFORMAT) || key.equals(DEF.KEY_PNUMPOS) || key.equals(DEF.KEY_PNUMSIZE)){
+		else if(key.equals(DEF.KEY_PNUMDISP) || key.equals(DEF.KEY_PNUMFORMAT) || key.equals(DEF.KEY_PNUMPOS) || key.equals(DEF.KEY_PNUMSIZE) || key.equals(DEF.KEY_PNUMCOLOR)){
 			//
 			mPageNumber.setSummary(getPageNumberSummary(sharedPreferences));
 		}
-		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE)){
+		else if(key.equals(DEF.KEY_TIMEDISP) || key.equals(DEF.KEY_TIMEFORMAT) || key.equals(DEF.KEY_TIMEPOS) || key.equals(DEF.KEY_TIMESIZE) || key.equals(DEF.KEY_TIMECOLOR)){
 			//
 			mTimeAndBattery.setSummary(getTimeSummary(sharedPreferences));
 		}
@@ -402,7 +406,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getPnumFormat(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMFORMAT, 1);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMFORMAT, DEF.DEFAULT_PNUMFORMAT);
 		if( val < 0 || val >= PnumFormatName.length){
 			val = 1;
 		}
@@ -410,7 +414,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getPnumPos(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMPOS, 5);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMPOS, DEF.DEFAULT_PNUMPOS);
 		if( val < 0 || val >= PnumPosName.length){
 			val = 5;
 		}
@@ -418,18 +422,26 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getPnumSize(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMSIZE, 10);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMSIZE, DEF.DEFAULT_PNUMSIZE);
 		return val;
 	}
 
 	public static boolean getPnumDisp(SharedPreferences sharedPreferences){
 		boolean flag;
-		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_PNUMDISP, false);
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_PNUMDISP, DEF.DEFAULT_PNUMDISP);
 		return flag;
 	}
-
+	
+	public static int getPnumColor(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_PNUMCOLOR, DEF.DEFAULT_PNUMCOLOR);
+		if( val < 0 || val >= PnumColorName.length){
+			val = 1;
+		}
+		return val;
+	}
+	
 	public static int getTimeFormat(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, 1);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEFORMAT, DEF.DEFAULT_TIMEFORMAT);
 		if( val < 0 || val >= TimeFormatName.length){
 			val = 1;
 		}
@@ -437,7 +449,7 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getTimePos(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, 5);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMEPOS, DEF.DEFAULT_TIMEPOS);
 		if( val < 0 || val >= PnumPosName.length){
 			val = 5;
 		}
@@ -445,15 +457,24 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	public static int getTimeSize(SharedPreferences sharedPreferences){
-		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, 10);
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMESIZE, DEF.DEFAULT_TIMESIZE);
 		return val;
 	}
 
 	public static boolean getTimeDisp(SharedPreferences sharedPreferences){
 		boolean flag;
-		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_TIMEDISP, false);
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_TIMEDISP, DEF.DEFAULT_TIMEDISP);
 		return flag;
 	}
+
+	public static int getTimeColor(SharedPreferences sharedPreferences){
+		int val = DEF.getInt(sharedPreferences, DEF.KEY_TIMECOLOR, DEF.DEFAULT_TIMECOLOR);
+		if( val < 0 || val >= PnumColorName.length){
+			val = 1;
+		}
+		return val;
+	}
+
 	public static boolean getSharpen(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_SHARPEN, false);
@@ -523,6 +544,12 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 	public static boolean getNoExpand(SharedPreferences sharedPreferences){
 		boolean flag;
 		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_NOEXPAND, true);
+		return flag;
+	}
+
+	public static boolean getScrlNext(SharedPreferences sharedPreferences){
+		boolean flag;
+		flag =  DEF.getBoolean(sharedPreferences, DEF.KEY_SCRLNEXT, false);
 		return flag;
 	}
 
@@ -610,13 +637,15 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		int format = getPnumFormat(sharedPreferences);
 		int pos = getPnumPos(sharedPreferences);
 		int size = getPnumSize(sharedPreferences);
+		int color = getPnumColor(sharedPreferences);
 		Resources res = getResources();
 
 		String summ;
 		if (disp) {
 			summ = res.getString(PnumFormatName[format])
 					+ ", " + res.getString(PnumPosName[pos])
-						+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
+					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1))
+					+ ", " + res.getString(PnumColorName[color]);
 		}
 		else {
 			summ = res.getString(R.string.pnumnodisp);
@@ -629,13 +658,15 @@ public class SetImageActivity extends PreferenceActivity implements OnSharedPref
 		int format = getTimeFormat(sharedPreferences);
 		int pos = getTimePos(sharedPreferences);
 		int size = getTimeSize(sharedPreferences);
+		int color = getTimeColor(sharedPreferences);
 		Resources res = getResources();
 
 		String summ;
 		if (disp) {
 			summ = res.getString(TimeFormatName[format])
 					+ ", " + res.getString(PnumPosName[pos])
-					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1));
+					+ ", " + DEF.getPnumSizeStr(size, res.getString(R.string.unitSumm1))
+					+ ", " + res.getString(PnumColorName[color]);
 		}
 		else {
 			summ = res.getString(R.string.pnumnodisp);
