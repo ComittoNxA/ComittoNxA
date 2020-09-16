@@ -3999,9 +3999,10 @@ public class ImageManager extends InputStream implements Runnable {
 
 		mFileList[page1].fwidth[half1] = fitwidth[0];
 		mFileList[page1].fheight[half1] = fitheight[0];
-		mFileList[page2].fwidth[half1] = fitwidth[1];
-		mFileList[page2].fheight[half1] = fitheight[1];
-
+		if (page2 != -1) {
+			mFileList[page2].fwidth[half1] = fitwidth[1];
+			mFileList[page2].fheight[half1] = fitheight[1];
+		}
 		// 任意スケールは結果に対して設定
 		width[0] = width[0] * mScrScale / 100;
 		height[0] = height[0] * mScrScale / 100;

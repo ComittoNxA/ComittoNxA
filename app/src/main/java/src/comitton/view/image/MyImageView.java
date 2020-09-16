@@ -74,8 +74,8 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	private int mDispHeight = 0;
 
 	private int mAttenuateCount = 0;
-	private int mOverScrollX;
-	private int mOverScrollMax;
+	private int mOverScrollX = 0;
+	private int mOverScrollMax = 0;
 	private float mMomentiumX;
 	private float mMomentiumY;
 	private long mMomentiumTime;
@@ -84,10 +84,10 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	private int mMomentDrain;
 
 	// 画像が画面からはみ出るサイズ(0～)
-	private int mMgnLeft;	// 左
-	private int mMgnRight;	// 右
-	private int mMgnTop; 	// 上
-	private int mMgnBottom;	// 下
+	private int mMgnLeft = 0;	// 左
+	private int mMgnRight = 0;	// 右
+	private int mMgnTop = 0; 	// 上
+	private int mMgnBottom = 0;	// 下
 
 	private ImageManager mImageManager;
 	private ImageData mImage[] = new ImageData[2];
@@ -327,6 +327,10 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
     		}
 
 			if (mCanvasBitmap == null) {
+				return;
+			}
+
+			if (mImage[0] == null) {
 				return;
 			}
 			if (isCreateBack == false && isBackDraw == true && mBackBitmap != null) {
@@ -1201,8 +1205,8 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 	public void scrollReset() {
 		mOverScrollX = 0;
-		mDrawLeft = 0 + mMgnLeft;
-		mDrawTop = 0 + mMgnTop;
+//		mDrawLeft = 0 + mMgnLeft;
+//		mDrawTop = 0 + mMgnTop;
 		mMomentiumMsg = null;
 	}
 

@@ -287,7 +287,7 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 	private boolean mSavePage;
 	private boolean mFlickEdge;
 	private boolean mIsConfSave;
-	private boolean mScrlNext; // スクロールで前後のページへ移動
+	private boolean mScrlNext = false; // スクロールで前後のページへ移動
 
 	private String mCharset;
 
