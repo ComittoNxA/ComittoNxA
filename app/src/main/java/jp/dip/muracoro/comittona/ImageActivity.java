@@ -2465,15 +2465,15 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 							// 普通のタッチでページ遷移
 							if (next) {
 								// 次ページへ
-								if (mScrlNext) {
-									mImageView.scrollReset();
-								}
+//								if (mScrlNext) {
+//									mImageView.scrollReset();
+//								}
 								nextPage();
 							} else {
 								// 前ページへ
-								if (mScrlNext) {
-									mImageView.scrollReset();
-								}
+//								if (mScrlNext) {
+//									mImageView.scrollReset();
+//								}
 								prevPage();
 							}
 						}

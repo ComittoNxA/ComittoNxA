@@ -742,6 +742,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 					if (mScrlNext == false || mOverScrollX == 0) {
 						Paint bmpPaint = null;
 						if (effect == 2) {	// ページめくりフェードイン
+							scrollReset();
 							bmpPaint = mAlphaPaint;
 							bmpPaint.setAlpha((int) (255 * (1.0f - effectRate) * (effectRate > 0 ? 1 : -1)));
 						}
