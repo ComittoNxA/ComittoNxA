@@ -371,7 +371,6 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 					else if (mOverScrollX < - mDispWidth) {
 						mDrawLeft -= mDispWidth;
 						drawLeft = (int)mDrawLeft;
-						mOverScrollX = 0;
 						mOverScrollX += mDispWidth;
 					}
 					mLastOverScrollX = mOverScrollX;
