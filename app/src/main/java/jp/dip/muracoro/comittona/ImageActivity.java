@@ -3849,7 +3849,11 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		}
 		mPageBack = false;
 		startVibrate();
+		if (mImageView.getPageLock()) {
+			mPageSelecting = true;
+		}
 		setBitmapImage();
+
 	}
 
 	public void prevPage() {
@@ -3882,6 +3886,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		}
 		mPageBack = true;
 		startVibrate();
+		if (mImageView.getPageLock()) {
+			mPageSelecting = true;
+		}
 		setBitmapImage();
 	}
 
@@ -3949,9 +3956,9 @@ public class ImageActivity extends Activity implements OnTouchListener, Handler.
 		if (!mListLoading && !mImageLoading && !mScrolling) {
 			if (!mImageView.setViewPosScroll(move)) {
 				// スクロールする余地がなければ次ページ
-				if (mScrlNext) {
-					mImageView.scrollReset();
-				}
+//				if (mScrlNext) {
+//					mImageView.scrollReset();
+//				}
 				changePage(move);
 			}
 			else {

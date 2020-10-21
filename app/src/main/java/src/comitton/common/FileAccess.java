@@ -741,7 +741,7 @@ public class FileAccess {
 						flag = false;
 					}
 					size = smbjFiles.get(i).getEndOfFile();
-					date = smbjFiles.get(i).getLastAccessTime().toEpochMillis();
+					date = smbjFiles.get(i).getLastWriteTime().toEpochMillis();
 				}
 			}
 			

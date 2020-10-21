@@ -1,20 +1,18 @@
 {
-  "version": 1,
+  "version": 2,
   "artifactType": {
     "type": "APK",
     "kind": "Directory"
   },
   "applicationId": "jp.dip.muracoro.comittona",
-  "variantName": "release",
+  "variantName": "processReleaseResources",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "properties": [],
-      "versionCode": 16517,
-      "versionName": "1.65A17",
-      "enabled": true,
-      "outputFile": "ComittoNxA_1.65A17.apk"
+      "versionCode": 16518,
+      "versionName": "1.65A18",
+      "outputFile": "ComittoNxA_1.65A18.apk"
     }
   ]
 }
