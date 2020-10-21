@@ -362,7 +362,9 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 			if (effectRate != 0.0f) {
 				if (mOverScrollX != 0) {
-					mLastOverScrollX = mOverScrollX;
+					if((effectRate < 0.0f && mOverScrollX < 0) ||(effectRate > 0.0f && mOverScrollX > 0)) {
+						mLastOverScrollX = mOverScrollX;
+					}
 					mOverScrollX = 0;
 				}
 				float tx = 0;
@@ -1540,7 +1542,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				", -(mDrawWidthSum + mMgnRight - mDispWidth)=" + (-(mDrawWidthSum + mMgnRight - mDispWidth)));
 */
 		
-/*
+
 		//オーバースクロールとめくり方向が同じなら次のページ
 		if (mOverScrollX > 0) {
 			if (mPageWay == DEF.PAGEWAY_RIGHT && move > 0 ||
@@ -1556,7 +1558,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				return false;
 			}
 		}
-*/
+
 
 /*
 		if (mPageWay == DEF.PAGEWAY_RIGHT && move > 0 ||
