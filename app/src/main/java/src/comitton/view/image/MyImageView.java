@@ -361,10 +361,20 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			Paint paint = mDrawPaint;
 
 			if (effectRate != 0.0f) {
+				// オーバースクロールが画面幅を超えるときには、1画面先のページを表示する
 				if (mOverScrollX != 0) {
-					if((effectRate < 0.0f && mOverScrollX < 0) ||(effectRate > 0.0f && mOverScrollX > 0)) {
-						mLastOverScrollX = mOverScrollX;
+					if (mOverScrollX > mDispWidth) {
+						mDrawLeft += mDispWidth;
+						drawLeft = (int)mDrawLeft;
+						mOverScrollX -= mDispWidth;
 					}
+					else if (mOverScrollX < - mDispWidth) {
+						mDrawLeft -= mDispWidth;
+						drawLeft = (int)mDrawLeft;
+						mOverScrollX = 0;
+						mOverScrollX += mDispWidth;
+					}
+					mLastOverScrollX = mOverScrollX;
 					mOverScrollX = 0;
 				}
 				float tx = 0;
@@ -1365,7 +1375,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				if (Math.abs(mOverScrollX) > mOverScrollMax) {
 					mOverScrollX = mOverScrollMax * (mOverScrollX > 0 ? 1 : -1);
 				}
-//			Log.d("overscroll", "overScroll=" + mOverScrollX + ", moveX=" + moveX + ", move=" + (int)(mDrawLeft - orgLeft));
+				//Log.d("overscroll", "overScroll=" + mOverScrollX + ", moveX=" + moveX + ", move=" + (int)(mDrawLeft - orgLeft));
 				if (mOverScrollX != 0) {
 					// 減衰開始
 					attenuate();
@@ -1531,8 +1541,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 	// 次の位置へスクロールする
 	public boolean setViewPosScroll(int move) {
-
-/*
+		
 		Log.d("MyImageView", "setViewPosScroll(move=" + move + ", mOverScrollX=" + mOverScrollX +
 				", mPageWay=" + (mPageWay == DEF.PAGEWAY_RIGHT ? "RIGHT" : "LEFT") +
 				", mDrawLeft=" + mDrawLeft + ", mDrawWidthSum=" + mDrawWidthSum +
@@ -1540,7 +1549,6 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		Log.d("MyImageView", "setViewPosScroll(move=" + move +
 				", mDrawLeft + mOverScrollX=" + (mDrawLeft + mOverScrollX) +
 				", -(mDrawWidthSum + mMgnRight - mDispWidth)=" + (-(mDrawWidthSum + mMgnRight - mDispWidth)));
-*/
 		
 
 		//オーバースクロールとめくり方向が同じなら次のページ
@@ -1596,10 +1604,10 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		min_x = -1;
 		min_y = -1;
 		for (int i = 0 ; i < mScrollPos.length ; i++) {
-			int wk_x = mScrollPos[i].x - (int)(mDrawLeft + mOverScrollX);
-			int wk_y = mScrollPos[i].y - (int)mDrawTop;
-			//Log.d("MyImageView", "setViewPosScroll mScrollPos[" + i +"]=(" + mScrollPos[i].x  + ", " + mScrollPos[i].y + ")" );
-			//Log.d("MyImageView", "setViewPosScroll wk_x=" + wk_x  + ", wk_y=" + wk_y );
+			int wk_x = (mScrollPos[i].x - (int)(mDrawLeft + mOverScrollX)) * move;
+			int wk_y = (mScrollPos[i].y - (int)mDrawTop) * move;
+			Log.d("MyImageView", "setViewPosScroll mScrollPos[" + i +"]=(" + mScrollPos[i].x  + ", " + mScrollPos[i].y + ")" );
+			Log.d("MyImageView", "setViewPosScroll wk_x=" + wk_x  + ", wk_y=" + wk_y );
 			if (wk_x >= 0 && wk_y >= 0) {
 				if (min_x == -1 || min_x >= wk_x && min_y >= wk_y) {
 					// 最初のループ又はさらに近い
@@ -1609,6 +1617,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				}
 			}
 		}
+		Log.d("MyImageView", "setViewPosScroll index=" + index + ", min_x=" + min_x  + ", min_y=" + min_y );
 		if (mScrollPos[index].x == (int)(mDrawLeft + mOverScrollX) && mScrollPos[index].y == (int)mDrawTop) {
 			// 丁度その位置なら次へ
 			index += move >= 0 ? 1 : -1;
@@ -1618,6 +1627,13 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			}
 		}
 		mScrollPoint = new Point(mScrollPos[index].x, mScrollPos[index].y);
+		// オーバースクロールの量が1画面を超えている場合、枠外のページでスクロールを停止する
+		if (mOverScrollX > mDispWidth) {
+			mScrollPoint = new Point(mScrollPos[index].x + mDispWidth, mScrollPos[index].y);
+		}
+		if (mOverScrollX < - mDispWidth) {
+			mScrollPoint = new Point(mScrollPos[index].x - mDispWidth, mScrollPos[index].y);
+		}
 //		moveToNextPoint();
 		return true;
 	}
@@ -1650,7 +1666,26 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			x_move = x_range / move_cnt;
 			y_move = y_range / move_cnt;
 
-			mDrawLeft += x_move;
+
+			if (mOverScrollX == 0) {
+				mDrawLeft += x_move;
+			}
+			// オーバースクロールしている場合は、先にそちらを消費する
+			else if (mOverScrollX > 0) {
+				mOverScrollX += x_move;
+				if (mOverScrollX < 0) {
+					mDrawLeft += mOverScrollX;
+					mOverScrollX = 0;
+				}
+			}
+			else if (mOverScrollX < 0) {
+				mOverScrollX += x_move;
+				if (mOverScrollX > 0) {
+					mDrawLeft += mOverScrollX;
+					mOverScrollX = 0;
+				}
+			}
+
 			mDrawTop += y_move;
 			updateNotify();
 		}
