@@ -1552,7 +1552,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		}
 
 		//オーバースクロールとめくり方向が同じなら次のページ
-		if (mOverScrollX < 0 && move > 0) {
+		if (mOverScrollX < 0) {
 			if (mPageWay == DEF.PAGEWAY_RIGHT && move < 0 ||
 					mPageWay == DEF.PAGEWAY_LEFT && move > 0) {
 				return false;
