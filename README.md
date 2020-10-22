@@ -17,14 +17,14 @@
 ## 変更履歴
 
 
-### [Ver1.65A19](/ComittoNxA/ComittoNxA/releases/tag/1.65A19) (2020/10/22)
+### [Ver1.65A19](https://github.com/ComittoNxA/ComittoNxA/releases/tag/1.65A19) (2020/10/22)
 
   - スクロール中のページ切り替えタイミングの調整.
   - テキスト閲覧時の改ページ・スクロール速度の調整.
   - 設定保存画面で保存済みの設定ファイルを選択してファイル名を入力欄にコピーできるように変更.
 
 
-### [Ver1.65A18](/ComittoNxA/ComittoNxA/releases/tag/1.65A18) (2020/10/22)
+### [Ver1.65A18](https://github.com/ComittoNxA/ComittoNxA/releases/tag/1.65A18) (2020/10/22)
 
   - ページ境界を越えてスクロール中のページめくり動作を調整.
   - smbjのファイル更新時間が誤っている不具合を修正.
