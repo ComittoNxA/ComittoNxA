@@ -363,6 +363,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			if (effectRate != 0.0f) {
 				// オーバースクロールが画面幅を超えるときには、1画面先のページを表示する
 				if (mOverScrollX != 0) {
+/*
 					if (mOverScrollX > mDispWidth) {
 						mDrawLeft += mDispWidth;
 						drawLeft = (int)mDrawLeft;
@@ -373,6 +374,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 						drawLeft = (int)mDrawLeft;
 						mOverScrollX += mDispWidth;
 					}
+*/
 					mLastOverScrollX = mOverScrollX;
 					mOverScrollX = 0;
 				}
@@ -448,7 +450,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 					if (mPageLock == false) {	// ページロック中じゃなければ
 						// 現在のページ幅合計以上移動したら前後のページに移動する
-						if (mOverScrollX > mDrawWidthSum) {
+						if (mOverScrollX > mDrawWidthSum || mOverScrollX > mDispWidth) {
 							mPageLock = true;
 							if (mPageWay == DEF.PAGEWAY_RIGHT) {
 								mParentAct.nextPage();
@@ -456,7 +458,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 								mParentAct.prevPage();
 							}
 						}
-						if (mOverScrollX < -(mDrawWidthSum)) {
+						if (mOverScrollX < -(mDrawWidthSum) || mOverScrollX < -(mDispWidth)) {
 							mPageLock = true;
 							if (mPageWay == DEF.PAGEWAY_RIGHT) {
 								mParentAct.prevPage();
@@ -1541,15 +1543,14 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 	// 次の位置へスクロールする
 	public boolean setViewPosScroll(int move) {
 		
-		Log.d("MyImageView", "setViewPosScroll(move=" + move + ", mOverScrollX=" + mOverScrollX +
-				", mPageWay=" + (mPageWay == DEF.PAGEWAY_RIGHT ? "RIGHT" : "LEFT") +
-				", mDrawLeft=" + mDrawLeft + ", mDrawWidthSum=" + mDrawWidthSum +
-				", mMgnRight=" + mMgnRight + ", mDispWidth=" + mDispWidth);
-		Log.d("MyImageView", "setViewPosScroll(move=" + move +
-				", mDrawLeft + mOverScrollX=" + (mDrawLeft + mOverScrollX) +
-				", -(mDrawWidthSum + mMgnRight - mDispWidth)=" + (-(mDrawWidthSum + mMgnRight - mDispWidth)));
+//		Log.d("MyImageView", "setViewPosScroll(move=" + move + ", mOverScrollX=" + mOverScrollX +
+//				", mPageWay=" + (mPageWay == DEF.PAGEWAY_RIGHT ? "RIGHT" : "LEFT") +
+//				", mDrawLeft=" + mDrawLeft + ", mDrawWidthSum=" + mDrawWidthSum +
+//				", mMgnRight=" + mMgnRight + ", mDispWidth=" + mDispWidth);
+//		Log.d("MyImageView", "setViewPosScroll(move=" + move +
+//				", mDrawLeft + mOverScrollX=" + (mDrawLeft + mOverScrollX) +
+//				", -(mDrawWidthSum + mMgnRight - mDispWidth)=" + (-(mDrawWidthSum + mMgnRight - mDispWidth)));
 		
-
 		//オーバースクロールとめくり方向が同じなら次のページ
 		if (mOverScrollX > 0) {
 			if (mPageWay == DEF.PAGEWAY_RIGHT && move > 0 ||
@@ -1605,8 +1606,8 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 		for (int i = 0 ; i < mScrollPos.length ; i++) {
 			int wk_x = (mScrollPos[i].x - (int)(mDrawLeft + mOverScrollX)) * move;
 			int wk_y = (mScrollPos[i].y - (int)mDrawTop) * move;
-			Log.d("MyImageView", "setViewPosScroll mScrollPos[" + i +"]=(" + mScrollPos[i].x  + ", " + mScrollPos[i].y + ")" );
-			Log.d("MyImageView", "setViewPosScroll wk_x=" + wk_x  + ", wk_y=" + wk_y );
+			//Log.d("MyImageView", "setViewPosScroll mScrollPos[" + i +"]=(" + mScrollPos[i].x  + ", " + mScrollPos[i].y + ")" );
+			//Log.d("MyImageView", "setViewPosScroll wk_x=" + wk_x  + ", wk_y=" + wk_y );
 			if (wk_x >= 0 && wk_y >= 0) {
 				if (min_x == -1 || min_x >= wk_x && min_y >= wk_y) {
 					// 最初のループ又はさらに近い
@@ -1616,7 +1617,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 				}
 			}
 		}
-		Log.d("MyImageView", "setViewPosScroll index=" + index + ", min_x=" + min_x  + ", min_y=" + min_y );
+		//Log.d("MyImageView", "setViewPosScroll index=" + index + ", min_x=" + min_x  + ", min_y=" + min_y );
 		if (mScrollPos[index].x == (int)(mDrawLeft + mOverScrollX) && mScrollPos[index].y == (int)mDrawTop) {
 			// 丁度その位置なら次へ
 			index += move >= 0 ? 1 : -1;
@@ -1626,13 +1627,15 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 			}
 		}
 		mScrollPoint = new Point(mScrollPos[index].x, mScrollPos[index].y);
-		// オーバースクロールの量が1画面を超えている場合、枠外のページでスクロールを停止する
+/*
+		// オーバースクロールの量が画面幅を超えている場合、枠外のページでスクロールを停止する
 		if (mOverScrollX > mDispWidth) {
 			mScrollPoint = new Point(mScrollPos[index].x + mDispWidth, mScrollPos[index].y);
 		}
 		if (mOverScrollX < - mDispWidth) {
 			mScrollPoint = new Point(mScrollPos[index].x - mDispWidth, mScrollPos[index].y);
 		}
+*/
 //		moveToNextPoint();
 		return true;
 	}
@@ -1643,6 +1646,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 	// 小単位でスクロールしながら目的のポイントへ
 	public boolean moveToNextPoint(int scrlRange){
+		Log.d("MyImageView", "moveToNextPoint(" + scrlRange + ")");
 		int x_range, x_cnt, x_move;
 		int y_range, y_cnt, y_move;
 		int move_cnt;

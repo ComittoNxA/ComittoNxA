@@ -255,7 +255,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		mUpdateThread = new Thread(this);
 		mUpdateThread.setPriority(Thread.MAX_PRIORITY);
 		mUpdateThread.start();
-		update();
+		update(false);
 	}
 
 	@Override
@@ -283,33 +283,50 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			mUpdateThread.interrupt();
 		}
 		else {
-			update();
+			update(false);
 		}
 	}
 
 	@Override
 	public void onUpdate() {
 		// ガイドの更新
-		update();
+		updateNotify();
 	}
 
-	public void update() {
+	private boolean mDrawLock;
+	public void lockDraw() { mDrawLock = true; }
+
+	public void unlockDraw() { mDrawLock = false; }
+
+	public boolean update(boolean unlock) {
+		if (mDrawLock == true && unlock == false) {
+			return false;
+		}
+		if (unlock == true) {
+			// 描画ロック解除
+			mDrawLock = false;
+		}
+
 		Canvas canvas = null;
 		SurfaceHolder surfaceHolder = getHolder();
 		try {
-			Log.d("MyTextView", "update 1");
 			canvas = surfaceHolder.lockCanvas(); // ロックして、書き込み用のcanvasを受け取る
 			if (canvas == null)
-				return; // canvasが受け取れてなかったら抜ける
+				return false; // canvasが受け取れてなかったら抜ける
 
-			synchronized (surfaceHolder) {
-				Log.d("MyTextView", "update 2");
+//			synchronized (surfaceHolder) {
 				drawScreen(canvas);
-			}
+//			}
 		} finally {
 			if (canvas != null)
-				surfaceHolder.unlockCanvasAndPost(canvas); // 例外が出て、canvas受け取ってたらロックはずす
+				try {
+					surfaceHolder.unlockCanvasAndPost(canvas); // 例外が出て、canvas受け取ってたらロックはずす
+				}
+				catch (IllegalStateException e) {
+					// Surface has already been released.
+				}
 		}
+		return true;
 	}
 
 	public void drawScreen(Canvas canvas) {
@@ -1363,7 +1380,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 	// エフェクト処理
 	public void setEffectRate(float rate) {
 		mEffectRate = rate;
-		update();
+		update(false);
 	}
 
 	public void setTextBuffer(char textbuff[], String title, TextDrawData td[][]) {
@@ -1378,7 +1395,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			// イメージデータを解放
 			CallTxtLibrary.FreeTextImage();
 		}
-		update();
+		update(false);
 	}
 
 	public void setPictures(PictureData pictures[]) {
@@ -1694,7 +1711,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 
 		if (mEffect != true) {
 			// エフェクトありのときは更新しない
-			update();
+			update(false);
 		}
 
 		// ページ送り位置の設定
@@ -1792,12 +1809,18 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		// 再描画フラグ
 		boolean fUpdate = false;
 
-		int orgLeft = (int)mDrawLeft;
-		int moveX = (int)((x - mScrollBaseX) * scroll) + mOverScrollX;
-		int moveY = (int)((y - mScrollBaseY) * scroll);
+		if (x == 0 && y == 0) {
+			return;
+		}
 
-		int left = (int)(mDrawLeft + moveX);  
-		int top  = (int)(mDrawTop  + moveY);  
+		float orgLeft = (int)mDrawLeft;
+		float moveX = ((x - mScrollBaseX) * scroll) + mOverScrollX;
+		float moveY = ((y - mScrollBaseY) * scroll);
+//		float moveX = (x * scroll) + mOverScrollX;
+//		float moveY = y * scroll;
+
+		float left = mDrawLeft + moveX;
+		float top  = mDrawTop  + moveY;  
 
 		if (left < mDispWidth - mDrawWidthSum - mMgnRight) {
 			left = mDispWidth - mDrawWidthSum - mMgnRight;
@@ -1812,13 +1835,15 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			top = mMgnTop;
 		}
 
-		if ((int)left != (int)mDrawLeft || (int)top != (int)mDrawTop) {
+		if (left != mDrawLeft || top != mDrawTop) {
 			mDrawLeft = left;
-			mDrawTop  = top;
+			mDrawTop = top;
 			fUpdate = true;
 		}
 
 		mOverScrollX = (int)(moveX - (mDrawLeft - orgLeft));
+
+/*
 		if (Math.abs(mOverScrollX) > mOverScrollMax) {
 			mOverScrollX = mOverScrollMax * (mOverScrollX > 0 ? 1 : -1);
 		}
@@ -1829,19 +1854,20 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			// 描画
 			fUpdate = true;
 		}
+*/
 
 		//mCurrentPage = getCurrentPage(PAGEBASE_CENTER);
 		setCurrentPage(getCurrentPage(PAGEBASE_CENTER));
 
 		if (fUpdate) {
-			update();
+			updateNotify();
 		}
 
-		mScrollBaseX = x;
-		mScrollBaseY = y;
+//		mScrollBaseX = x;
+//		mScrollBaseY = y;
 
 		// 設定スレッド開始
-		runDrawBitmapThread();
+//		runDrawBitmapThread();
 		return;
 	}
 
@@ -2088,7 +2114,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 
 			mDrawLeft += x_move;
 			mDrawTop += y_move;
-			update();
+			updateNotify();
 		}
 		if (move_cnt <= 1) {
 			mScrollPoint = null;
@@ -2152,7 +2178,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		y_move = (mMgnTop - mMoveFromTop) * t / movetime;
 		mDrawLeft = mMoveFromLeft + x_move;
 		mDrawTop = mMoveFromTop + y_move;
-		update();
+		update(false);
 //		}
 //		if (move_cnt <= 1) {
 //			result = false;
@@ -2413,7 +2439,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 	private final int EVENT_MOMENTIUM = 205;
 
 	private final int EFFECT_TERM = 1;
-	private final int SCROLL_TERM = 1;
+	private final int SCROLL_TERM = 4;
 	private final int PAGE_TERM = 1;
 	private final int ATTENUATE_TERM = 10;
 	private final int MOMENTIUM_TERM = 10;
@@ -2557,7 +2583,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 							mOverScrollX = 0;
 						}
 					}
-					update();
+					update(false);
 					if (mOverScrollX != 0) {
 						NextTime += ATTENUATE_TERM;
 						Message nextmsg = mHandler.obtainMessage(msg.what);
@@ -2638,7 +2664,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 
 					// エフェクト終了
 					mEffectDraw = false;
-					update();
+					update(false);
 				}
 				else {
 					// mEffectTimeミリ秒未満
@@ -2693,14 +2719,14 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			// リストの描画が必要な時にtrue復帰
 			try {
 				Thread.sleep(1000);
-				update();
+				update(false);
 			} catch (InterruptedException e) {
 				// 描画発生による割り込み
 				if (mIsRunning == false) {
 					break;
 				}
 				else {
-					update();
+					update(false);
 				}
 			}
 			;

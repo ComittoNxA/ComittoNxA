@@ -553,10 +553,10 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		if (mNoiseSwitch != null) {
 			mNoiseSwitch.recordPause(false);
 		}
-		if (mTextView != null) {
-			mTextView.breakMessage(false);
-			mTextView.update();
-		}
+//		if (mTextView != null) {
+//			mTextView.breakMessage(false);
+//			mTextView.update(true);
+//		}
 	}
 
 	/**
@@ -997,10 +997,11 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 				mTextView.setPictures(pictures);
 
 				// 画面サイズが必要なのでここでセット
+				mTextView.lockDraw();
 				mTextView.setTextConfig(mTextWidth, mTextHeight, mInfoSize, mMarginH);
 				setTextPageData();
 				mTextView.setPage(mCurrentPage, false, true);
-				mTextView.update();
+				mTextView.update(true);
 				break;
 		}
 		return false;
@@ -1188,10 +1189,11 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
     				if (mPinchScale != mPinchScaleSel) {
     					mPinchScale = mPinchScaleSel;
     					// テキストモード
+						mTextView.lockDraw();
     					mTextView.setTextScale(DEF.SCALE_PINCH, mPinchScale);
     					mPinchScale = mTextView.TextScaling();
     					this.updateOverSize();
-    					mTextView.update();
+    					mTextView.update(true);
     				}
     			}
     			return true;
@@ -1721,10 +1723,11 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 
 							if (isPrePort == isAftPort) {
 								// 変化がないときは強制的に発生させる
+								mTextView.lockDraw();
 								mTextView.updateScreenSize();
 								mTextView.TextScaling();
 								mTextView.updateOverSize();
-								mTextView.update();
+								mTextView.update(true);
 							}
 						}
 						break;
@@ -1732,16 +1735,18 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 						// 見開き設定変更
 						if (mDispMode != index) {
 							mDispMode = index;
+							mTextView.lockDraw();
 							mTextView.setDispMode(mDispMode);
 							mGuideView.setGuideMode(mDispMode == DEF.DISPMODE_TX_DUAL, mBottomFile, true, mPageSelect, false);
 							setTextPageData();
-							mTextView.update();
+							mTextView.update(true);
 						}
 						break;
 					case 2:
 						// 画像拡大率の変更
+						mTextView.lockDraw();
 						ChangeScale(index);
-						mTextView.update();
+						mTextView.update(true);
 						break;
 				}
 			}
@@ -2350,7 +2355,7 @@ public class TextActivity extends Activity implements OnTouchListener, Handler.C
 		mBottomFile = SetImageTextDetailActivity.getBottomFile(sharedPreferences);
 		mPinchEnable = SetImageTextDetailActivity.getPinchEnable(sharedPreferences);
 
-		mVolScrl = DEF.calcScrlSpeedPix(SetImageTextDetailActivity.getVolScrl(sharedPreferences), mDensity) * 5;
+		mVolScrl = DEF.calcScrlSpeedPix(SetImageTextDetailActivity.getVolScrl(sharedPreferences), mDensity);
 		mTapScrl = SetImageText.getTapScrl(sharedPreferences);
 		mScrlRngW = DEF.calcScrlRange(SetTextActivity.getScrlRngW(sharedPreferences));
 		mScrlRngH = DEF.calcScrlRange(SetTextActivity.getScrlRngH(sharedPreferences));
