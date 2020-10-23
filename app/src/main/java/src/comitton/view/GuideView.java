@@ -1429,7 +1429,10 @@ public class GuideView {
 //		boolean isCharging = false;
 		boolean usbCharge = false;
 		boolean acCharge = false;
-		
+
+		// バッテリー残量(%)
+		mBatteryIntent = mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+
 		if (mBatteryIntent != null) {
 			// バッテリー残量(%)
 			int level = mBatteryIntent.getIntExtra("level", 0);

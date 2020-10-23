@@ -1646,7 +1646,7 @@ public class MyImageView extends SurfaceView implements SurfaceHolder.Callback, 
 
 	// 小単位でスクロールしながら目的のポイントへ
 	public boolean moveToNextPoint(int scrlRange){
-		Log.d("MyImageView", "moveToNextPoint(" + scrlRange + ")");
+		//Log.d("MyImageView", "moveToNextPoint(" + scrlRange + ")");
 		int x_range, x_cnt, x_move;
 		int y_range, y_cnt, y_move;
 		int move_cnt;

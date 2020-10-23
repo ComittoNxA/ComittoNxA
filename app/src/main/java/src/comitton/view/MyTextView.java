@@ -1994,6 +1994,11 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 
 	// 次の位置へスクロールする
 	public boolean setViewPosScroll(int move) {
+		//オーバースクロールとめくり方向が同じなら次のページ
+		if (mOverScrollX != 0) {
+			return false;
+		}
+
 		if (mScrollPos == null) {
 			return true;
 		}
@@ -2019,8 +2024,8 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 
 			for (int i = 0; i < mScrollPos.length; i++) {
 				// 一番近いポイントを探す
-				int wk_x = mScrollPos[i].x - base - (int) mDrawLeft;
-				int wk_y = mScrollPos[i].y - (int) mDrawTop;
+				int wk_x = mScrollPos[i].x - base - (int)(mDrawLeft + mOverScrollX);
+				int wk_y = mScrollPos[i].y - (int)mDrawTop;
 				if (wk_x >= 0 && wk_y >= 0) {
 					if (min_x == -1 || min_x >= wk_x && min_y >= wk_y) {
 						// 最初のループ又はさらに近い
@@ -2030,7 +2035,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 					}
 				}
 			}
-			if (mScrollPos[index].x - base == mDrawLeft && mScrollPos[index].y == mDrawTop) {
+			if (mScrollPos[index].x - base == (int)(mDrawLeft + mOverScrollX) && mScrollPos[index].y == (int)mDrawTop) {
 				index += move >= 0 ? 1 : -1;
 				if (index < 0 || index >= mScrollPos.length) {
 					// 移動がない
@@ -2055,7 +2060,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 		}
 		else {
 			for (int i = 0; i < mScrollPos.length; i++) {
-				int wk_x = mScrollPos[i].x - (int) mDrawLeft;
+				int wk_x = mScrollPos[i].x - (int) (mDrawLeft + mOverScrollX);
 				int wk_y = mScrollPos[i].y - (int) mDrawTop;
 				if (wk_x >= 0 && wk_y >= 0) {
 					if (min_x == -1 || min_x >= wk_x && min_y >= wk_y) {
@@ -2066,7 +2071,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 					}
 				}
 			}
-			if (mScrollPos[index].x == mDrawLeft && mScrollPos[index].y == mDrawTop) {
+			if (mScrollPos[index].x == (int)(mDrawLeft + mOverScrollX) && mScrollPos[index].y == (int)mDrawTop) {
 				// 丁度その位置なら次へ
 				index += move >= 0 ? 1 : -1;
 				if (index < 0 || index >= mScrollPos.length) {
@@ -2100,7 +2105,7 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			return false;
 		}
 
-		x_range = mScrollPoint.x - (int) mDrawLeft;
+		x_range = mScrollPoint.x - (int) (mDrawLeft + mOverScrollX);
 		y_range = mScrollPoint.y - (int) mDrawTop;
 
 		x_cnt = (Math.abs(x_range) + range - 1) / range;
@@ -2112,7 +2117,25 @@ public class MyTextView extends SurfaceView implements Handler.Callback, Surface
 			x_move = x_range / move_cnt;
 			y_move = y_range / move_cnt;
 
-			mDrawLeft += x_move;
+			if (mOverScrollX == 0) {
+				mDrawLeft += x_move;
+			}
+			// オーバースクロールしている場合は、先にそちらを消費する
+			else if (mOverScrollX > 0) {
+				mOverScrollX += x_move;
+				if (mOverScrollX < 0) {
+					mDrawLeft += mOverScrollX;
+					mOverScrollX = 0;
+				}
+			}
+			else if (mOverScrollX < 0) {
+				mOverScrollX += x_move;
+				if (mOverScrollX > 0) {
+					mDrawLeft += mOverScrollX;
+					mOverScrollX = 0;
+				}
+			}
+
 			mDrawTop += y_move;
 			updateNotify();
 		}

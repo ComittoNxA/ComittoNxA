@@ -17,6 +17,12 @@
 ## 変更履歴
 
 
+### [Ver1.65A20 (2020/10/23)](https://github.com/ComittoNxA/ComittoNxA/releases/tag/1.65A20)
+
+  - バッテリー表示が更新されない不具合の修正.
+  - テキスト閲覧時の改ページ・スクロール条件の調整.
+
+
 ### [Ver1.65A19 (2020/10/22)](https://github.com/ComittoNxA/ComittoNxA/releases/tag/1.65A19)
 
   - スクロール中のページ切り替えタイミングの調整.

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 def applicationName = "ComittoNxA"
 def versionMajor = 1
 def versionMinor = 65
-def versionPatch = 19
+def versionPatch = 20
 def revision = "A"
 
 android {
