@@ -4,7 +4,7 @@
 ソースの再利用は自由です.  
 利用しているライブラリはそれぞれのライセンスに従ってください.  
 
-本ソースは、[ComittoNおよびComittoNxN](https://docs.google.com/open?id=0Bzx6UxEo3Pg0SXNIQVdRVnVqemM)、[ComittoNxM](https://www.axfc.net/u/3792235)、[ComittoNxT](https://www.axfc.net/u/3978158)のソースを元にしています。
+本ソースは、[ComittoNおよびComittoNxN](https://docs.google.com/open?id=0Bzx6UxEo3Pg0SXNIQVdRVnVqemM)、[ComittoNxM](https://www.axfc.net/u/3792235)、[ComittoNxT](https://www.axfc.net/u/3978158)のソースを元にしています.
 
 対応バージョンはAndroid2.3以上です.  
 
@@ -12,7 +12,7 @@
 #### 主な変更点
 
   - Windowsファイル共有サーバへのSMBバージョン2(SMBv2)プロトコルによるアクセスに対応.
-  - Android7以降ののSDカード内へファイルのダウンロード・名前の変更・削除に対応.
+  - Android7以降でSDカードアクセス（ファイルのダウンロード・ファイル名の変更・ファイルの削除）に対応.
   - イメージ表示画面でページ境界を越えた連続スクロールに対応.
   - イメージ表示画面とテキスト表示画面に時刻と充電状態を表示する機能を追加.
 
